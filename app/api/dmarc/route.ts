@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dns from "dns/promises";
 
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get("domain");
@@ -16,30 +18,31 @@ export async function GET(request: Request) {
 
   try {
     const records = await dns.resolveTxt(dmarcDomain);
-    const value = records.flat().join("");
 
-    const dmarcRecord = value.toLowerCase().startsWith("v=dmarc")
-      ? value
-      : null;
+    const dmarcRecords = records
+      .flat()
+      .filter(v => v.toLowerCase().startsWith("v=dmarc"));
+
+    if (dmarcRecords.length > 0) {
+      return NextResponse.json({
+        domain,
+        status: "found",
+        dmarc: dmarcRecords,
+      });
+    }
 
     return NextResponse.json({
       domain,
-      dmarc: dmarcRecord,
+      status: "not_found",
+      dmarc: null,
     });
   } catch (err: any) {
-    if (err.code === "ENOTFOUND" || err.code === "NXDOMAIN") {
-      return NextResponse.json(
-        {
-          domain,
-          dmarc: null,
-          message: "No DMARC record found",
-        },
-        { status: 404 }
-      );
-    }
-
     return NextResponse.json(
-      { error: "Unable to retrieve DMARC record" },
+      {
+        domain,
+        status: "error",
+        error: err.code || err.message,
+      },
       { status: 500 }
     );
   }

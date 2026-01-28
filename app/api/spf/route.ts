@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dns from "dns/promises";
 
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get("domain");
@@ -13,33 +15,30 @@ export async function GET(request: Request) {
   }
 
   try {
-    // First: check if domain exists at all
-    await dns.resolveAny(domain);
-
-    // Then: fetch SPF (TXT records)
     const records = await dns.resolveTxt(domain);
 
-    const spfRecord = records
+    const spfRecords = records
       .flat()
-      .find((r) => r.toLowerCase().startsWith("v=spf1"));
+      .filter(r => r.toLowerCase().startsWith("v=spf1"));
+
+    if (spfRecords.length > 0) {
+      return NextResponse.json({
+        domain,
+        status: "found",
+        spf: spfRecords,
+      });
+    }
 
     return NextResponse.json({
       domain,
-      spf: spfRecord || null,
+      status: "not_found",
+      spf: null,
     });
   } catch (err: any) {
-    // Domain does not exist
-    if (err.code === "ENOTFOUND" || err.code === "NXDOMAIN") {
-      return NextResponse.json(
-        { error: "Domain does not exist" },
-        { status: 404 }
-      );
-    }
-
-    // Other DNS / server error
-    return NextResponse.json(
-      { error: "Unable to retrieve SPF record" },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      domain,
+      status: "error",
+      error: err.code || err.message,
+    }, { status: 500 });
   }
 }
