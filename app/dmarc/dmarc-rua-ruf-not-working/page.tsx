@@ -1,4 +1,5 @@
 import Link from "next/link";
+import React from "react";
 
 export const metadata = {
   title: "DMARC RUA / RUF Not Working – Fix DMARC Reporting",
@@ -10,42 +11,48 @@ export default function DmarcRuaRufNotWorkingPage() {
   return (
     <main style={styles.wrapper}>
       <section style={styles.card}>
-        <h1 style={styles.title}>DMARC RUA / RUF Not Working</h1>
 
-        <p style={styles.subtitle}>
-          Your DMARC record is present, but aggregate (RUA) or forensic (RUF)
-          reports are not arriving. This usually means the reporting address is
-          invalid, unauthorized, or blocked.
-        </p>
+        {/* 1️⃣ VERDICT */}
+        <section>
+          <h1 style={styles.title}>DMARC RUA / RUF Not Working</h1>
 
-        {/* One-Minute Fix */}
-        <div style={styles.fixBox}>
+          <p style={styles.verdictInfo}>
+            ❌ DMARC reports are not being delivered.
+          </p>
+
+          <p style={styles.subtitle}>
+            Your DMARC record exists, but aggregate (RUA) or forensic (RUF)
+            reports are not arriving. This usually means the reporting address
+            is invalid, unauthorized, or blocked.
+          </p>
+        </section>
+
+        {/* 2️⃣ ONE-MINUTE FIX */}
+        <section style={styles.fixBox}>
           <h2 style={styles.sectionTitle}>One-Minute Fix</h2>
 
           <p style={styles.text}>
-            Ensure the reporting mailbox exists and is authorized to receive
+            Make sure the reporting mailbox exists and is allowed to receive
             DMARC reports.
           </p>
 
           <pre style={styles.code}>
-{`Working DMARC example:
-
-v=DMARC1; p=none;
+{`v=DMARC1; p=none;
 rua=mailto:dmarc@yourdomain.com;
 ruf=mailto:dmarc@yourdomain.com; fo=1;`}
           </pre>
 
           <p style={styles.note}>
-            The mailbox must exist and accept large attachments (XML files).
+            The mailbox must exist and accept large XML attachments.
           </p>
 
           <Link href="/" style={styles.button}>
             Re-check DMARC
           </Link>
-        </div>
+        </section>
 
-        {/* Common causes */}
-        <div style={styles.infoBox}>
+        {/* 3️⃣ WHY REPORTS FAIL */}
+        <section style={styles.infoBox}>
           <h2 style={styles.sectionTitle}>Why DMARC reports fail</h2>
 
           <ul style={styles.list}>
@@ -53,56 +60,54 @@ ruf=mailto:dmarc@yourdomain.com; fo=1;`}
             <li>Receiving domain blocks external reports</li>
             <li>No external reporting authorization</li>
             <li>Attachment size limits</li>
-            <li>RUF disabled by many providers</li>
+            <li>RUF is disabled by many providers</li>
           </ul>
 
           <p style={styles.text}>
             Most providers only send RUA reports. RUF is often ignored or
             deprecated.
           </p>
-        </div>
+        </section>
 
-        {/* External reporting */}
-        <div style={styles.infoBox}>
+        {/* 4️⃣ EXTERNAL REPORT AUTHORIZATION */}
+        <section style={styles.infoBox}>
           <h2 style={styles.sectionTitle}>
-            Using a third-party DMARC report service
+            Using a third-party DMARC reporting service
           </h2>
 
           <p style={styles.text}>
-            When sending reports to another domain, you must authorize it using
-            a DNS record.
+            When sending reports to another domain, you must authorize it with
+            a DNS record:
           </p>
 
           <pre style={styles.code}>
-{`Authorization example:
-
-_dmarc.yourdomain.com._report._dmarc.vendor.com TXT "v=DMARC1"`} 
+{`_dmarc.yourdomain.com._report._dmarc.vendor.com TXT "v=DMARC1"`} 
           </pre>
 
           <p style={styles.note}>
-            Without this record, reports will be silently dropped.
+            Without this record, reports are silently dropped.
           </p>
-        </div>
+        </section>
 
-        {/* What we checked */}
-        <div style={styles.infoBox}>
+        {/* 5️⃣ WHAT WE CHECKED */}
+        <section style={styles.infoBox}>
           <h2 style={styles.sectionTitle}>What we checked</h2>
           <p style={styles.text}>
-            We validated your DMARC record, checked for RUA/RUF tags, and
-            verified reporting destinations.
+            We validated your DMARC record, checked for RUA and RUF tags, and
+            verified whether reporting destinations are authorized.
           </p>
           <p style={styles.trust}>
-            Live DNS lookup. No assumptions.
+            Live DNS lookup. No cached data. No assumptions.
           </p>
-        </div>
+        </section>
 
-        {/* Escape hatch */}
-        <div style={styles.escapeBox}>
+        {/* 6️⃣ STILL FAILING / NEXT STEPS */}
+        <section style={styles.escapeBox}>
           <h3 style={styles.escapeTitle}>Still no reports?</h3>
 
           <ul style={styles.list}>
             <li>Wait 24–48 hours (reports are sent daily)</li>
-            <li>Check spam/quarantine folders</li>
+            <li>Check spam or quarantine folders</li>
             <li>Use a dedicated DMARC reporting service</li>
           </ul>
 
@@ -124,13 +129,14 @@ _dmarc.yourdomain.com._report._dmarc.vendor.com TXT "v=DMARC1"`}
               </Link>
             </li>
           </ul>
-        </div>
+        </section>
+
       </section>
     </main>
   );
 }
 
-/* ---------- STYLES ---------- */
+/* ---------- STYLES (DEFINED + SAFE) ---------- */
 
 const styles: Record<string, React.CSSProperties> = {
   wrapper: {
@@ -147,7 +153,13 @@ const styles: Record<string, React.CSSProperties> = {
   title: {
     fontSize: 32,
     fontWeight: 700,
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  verdictInfo: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: "#b91c1c",
+    marginBottom: 8,
   },
   subtitle: {
     color: "#374151",

@@ -17,15 +17,14 @@ export default function ErrorPageTemplate() {
           ❌ DKIM is not detected for this domain.
         </p>
         <p style={styles.subtitle}>
-          This means receiving mail servers cannot verify that your emails are
-          authentic.
+          Receiving mail servers cannot verify that your emails are authentic.
         </p>
       </section>
 
       {/* 2️⃣ ONE-MINUTE FIX */}
       <section style={styles.fixBox}>
         <h2 style={styles.sectionTitle}>One-Minute Fix</h2>
-        <p>Add the following DNS record:</p>
+        <p>Add the following DNS record exactly as shown:</p>
 
         <pre style={styles.codeBlock}>
 {`Type: TXT
@@ -35,23 +34,23 @@ TTL: Auto`}
         </pre>
 
         <p style={styles.note}>
-          This record enables DKIM signing for your domain.
+          This enables DKIM signing so receivers can validate your emails.
         </p>
       </section>
 
-      {/* 3️⃣ REGISTRAR STEPS */}
+      {/* 3️⃣ WHERE TO PASTE THIS */}
       <section style={styles.stepsBox}>
         <h2 style={styles.sectionTitle}>Where to paste this</h2>
-        <ul>
+        <ul style={styles.list}>
           <li>Log in to your DNS provider</li>
-          <li>Open DNS / Zone settings</li>
+          <li>Open DNS or Zone settings</li>
           <li>Add a new TXT record</li>
           <li>Paste the values exactly as shown</li>
           <li>Save changes</li>
         </ul>
       </section>
 
-      {/* 4️⃣ RE-CHECK LOOP */}
+      {/* 4️⃣ RE-CHECK */}
       <section style={styles.recheckBox}>
         <h2 style={styles.sectionTitle}>Re-check</h2>
         <p>
@@ -73,32 +72,58 @@ TTL: Auto`}
         )}
       </section>
 
-      {/* 5️⃣ TRUST ANCHOR */}
+      {/* 5️⃣ WHAT WE CHECKED */}
+      <section style={styles.infoBox}>
+        <h2 style={styles.sectionTitle}>What we checked</h2>
+        <p style={styles.text}>
+          We queried live DNS records for the DKIM selector shown above using
+          public resolvers and evaluated whether a valid DKIM key is published.
+        </p>
+      </section>
+
+      {/* 6️⃣ TRUST ANCHOR */}
       <section style={styles.trustBox}>
         <p>
-          We check live DNS records using public resolvers.
+          Checks live DNS records using public resolvers.
           <br />
           No logins. No saved domains. No tracking.
         </p>
       </section>
 
-      {/* 6️⃣ ESCAPE HATCH */}
+      {/* 7️⃣ STILL FAILING */}
       <section style={styles.escapeBox}>
-        <h3>Still failing?</h3>
-        <ul>
+        <h3 style={styles.escapeTitle}>Still failing?</h3>
+        <ul style={styles.list}>
           <li>DNS propagation may not be complete yet</li>
-          <li>You may have multiple sending services</li>
-          <li>DKIM may be disabled at your email provider</li>
+          <li>You may have multiple email providers</li>
+          <li>DKIM may be disabled in your email service</li>
         </ul>
 
-        <p>
-          You can wait a few minutes and re-check, or{" "}
-          <Link href="/">verify another domain</Link>.
+        <p style={styles.text}>
+          You can wait a few minutes and re-check, or verify another domain.
         </p>
+
+        <ul style={styles.linkList}>
+          <li>
+            <Link href="/dkim/dkim-selector-not-found">
+              DKIM selector not found
+            </Link>
+          </li>
+          <li>
+            <Link href="/spf/spf-permerror-too-many-dns-lookups">
+              Check SPF configuration
+            </Link>
+          </li>
+          <li>
+            <Link href="/">Run full SPF, DKIM & DMARC check</Link>
+          </li>
+        </ul>
       </section>
     </main>
   );
 }
+
+/* ---------- STYLES (LOCKED) ---------- */
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
@@ -139,11 +164,14 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 12,
   },
   codeBlock: {
-    background: "#f6f6f6",
+    background: "#0f172a",
+    color: "#e5e7eb",
     padding: 16,
     borderRadius: 6,
     marginTop: 12,
     marginBottom: 12,
+    fontSize: 14,
+    overflowX: "auto",
   },
   note: {
     fontSize: 14,
@@ -168,6 +196,9 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#15803d",
     fontWeight: 600,
   },
+  infoBox: {
+    marginBottom: 40,
+  },
   trustBox: {
     fontSize: 14,
     color: "#6b7280",
@@ -176,5 +207,21 @@ const styles: Record<string, React.CSSProperties> = {
   escapeBox: {
     borderTop: "1px solid #e5e7eb",
     paddingTop: 24,
+  },
+  escapeTitle: {
+    fontSize: 18,
+    fontWeight: 600,
+    marginBottom: 8,
+  },
+  list: {
+    paddingLeft: 18,
+    marginBottom: 12,
+  },
+  linkList: {
+    paddingLeft: 18,
+    marginTop: 12,
+  },
+  text: {
+    color: "#374151",
   },
 };
