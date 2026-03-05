@@ -16,12 +16,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* HEADER - Restored exactly to your original version */}
+        {/* HEADER */}
         <header className="site-header">
           <div className="container header-inner">
             <Logo />
 
-            <nav className="nav">
+            <nav className="nav" aria-label="Primary">
               <Link href="/spf">SPF</Link>
               <Link href="/dkim">DKIM</Link>
               <Link href="/dmarc">DMARC</Link>
@@ -30,35 +30,51 @@ export default function RootLayout({
         </header>
 
         {/* MAIN */}
-        <div className="container" style={{ minHeight: '60vh' }}>{children}</div>
+        <main className="container site-main">{children}</main>
 
-        {/* FOOTER - Your original structure + the 3 "Hub" columns for SEO */}
+        {/* FOOTER */}
         <footer className="site-footer">
-          <div className="container footer-inner" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-            
-            {/* SEO Hallway Section: Clean & Organized */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '40px', width: '100%', marginBottom: '40px', textAlign: 'left' }}>
-              <div>
-                <strong style={{ display: 'block', marginBottom: '12px' }}>SPF Hub</strong>
-                <Link href="/spf" style={hubLinkStyle}>SPF Checker</Link>
-                <Link href="/spf/spf-softfail-vs-fail" style={hubLinkStyle}>Softfail vs Fail</Link>
+          <div className="container footer-wrap">
+            {/* Hub columns */}
+            <div className="footer-hubs">
+              <div className="footer-hub">
+                <strong>SPF Hub</strong>
+                <Link href="/spf" className="footer-hub-link">
+                  SPF Checker
+                </Link>
+                <Link href="/spf/spf-softfail-vs-fail" className="footer-hub-link">
+                  Softfail vs Fail
+                </Link>
               </div>
-              <div>
-                <strong style={{ display: 'block', marginBottom: '12px' }}>DKIM Hub</strong>
-                <Link href="/dkim" style={hubLinkStyle}>DKIM Checker</Link>
-                <Link href="/dkim/no-dkim-record-found" style={hubLinkStyle}>Missing DKIM Fix</Link>
+
+              <div className="footer-hub">
+                <strong>DKIM Hub</strong>
+                <Link href="/dkim" className="footer-hub-link">
+                  DKIM Checker
+                </Link>
+                <Link href="/dkim/no-dkim-record-found" className="footer-hub-link">
+                  Missing DKIM Fix
+                </Link>
               </div>
-              <div>
-                <strong style={{ display: 'block', marginBottom: '12px' }}>DMARC Hub</strong>
-                <Link href="/dmarc" style={hubLinkStyle}>DMARC Checker</Link>
-                <Link href="/dmarc/no-dmarc-record-found" style={hubLinkStyle}>DMARC Setup</Link>
+
+              <div className="footer-hub">
+                <strong>DMARC Hub</strong>
+                <Link href="/dmarc" className="footer-hub-link">
+                  DMARC Checker
+                </Link>
+                <Link href="/dmarc/no-dmarc-record-found" className="footer-hub-link">
+                  DMARC Setup
+                </Link>
               </div>
             </div>
 
-            {/* Your Original Footer Bottom Bar */}
-            <div style={{ width: '100%', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              <p style={{ margin: 0 }}>© {new Date().getFullYear()} Email DNS Check</p>
-              <div className="footer-links">
+            {/* Bottom bar */}
+            <div className="footer-bottom">
+              <p className="footer-copy">
+                © {new Date().getFullYear()} Email DNS Check
+              </p>
+
+              <div className="footer-links" aria-label="Footer">
                 <Link href="/privacy">Privacy Policy</Link>
                 <Link href="/terms">Terms of Use</Link>
                 <Link href="/contact">Contact</Link>
@@ -70,12 +86,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-// Simple style object that won't break the server-side build
-const hubLinkStyle = {
-  display: 'block',
-  fontSize: '14px',
-  marginBottom: '8px',
-  textDecoration: 'none',
-  opacity: 0.8
-};

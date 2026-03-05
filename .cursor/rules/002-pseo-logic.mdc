@@ -1,0 +1,20 @@
+---
+description: "Programmatic SEO Data & Scaling Logic"
+globs: "app/**/*.{ts,tsx}, data/*.json"
+alwaysApply: true
+---
+
+# pSEO Scaling Rules
+
+## 1. Logic Dependency
+- **Contextual Awareness:** The text must change based on the variable. If the Provider is 'Google', include specific instructions for the Google Admin Console. If 'Microsoft', mention Exchange Online settings.
+- **Unique Value:** Never use a "one-size-fits-all" text block. Generate specific technical steps for each combination of Provider and Registrar.
+
+## 2. Internal Linking Loop
+- **Automated Clusters:** Every page must automatically identify 3 other pages within the same 'Topic Cluster' (e.g., SPF fixes link to other SPF fixes) using descriptive anchor text.
+- **Hub Connectivity:** Every page must include a "Return to [Protocol] Hub" link to satisfy the Browsable Hierarchy rule.
+
+## 3. Data Integrity & Alignment
+- **Database Driven:** All content must be driven by the keyword CSV or JSON database. 
+- **Human-Readable Slugs:** Slugs must be clean and SEO-friendly (e.g., `/fix-gmail-spf-godaddy-2026`).
+- **300+ Word Depth:** For every programmatic page, expand on the "Why" and "How" to ensure the page is helpful, not just a thin gateway.

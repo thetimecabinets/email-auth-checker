@@ -1,0 +1,104 @@
+---
+description: "UI Design System & Page Layout Guardrails (Consistency First)"
+globs: "app/**/*.{ts,tsx}, components/**/*.{ts,tsx}"
+alwaysApply: true
+---
+
+# UI Design System Rules (Strict)
+
+Goal: Every page (home, hubs, error/fix pages) must look like one cohesive product.
+No “unstyled HTML dumps”. No massive blue-link paragraphs. No random spacing.
+
+## 0) Non-Negotiables
+- Use Tailwind classes everywhere.
+- Do NOT rely on browser default styling for lists, headings, links, code blocks.
+- All pages MUST use the shared layout shell components below (PageShell + SiteHeader + SiteFooter).
+- Primary CTA (“Check domain” / “Re-check SPF/DKIM/DMARC”) must be visually obvious and above the fold.
+
+## 1) Required shared components (must exist and be used)
+Create these components if missing, and use them on ALL pages:
+
+1) `components/layout/SiteHeader.tsx`
+   - Brand left (logo + “Email DNS Check”)
+   - Top nav right (SPF / DKIM / DMARC)
+   - Sticky optional, but consistent height and spacing.
+
+2) `components/layout/SiteFooter.tsx`
+   - 3 columns: SPF Hub links, DKIM Hub links, DMARC Hub links
+   - Bottom row: Privacy / Terms / Contact
+   - No giant link lists in the page body if they belong in footer.
+
+3) `components/layout/PageShell.tsx`
+   - Wraps content with:
+     - `min-h-screen`
+     - centered container `max-w-5xl` (or `max-w-6xl`)
+     - consistent paddings (mobile + desktop)
+     - consistent vertical rhythm: sections spaced with `space-y-10` (or similar)
+
+4) `components/ui/Prose.tsx`
+   - A controlled typography wrapper (your own, not raw markdown defaults).
+   - It should define heading sizes, paragraph line-height, link styling, list styling, code styling.
+   - IMPORTANT: This component must prevent the “blue underline everywhere” look.
+   - Links inside Prose: use a branded style (e.g., underline on hover, not always).
+
+5) `components/ui/CodeBlock.tsx`
+   - Used for all DNS record examples and “One-Minute Fix”.
+   - Must have:
+     - dark background, mono font
+     - horizontal scroll on mobile
+     - optional “Copy” button (nice-to-have)
+
+6) `components/ui/Callout.tsx`
+   - Used for warnings (“Common mistakes”), tips, and “What we checked”.
+   - Variants: `info`, `warning`, `success`, `danger` with subtle backgrounds.
+
+## 2) Page layout rules (applies to Home, Hub, Error/Fix pages)
+Every page must follow this structure:
+
+A) Top: `SiteHeader`
+B) Main content (inside PageShell)
+   1. Breadcrumbs (small)
+   2. H1 + 1–2 sentence subheading
+   3. Primary CTA block (Domain checker or Re-check button)
+   4. “Quick answer / One-Minute Fix” section (must be above the fold on desktop)
+   5. “How it works / Why it matters” (scannable)
+   6. “Common mistakes” (Callout)
+   7. “Next steps” (3 links max)
+   8. Related fixes (3–6 cards, NOT a paragraph of links)
+C) Bottom: `SiteFooter`
+
+## 3) Navigation & internal links (visual rules)
+- Do NOT output long inline link paragraphs like:
+  “LinkA LinkB LinkC LinkD …”
+- Related links must be displayed as:
+  - a short bulleted list with spacing OR
+  - a grid of cards (preferred)
+- Each list item must have a title + short description (1 line). No naked links.
+
+## 4) Typography & spacing rules (consistency)
+- Body text max width: `max-w-prose` inside the content area (or similar).
+- Paragraph line height: `leading-7` (or similar).
+- Headings:
+  - H1: large and bold, consistent across pages
+  - H2: clear separation with spacing above
+- Lists must have intentional spacing: `space-y-2` minimum.
+- Never allow sections to touch: use consistent `py-10` / `space-y-10`.
+
+## 5) Buttons & inputs (design rules)
+- Primary button uses the brand yellow.
+- Inputs must have consistent height, border, focus ring.
+- No tiny default HTML inputs.
+- CTA block should be a “card” with border + subtle shadow.
+
+## 6) Don’ts (hard bans)
+- BAN: unstyled `<ul><li><a>` dumps without Tailwind.
+- BAN: link walls inside a single paragraph.
+- BAN: mixing multiple visual styles across pages.
+- BAN: adding new “one-off” styling that isn’t reusable via components.
+
+## 7) Definition of Done (UI)
+A page is acceptable only if:
+- It uses PageShell + SiteHeader + SiteFooter.
+- The “One-Minute Fix” is in a styled CodeBlock.
+- Related fixes appear as cards or a spaced list (not a link wall).
+- On mobile: no horizontal overflow except inside CodeBlock.

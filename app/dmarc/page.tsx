@@ -1,259 +1,352 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import React from "react";
 
-export const metadata = {
-  title: "DMARC Checker & DMARC Policy Explained (Examples, Fixes)",
+export const metadata: Metadata = {
+  title:
+    "DMARC Hub – Turn SPF and DKIM Signals into Enforced Policy (2026 Playbook)",
   description:
-    "Learn what DMARC is, how DMARC policies work, common DMARC errors, examples, and how to fix them. Use the DMARC checker to secure your domain.",
+    "Authoritative DMARC hub for policy design. Learn how to move from p=none to quarantine and reject, read DMARC reports, and fix common DMARC errors with one-minute examples.",
 };
 
-export default function DMARCPage() {
+export default function DMARCHubPage() {
   return (
-    <main style={styles.page}>
-      {/* HERO */}
-      <section style={styles.hero}>
-        <h1 style={styles.title}>DMARC explained and DMARC checker</h1>
-        <p style={styles.subtitle}>
-          Domain-based Message Authentication, Reporting & Conformance (DMARC)
-          tells mail servers what to do when SPF or DKIM checks fail.
-        </p>
+    <main style={{ padding: "36px 0 64px" }}>
+      <div className="container">
+        {/* TOP STRIP */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "#6b7280",
+            marginBottom: 14,
+          }}
+        >
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: 999,
+              background: "#E0B100",
+              display: "inline-block",
+            }}
+          />
+          <span>Email Authentication Hub</span>
+          <span style={{ color: "#9ca3af" }}>/</span>
+          <span style={{ color: "#111827", fontWeight: 700 }}>DMARC</span>
+        </div>
 
-        <Link href="/" style={styles.cta}>
-          Check your domain
-        </Link>
-      </section>
+        {/* HERO + ONE-MINUTE FIX */}
+        <section
+          style={{
+            display: "grid",
+            gap: 16,
+            gridTemplateColumns: "1.25fr 1fr",
+            alignItems: "start",
+          }}
+        >
+          <div style={card}>
+            <div className="prose">
+              <h1 style={{ marginTop: 0 }}>
+                Design a DMARC policy that stops spoofing without breaking your
+                product emails
+              </h1>
 
-      {/* WHAT IS DMARC */}
-      <section style={styles.highlightBox}>
-        <h2 style={styles.boxTitle}>What is DMARC?</h2>
-        <p style={styles.boxText}>
-          <strong>DMARC</strong> is an email authentication protocol that builds
-          on SPF and DKIM. It allows domain owners to publish a policy that tells
-          receiving mail servers how to handle emails that fail authentication,
-          and it provides reporting for visibility and monitoring.
-        </p>
-      </section>
+              <p>
+                Our 2026 audits show the same pattern in nearly every compromised
+                brand: SPF and DKIM exist, but DMARC is stuck on{" "}
+                <code>p=none</code>. That “monitor only” setting gives mailbox
+                providers visibility into abuse – but it never tells them to
+                block anything.
+              </p>
 
-      {/* CONTENT */}
-      <section style={styles.content}>
-        <h2 style={styles.sectionTitle}>Why DMARC matters</h2>
-        <ul style={styles.list}>
-          <li>Prevents domain spoofing and phishing attacks</li>
-          <li>Protects your brand reputation</li>
-          <li>Improves email trust and deliverability</li>
-        </ul>
+              <p>
+                DMARC is the policy brain that sits on top of SPF and DKIM. It
+                decides whether a suspicious message pretending to be you should
+                be delivered, junked, or rejected. Done well, DMARC dramatically
+                reduces spoofing and impersonation.
+              </p>
 
-        <h2 style={styles.sectionTitle}>How DMARC works</h2>
-        <ol style={styles.list}>
-          <li>An email is checked against SPF and DKIM</li>
-          <li>DMARC evaluates alignment and authentication results</li>
-          <li>The published DMARC policy is applied</li>
-          <li>Receivers take action and send reports</li>
-        </ol>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                <Link href="/" style={primaryBtn}>
+                  Run DMARC, SPF & DKIM check
+                </Link>
 
-        <h2 style={styles.sectionTitle}>
-          Common DMARC errors and how to fix them
-        </h2>
-        <ul style={styles.list}>
-          <li>
-            <Link href="/dmarc/no-dmarc-record-found">
-              No DMARC record found
-            </Link>{" "}
-            — why DMARC is missing and how to publish your first record.
-          </li>
-          <li>
-            <Link href="/dmarc/dmarc-policy-none-vs-quarantine-vs-reject">
-              DMARC policy: none vs quarantine vs reject
-            </Link>{" "}
-            — how enforcement levels affect email delivery.
-          </li>
-          <li>
-            <Link href="/dmarc/dmarc-alignment-failed">
-              DMARC alignment failed
-            </Link>{" "}
-            — why SPF or DKIM alignment is not passing.
-          </li>
-          <li>
-            <Link href="/dmarc/dmarc-rua-ruf-not-working">
-              DMARC RUA / RUF not working
-            </Link>{" "}
-            — why reports are not being delivered.
-          </li>
-          <li>
-            <Link href="/dmarc/dmarc-pct-tag-explained">
-              DMARC pct tag explained
-            </Link>{" "}
-            — how gradual enforcement works.
-          </li>
-          <li>
-            <Link href="/dmarc/dmarc-sp-subdomain-policy-explained">
-              DMARC sp subdomain policy explained
-            </Link>{" "}
-            — how DMARC applies to subdomains.
-          </li>
-          <li>
-            <Link href="/dmarc/dmarc-fo-tag-explained">
-              DMARC fo tag explained
-            </Link>{" "}
-            — when forensic reports are generated.
-          </li>
-          <li>
-            <Link href="/dmarc/dmarc-aspf-adkim-explained">
-              DMARC aspf / adkim explained
-            </Link>{" "}
-            — strict vs relaxed alignment.
-          </li>
-          <li>
-            <Link href="/dmarc/multiple-dmarc-records-found">
-              Multiple DMARC records found
-            </Link>{" "}
-            — why having more than one record breaks DMARC.
-          </li>
-        </ul>
+                <span style={{ fontSize: 12, color: "#6b7280" }}>
+                  Live DNS results – ideal for policy rollouts.
+                </span>
+              </div>
+            </div>
+          </div>
 
-        <h2 style={styles.sectionTitle}>DMARC policy options</h2>
-        <ul style={styles.list}>
-          <li>
-            <strong>p=none</strong> — monitor email traffic without blocking
-          </li>
-          <li>
-            <strong>p=quarantine</strong> — send failing messages to spam
-          </li>
-          <li>
-            <strong>p=reject</strong> — block unauthenticated messages entirely
-          </li>
-        </ul>
+          {/* ONE MINUTE FIX */}
+          <aside
+            style={{
+              ...card,
+              borderColor: "rgba(224,177,0,0.35)",
+              background: "rgba(224,177,0,0.08)",
+            }}
+          >
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                One-Minute DMARC starter policy
+              </h2>
 
-        <h2 style={styles.sectionTitle}>Example DMARC record</h2>
-        <pre style={styles.code}>
-v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com
-        </pre>
-        <p style={styles.paragraph}>
-          This DMARC record instructs receiving servers to quarantine failing
-          messages and send aggregate reports to the specified email address.
-        </p>
+              <p style={{ fontSize: 14 }}>
+                Use this when you are just starting your DMARC journey. It
+                collects data without blocking mail.
+              </p>
 
-        <section style={styles.warningBox}>
-          <h3 style={styles.boxTitle}>Common DMARC mistakes</h3>
-          <ul>
-            <li>No DMARC record published</li>
-            <li>Staying on <code>p=none</code> indefinitely</li>
-            <li>Misaligned SPF or DKIM configuration</li>
-            <li>Ignoring DMARC reports</li>
-            <li>Publishing multiple DMARC records</li>
-          </ul>
+              <pre style={codeBox}>
+{`v=DMARC1; p=none; rua=mailto:dmarc@yourdomain.com;
+ruf=mailto:dmarc@yourdomain.com; fo=1; pct=100`}
+              </pre>
+
+              <p style={{ fontSize: 14 }}>
+                Once SPF and DKIM are aligned for all senders, you can move to
+                <code> p=quarantine </code> and eventually <code>p=reject</code>.
+              </p>
+            </div>
+          </aside>
         </section>
 
-        <h2 style={styles.sectionTitle}>DMARC, SPF, and DKIM</h2>
-        <p style={styles.paragraph}>
-          DMARC relies on SPF and DKIM for authentication. Without properly
-          configured SPF and DKIM, DMARC cannot enforce policy decisions.
-        </p>
-        <p style={styles.paragraph}>
-          Learn more about <Link href="/spf">SPF</Link> and{" "}
-          <Link href="/dkim">DKIM</Link>.
-        </p>
-      </section>
+        {/* STRATEGY VIEW */}
+        <section
+          style={{
+            marginTop: 18,
+            display: "grid",
+            gap: 16,
+            gridTemplateColumns: "1fr 1fr",
+          }}
+        >
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                For panicked founders
+              </h2>
 
-      {/* FINAL CTA */}
-      <section style={styles.finalCta}>
-        <h2>Ready to secure your domain with DMARC?</h2>
-        <Link href="/" style={styles.cta}>
-          Run the email authentication check
-        </Link>
-      </section>
+              <p>
+                When customers forward phishing emails that appear to come from
+                your domain, it usually means DMARC has never been allowed to
+                enforce policy.
+              </p>
+
+              <p>
+                Receivers can see messages failing SPF or DKIM but without a
+                policy they may still accept them. DMARC enforcement fixes that.
+              </p>
+
+              <p>
+                The key is gradual rollout: monitor → quarantine → reject.
+              </p>
+            </div>
+          </div>
+
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                For IT admins
+              </h2>
+
+              <p>
+                Modern mailbox providers require alignment between SPF,
+                DKIM, and the visible From domain.
+              </p>
+
+              <p>
+                DMARC tags such as <code>aspf</code>, <code>adkim</code>,
+                <code>pct</code>, and reporting addresses control enforcement
+                and rollout strategy.
+              </p>
+
+              <p>
+                Use aggregate reports to monitor real traffic before increasing
+                enforcement.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* CLUSTER LINKS */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div style={{ marginBottom: 12 }}>
+              <h2 style={{ margin: 0, fontSize: 18 }}>
+                DMARC troubleshooting playbook
+              </h2>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              }}
+            >
+              <HubLink
+                href="/dmarc/no-dmarc-record-found"
+                label="No DMARC record found"
+                description="Publish your first DMARC policy safely."
+              />
+              <HubLink
+                href="/dmarc/dmarc-policy-none-vs-quarantine-vs-reject"
+                label="DMARC policy levels"
+                description="None vs quarantine vs reject explained."
+              />
+              <HubLink
+                href="/dmarc/dmarc-alignment-failed"
+                label="DMARC alignment failed"
+                description="Fix SPF/DKIM alignment issues."
+              />
+              <HubLink
+                href="/dmarc/dmarc-rua-ruf-not-working"
+                label="DMARC reports missing"
+                description="Diagnose RUA/RUF problems."
+              />
+              <HubLink
+                href="/dmarc/dmarc-pct-tag-explained"
+                label="DMARC pct tag"
+                description="Gradual rollout strategy."
+              />
+              <HubLink
+                href="/dmarc/multiple-dmarc-records-found"
+                label="Multiple DMARC records"
+                description="Merge conflicting records."
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* CROSS PROTOCOL */}
+        <section
+          style={{
+            marginTop: 18,
+            display: "grid",
+            gap: 16,
+            gridTemplateColumns: "1.4fr 1fr",
+          }}
+        >
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                DMARC works only with SPF and DKIM
+              </h2>
+
+              <p>
+                DMARC is the final enforcement layer. It interprets SPF and
+                DKIM signals and tells receivers what to do when authentication
+                fails.
+              </p>
+
+              <p>
+                A healthy email authentication stack always includes all three
+                protocols working together.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              borderRadius: 14,
+              padding: 16,
+              border: "1px solid #111827",
+              background: "#111827",
+              color: "#fff",
+            }}
+          >
+            <div style={{ fontWeight: 800, marginBottom: 8 }}>
+              Next protocol hubs
+            </div>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <Link href="/spf" style={darkCardLink}>
+                <span>SPF Hub</span>
+                <span style={{ fontSize: 11, opacity: 0.7 }}>Sources</span>
+              </Link>
+
+              <Link href="/dkim" style={darkCardLink}>
+                <span>DKIM Hub</span>
+                <span style={{ fontSize: 11, opacity: 0.7 }}>Integrity</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    paddingTop: 64,
-    paddingBottom: 64,
-  },
-  hero: {
-    maxWidth: 760,
-    margin: "0 auto 72px",
-    textAlign: "center",
-    padding: "52px 24px",
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 700,
-    marginBottom: 16,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#4b5563",
-    marginBottom: 32,
-  },
-  cta: {
-    display: "inline-block",
-    padding: "14px 28px",
-    background: "#E0B100",
-    color: "#111827",
-    fontWeight: 600,
-    borderRadius: 6,
-    textDecoration: "none",
-  },
-  highlightBox: {
-    maxWidth: 760,
-    margin: "0 auto 64px",
-    padding: "36px 30px",
-    background: "#fffbea",
-    borderLeft: "6px solid #E0B100",
-    borderRadius: 8,
-  },
-  content: {
-    maxWidth: 760,
-    margin: "0 auto",
-    padding: "0 24px",
-    lineHeight: 1.7,
-  },
-  sectionTitle: {
-    marginTop: 56,
-    marginBottom: 20,
-  },
-  paragraph: {
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  list: {
-    marginBottom: 32,
-  },
-  warningBox: {
-    marginTop: 56,
-    padding: "32px 26px",
-    background: "#fff5f5",
-    borderLeft: "6px solid #dc2626",
-    borderRadius: 8,
-  },
-  boxTitle: {
-    fontSize: 22,
-    fontWeight: 700,
-    marginBottom: 16,
-  },
-  boxText: {
-    fontSize: 15,
-    lineHeight: 1.7,
-  },
-  code: {
-    background: "#f6f6f6",
-    padding: 18,
-    borderRadius: 6,
-    marginTop: 16,
-    marginBottom: 20,
-    overflowX: "auto",
-  },
-  finalCta: {
-    maxWidth: 760,
-    margin: "80px auto 0",
-    textAlign: "center",
-    padding: "44px 24px",
-    background: "#ffffff",
-    borderTop: "1px solid #e5e7eb",
-  },
+function HubLink({
+  href,
+  label,
+  description,
+}: {
+  href: string;
+  label: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+        padding: 12,
+        borderRadius: 12,
+        border: "1px solid #e5e7eb",
+        background: "#f9fafb",
+        textDecoration: "none",
+      }}
+    >
+      <span style={{ fontWeight: 700, color: "#111827" }}>{label}</span>
+      <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+    </Link>
+  );
+}
+
+const card: React.CSSProperties = {
+  border: "1px solid #e5e7eb",
+  background: "#ffffff",
+  borderRadius: 14,
+  padding: 18,
+};
+
+const primaryBtn: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: 40,
+  padding: "0 14px",
+  borderRadius: 10,
+  border: "1px solid #c79c00",
+  background: "#E0B100",
+  color: "#111827",
+  fontWeight: 700,
+  textDecoration: "none",
+};
+
+const codeBox: React.CSSProperties = {
+  margin: "10px 0",
+  padding: 12,
+  borderRadius: 12,
+  background: "#111827",
+  color: "#f9fafb",
+  fontSize: 12,
+  overflowX: "auto",
+};
+
+const darkCardLink: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.18)",
+  background: "rgba(255,255,255,0.06)",
+  color: "#fff",
+  textDecoration: "none",
 };

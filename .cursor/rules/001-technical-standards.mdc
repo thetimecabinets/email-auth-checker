@@ -1,0 +1,23 @@
+---
+description: "Next.js 15 Technical & Performance Standards"
+globs: "app/**/*.{ts,tsx}, components/**/*.{ts,tsx}"
+alwaysApply: true
+---
+
+# Technical Standards
+
+## 1. Performance & Rendering
+- **Server Components:** Use React Server Components (RSC) by default. The site is a stateless utility; maximize speed by pre-rendering everything.
+- **Static Site Generation (SSG):** All 2,000+ fix pages must be statically generated at build time to ensure sub-second load times.
+- **Image Optimization:** Always use the Next.js `Image` component with descriptive alt tags for trust signals.
+- **Clean Styling:** Use Tailwind CSS. Strictly avoid inline styles.
+
+## 2. Privacy-First & Monetization Readiness
+- **Stateless Architecture:** No local user database, no login system, and no local session cookies. 
+- **Monetization Guardrails:** Prepare for Google AdSense and Affiliate links by ensuring the layout has "Ad Slots" that do not shift the content (preventing Layout Shift/CLS).
+- **Script Loading:** Third-party scripts (AdSense/Affiliates) must be loaded with `next/script` using the `strategy="lazyOnload"` to keep the "One-Minute Fix" interactive immediately.
+
+## 3. Core Web Vitals (The $10k Requirement)
+- **LCP (Largest Contentful Paint):** The "One-Minute Fix" code box must be visible in the first frame.
+- **CLS (Cumulative Layout Shift):** All ad placeholders must have fixed heights to prevent the page from jumping when ads load.
+- **Mobile-Responsive:** All technical code blocks and tables must be 100% horizontal-scroll friendly on mobile.

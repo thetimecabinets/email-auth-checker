@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type Result = {
@@ -16,17 +17,21 @@ export default function Home() {
 
   async function runCheck(e: React.FormEvent) {
     e.preventDefault();
-    if (!domain) return;
+
+    const cleaned = domain.trim().toLowerCase();
+    if (!cleaned) return;
 
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
+      const q = encodeURIComponent(cleaned);
+
       const [spfRes, dkimRes, dmarcRes] = await Promise.all([
-        fetch(`/api/spf?domain=${domain}`).then((r) => r.json()),
-        fetch(`/api/dkim?domain=${domain}`).then((r) => r.json()),
-        fetch(`/api/dmarc?domain=${domain}`).then((r) => r.json()),
+        fetch(`/api/spf?domain=${q}`).then((r) => r.json()),
+        fetch(`/api/dkim?domain=${q}`).then((r) => r.json()),
+        fetch(`/api/dmarc?domain=${q}`).then((r) => r.json()),
       ]);
 
       setResult({
@@ -42,167 +47,227 @@ export default function Home() {
   }
 
   return (
-    <main style={styles.page}>
-      {/* HERO */}
-      <section style={styles.hero}>
-        <h1 style={styles.title}>Email Authentication Checker</h1>
-        <p style={styles.subtitle}>
-          Instantly check SPF, DKIM, and DMARC records for any domain.
-        </p>
+    <>
+      {/* HERO / TOOL */}
+      <section className="checker-hero">
+        <div className="checker-card">
+          <h1 className="checker-title">Email Authentication Checker</h1>
+          <p className="checker-subtitle">
+            Instantly check SPF, DKIM, and DMARC records for any domain. Built
+            for fast triage by founders and IT teams.
+          </p>
 
-        <form onSubmit={runCheck} style={styles.form}>
-          <input
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            placeholder="example.com"
-            style={styles.input}
-          />
-          <button type="submit" style={styles.button} disabled={loading}>
-            {loading ? "Checking…" : "Check domain"}
-          </button>
-        </form>
+          <form onSubmit={runCheck} className="domain-form">
+            <input
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              placeholder="example.com"
+              className="domain-input"
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-label="Domain name"
+            />
+            <button type="submit" disabled={loading} className="domain-button">
+              {loading ? "Checking…" : "Check domain"}
+            </button>
+          </form>
 
-        {error && <div style={styles.error}>{error}</div>}
+          {error && (
+            <div
+              style={{ marginTop: 12, color: "#b91c1c", fontSize: 14 }}
+              role="alert"
+            >
+              {error}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* RESULTS */}
       {result && (
-        <section style={styles.results}>
-          <Card
+        <section className="results-grid" aria-label="Results">
+          <ResultCard
             title="SPF"
-            status={result.spf ? "ok" : "error"}
+            status={result.spf ? "pass" : "fail"}
             value={result.spf || "No SPF record found"}
             hint="Controls which servers may send mail for your domain."
           />
-          <Card
+
+          <ResultCard
             title="DKIM"
-            status={result.dkimDetected ? "ok" : "warning"}
+            status={result.dkimDetected ? "pass" : "warn"}
             value={result.dkimDetected ? "DKIM detected" : "No DKIM detected"}
             hint="Cryptographic signing of outgoing mail."
           />
-          <Card
+
+          <ResultCard
             title="DMARC"
             status={
               result.dmarc?.includes("p=reject")
-                ? "ok"
+                ? "pass"
                 : result.dmarc
-                ? "warning"
-                : "error"
+                ? "warn"
+                : "fail"
             }
             value={result.dmarc || "No DMARC record found"}
             hint="Policy for handling mail that fails SPF or DKIM."
           />
         </section>
       )}
-    </main>
+
+      {/* EXPLANATION (CENTERED under tool + same width as checker) */}
+      <section
+        className="container"
+        style={{
+          paddingTop: 34,
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <div className="prose" style={{ width: "100%" }}>
+          <h2>How SPF, DKIM and DMARC work together</h2>
+          <p>
+            SPF tells receiving servers which IPs and services are allowed to
+            send email for your domain. DKIM signs each message so receivers can
+            verify that the content was not altered in transit. DMARC sits on
+            top and defines what should happen when SPF or DKIM fail – monitor,
+            send to spam, or reject entirely.
+          </p>
+          <p>
+            Use the checker above to see at a glance whether these three
+            protocols are present and healthy for any domain before you start
+            debugging deliverability issues.
+          </p>
+        </div>
+      </section>
+
+      {/* PROTOCOL CARDS */}
+      <section className="container" style={{ paddingTop: 26 }}>
+        <div
+          style={{
+            display: "grid",
+            gap: 14,
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          }}
+        >
+          <ProtocolCard
+            title="SPF"
+            description="Check and repair common SPF issues."
+            links={[
+              { href: "/spf/no-spf-record-found", label: "No SPF record" },
+              {
+                href: "/spf/spf-permerror-too-many-dns-lookups",
+                label: "SPF permerror",
+              },
+              {
+                href: "/spf/multiple-spf-records-found",
+                label: "Multiple SPF records",
+              },
+            ]}
+          />
+          <ProtocolCard
+            title="DKIM"
+            description="Stabilise DKIM keys and selectors."
+            links={[
+              { href: "/dkim/no-dkim-record-found", label: "No DKIM record" },
+              {
+                href: "/dkim/dkim-selector-not-found",
+                label: "DKIM selector not found",
+              },
+              { href: "/dkim/invalid-dkim-key", label: "Invalid DKIM key" },
+            ]}
+          />
+          <ProtocolCard
+            title="DMARC"
+            description="Control how receivers handle failures."
+            links={[
+              { href: "/dmarc/no-dmarc-record-found", label: "No DMARC record" },
+              {
+                href: "/dmarc/dmarc-alignment-failed",
+                label: "DMARC alignment failed",
+              },
+              {
+                href: "/dmarc/multiple-dmarc-records-found",
+                label: "Multiple DMARC records",
+              },
+            ]}
+          />
+        </div>
+      </section>
+    </>
   );
 }
 
-function Card({
+function ResultCard({
   title,
   status,
   value,
   hint,
 }: {
   title: string;
-  status: "ok" | "warning" | "error";
+  status: "pass" | "warn" | "fail";
   value: string;
   hint: string;
 }) {
-  const badge = status === "ok" ? "✅" : status === "warning" ? "⚠️" : "❌";
+  const pillClass =
+    status === "pass"
+      ? "status-pill status-pass"
+      : status === "warn"
+      ? "status-pill status-warn"
+      : "status-pill status-fail";
+
+  const pillLabel =
+    status === "pass" ? "Pass" : status === "warn" ? "Warning" : "Issue";
 
   return (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <strong>{title}</strong> <span>{badge}</span>
+    <article className="result-card">
+      <div className="result-left">
+        <div className="result-title">{title}</div>
+        <div className="result-value">{value}</div>
+        <div className="result-desc">{hint}</div>
       </div>
-      <div style={styles.value}>{value}</div>
-      <div style={styles.hint}>{hint}</div>
-    </div>
+
+      <div className={pillClass}>{pillLabel}</div>
+    </article>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "calc(100vh - 160px)", // pushes footer down
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    paddingTop: 64,
-    paddingBottom: 64,
-  },
-  hero: {
-    maxWidth: 720,
-    margin: "0 auto",
-    textAlign: "center",
-    padding: "48px 24px",
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 700,
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#4b5563",
-    marginBottom: 32,
-  },
-  form: {
-    display: "flex",
-    gap: 12,
-    justifyContent: "center",
-    flexWrap: "wrap",
-  },
-  input: {
-    flex: "1 1 320px",
-    padding: 14,
-    fontSize: 16,
-    borderRadius: 6,
-    border: "1px solid #d1d5db",
-  },
-  button: {
-    padding: "14px 20px",
-    fontSize: 16,
-    background: "#E0B100", // MUSTARD
-    color: "#111827",
-    border: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  error: {
-    marginTop: 16,
-    color: "#b91c1c",
-    fontSize: 14,
-  },
-  results: {
-    maxWidth: 720,
-    margin: "48px auto 0",
-    display: "grid",
-    gap: 16,
-    padding: "0 24px",
-  },
-  card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 8,
-    padding: 16,
-    background: "#ffffff",
-  },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  value: {
-    fontSize: 14,
-    color: "#111827",
-  },
-  hint: {
-    marginTop: 6,
-    fontSize: 13,
-    color: "#6b7280",
-  },
+type ProtocolLink = {
+  href: string;
+  label: string;
 };
+
+function ProtocolCard({
+  title,
+  description,
+  links,
+}: {
+  title: string;
+  description: string;
+  links: ProtocolLink[];
+}) {
+  return (
+    <article
+      style={{
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 14,
+        padding: 18,
+      }}
+    >
+      <div style={{ fontWeight: 800, marginBottom: 4 }}>{title}</div>
+      <div style={{ color: "#6b7280", fontSize: 14, marginBottom: 10 }}>
+        {description}
+      </div>
+      <ul style={{ paddingLeft: 18 }}>
+        {links.map((l) => (
+          <li key={l.href} style={{ margin: "6px 0" }}>
+            <Link href={l.href}>{l.label}</Link>
+          </li>
+        ))}
+      </ul>
+    </article>
+  );
+}

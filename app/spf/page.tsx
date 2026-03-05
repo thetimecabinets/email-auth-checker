@@ -1,226 +1,395 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import React from "react";
 
-export const metadata = {
-  title: "SPF Checker & SPF Record Explained (Errors, Fixes, Examples)",
+export const metadata: Metadata = {
+  title:
+    "SPF Hub – Fix SPF Errors, Alignment and DNS for Modern Email Delivery (2026)",
   description:
-    "Learn what SPF is, how SPF works, common SPF errors, and how to fix SPF problems. Use the SPF checker to test your domain.",
+    "Deep-dive SPF hub for founders and IT admins. Understand SPF alignment, DNS limits, Microsoft 365 and Google Workspace patterns, and grab one-minute SPF fixes for common errors.",
 };
 
-export default function SPFPage() {
+export default function SPFHubPage() {
   return (
-    <main style={styles.page}>
-      {/* HERO */}
-      <section style={styles.hero}>
-        <h1 style={styles.title}>SPF explained and SPF checker</h1>
-        <p style={styles.subtitle}>
-          Sender Policy Framework (SPF) defines which mail servers are allowed to
-          send email on behalf of your domain.
-        </p>
+    <main style={{ padding: "36px 0 64px" }}>
+      <div className="container">
+        {/* TOP STRIP + BREADCRUMB */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "#6b7280",
+            marginBottom: 14,
+          }}
+        >
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: 999,
+              background: "#E0B100",
+              display: "inline-block",
+            }}
+          />
+          <span>Email Authentication Hub</span>
+          <span style={{ color: "#9ca3af" }}>/</span>
+          <span style={{ color: "#111827", fontWeight: 700 }}>SPF</span>
+        </div>
 
-        <Link href="/" style={styles.cta}>
-          Check your domain
-        </Link>
-      </section>
+        {/* HERO + ONE-MINUTE FIX */}
+        <section
+          style={{
+            display: "grid",
+            gap: 16,
+            gridTemplateColumns: "1.25fr 1fr",
+            alignItems: "start",
+          }}
+        >
+          <div style={card}>
+            <div className="prose">
+              <h1 style={{ marginTop: 0 }}>
+                Master SPF records for reliable email delivery
+              </h1>
 
-      {/* WHAT IS SPF */}
-      <section style={styles.highlightBox}>
-        <h2 style={styles.boxTitle}>What is SPF?</h2>
-        <p style={styles.boxText}>
-          <strong>SPF</strong> is an email authentication method that uses a DNS
-          TXT record to specify which mail servers are authorized to send email
-          for a domain. Receiving servers validate the sending IP against this
-          record.
-        </p>
-      </section>
+              <p>
+                Our 2026 SPF audit data shows the same pattern again and again:
+                panicked founders discover a single vague “SPF permerror” line in
+                a delivery report, while their IT teams are left untangling years
+                of DNS changes. This hub turns that anxiety into a clear,
+                repeatable SPF playbook for any stack.
+              </p>
 
-      {/* CONTENT */}
-      <section style={styles.content}>
-        <h2 style={styles.sectionTitle}>Why SPF matters</h2>
-        <ul>
-          <li>Prevents email spoofing and phishing</li>
-          <li>Improves email deliverability</li>
-          <li>Forms the foundation for DMARC enforcement</li>
-        </ul>
+              <p>
+                Sender Policy Framework (SPF) is the DNS rulebook that tells
+                receiving servers which IPs and services are allowed to send
+                mail for your domain. When it is misconfigured – too many
+                lookups, duplicate records, or outdated senders – even
+                legitimate product emails can silently disappear.
+              </p>
 
-        <h2 style={styles.sectionTitle}>How SPF works</h2>
-        <ol>
-          <li>An email is sent claiming to be from your domain</li>
-          <li>The receiving server queries the SPF record in DNS</li>
-          <li>Authorized sending sources are evaluated</li>
-          <li>The email passes or fails SPF</li>
-        </ol>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+                <Link href="/" style={primaryBtn}>
+                  Run SPF, DKIM &amp; DMARC check
+                </Link>
+                <span style={{ fontSize: 12, color: "#6b7280" }}>
+                  No login. Live DNS only. Built for fast triage.
+                </span>
+              </div>
+            </div>
+          </div>
 
-        {/* 🔑 HIERARCHY + INTERNAL LINKING */}
-        <h2 style={styles.sectionTitle}>
-          Common SPF errors and how to fix them
-        </h2>
-        <ul>
-          <li>
-            <Link href="/spf/spf-permerror-too-many-dns-lookups">
-              SPF permerror – too many DNS lookups
-            </Link>{" "}
-            — exceeding the 10-lookup limit.
-          </li>
-          <li>
-            <Link href="/spf/spf-softfail-vs-fail">
-              SPF softfail vs fail
-            </Link>{" "}
-            — understanding enforcement results.
-          </li>
-          <li>
-            <Link href="/spf/multiple-spf-records-found">
-              Multiple SPF records found
-            </Link>{" "}
-            — why only one SPF record is allowed.
-          </li>
-          <li>
-            <Link href="/spf/spf-include-flattening">
-              SPF include flattening
-            </Link>{" "}
-            — reducing DNS lookups safely.
-          </li>
-          <li>
-            <Link href="/spf/spf-redirect-explained">
-              SPF redirect explained
-            </Link>{" "}
-            — delegating SPF evaluation.
-          </li>
-          <li>
-            <Link href="/spf/spf-neutral-result-explained">
-              SPF neutral result explained
-            </Link>{" "}
-            — what neutral really means.
-          </li>
-        </ul>
+          <aside
+            style={{
+              ...card,
+              borderColor: "rgba(224,177,0,0.35)",
+              background: "rgba(224,177,0,0.08)",
+            }}
+          >
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                One-Minute SPF baseline (safe starting point)
+              </h2>
 
-        <h2 style={styles.sectionTitle}>Example SPF record</h2>
-        <pre style={styles.code}>
-v=spf1 include:spf.protection.outlook.com -all
-        </pre>
-        <p style={styles.paragraph}>
-          This SPF record authorizes Microsoft 365 servers and rejects all other
-          sending sources.
-        </p>
+              <p style={{ fontSize: 14, color: "#374151" }}>
+                Use this when you send only via Microsoft 365. Adapt the{" "}
+                <code>include:</code> mechanisms to match your providers.
+              </p>
 
-        {/* COMMON MISTAKES */}
-        <section style={styles.warningBox}>
-          <h3 style={styles.boxTitle}>Common SPF mistakes</h3>
-          <ul>
-            <li>Publishing multiple SPF records</li>
-            <li>Exceeding the DNS lookup limit</li>
-            <li>Using <code>+all</code></li>
-            <li>Forgetting to update SPF after adding services</li>
-          </ul>
+              <pre style={codeBox}>
+{`v=spf1 include:spf.protection.outlook.com -all
+
+# Allows Microsoft 365 to send for your domain
+# and hard-fails everything else.`}
+              </pre>
+
+              <p style={{ fontSize: 14, color: "#374151" }}>
+                For Google Workspace, replace the include with{" "}
+                <code>include:_spf.google.com</code>. For hybrid setups (CRM,
+                marketing tools, ticketing systems), add one proven sender at a
+                time and re-run the checker after each change.
+              </p>
+            </div>
+          </aside>
         </section>
 
-        <h2 style={styles.sectionTitle}>SPF, DKIM, and DMARC</h2>
-        <p style={styles.paragraph}>
-          SPF works together with DKIM and DMARC. SPF validates sending servers,
-          DKIM validates message integrity, and DMARC defines enforcement.
-        </p>
-        <p style={styles.paragraph}>
-          Learn more about <Link href="/dkim">DKIM</Link> and{" "}
-          <Link href="/dmarc">DMARC</Link>.
-        </p>
-      </section>
+        {/* FOUNDER + IT */}
+        <section style={{ marginTop: 18, display: "grid", gap: 16, gridTemplateColumns: "1fr 1fr" }}>
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                For panicked founders: what “SPF is broken” really means
+              </h2>
+              <p>
+                When our team audits failing campaigns, the story is rarely
+                about a single magic record. It is usually about drift. New
+                tools were added over the years, but SPF was never updated
+                cleanly. Mailbox providers see conflicting signals and start
+                throttling or junking messages.
+              </p>
+              <p>
+                The fastest path to stability is to publish one clear SPF
+                policy, remove duplicates, and keep the number of DNS lookups
+                under the industry-standard limit of ten. From there you can
+                grow more aggressive DMARC enforcement with confidence instead
+                of guessing.
+              </p>
+              <p>
+                If you only take one action today: identify every system that
+                can send email as your brand and verify that each of them is
+                represented in a single, consolidated SPF record.
+              </p>
+            </div>
+          </div>
 
-      {/* FINAL CTA */}
-      <section style={styles.finalCta}>
-        <h2>Ready to test your SPF record?</h2>
-        <Link href="/" style={styles.cta}>
-          Run the email authentication check
-        </Link>
-      </section>
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                For IT admins: alignment, DNS limits and edge cases
+              </h2>
+              <p>
+                Major receivers expect SPF to be both syntactically valid and
+                aligned with the visible From: domain when DMARC is enabled.
+                That means your SPF policy must ultimately resolve to IPs that
+                are actually used by your SMTP hosts, without chained includes
+                that explode beyond ten lookups.
+              </p>
+              <p>
+                Our checks surface the exact mechanisms and lookups involved so
+                you can decide whether to flatten includes, consolidate records,
+                or move some sending systems behind a dedicated subdomain such
+                as <code>mail.example.com</code>.
+              </p>
+              <p>
+                Treat SPF as code: version it, document which SaaS tools depend
+                on it, and roll out changes in small, observable steps rather
+                than all at once during a crisis.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* CLUSTER LINKS */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 18, color: "#111827" }}>
+                SPF troubleshooting playbook
+              </h2>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                Deep dives for specific SPF errors
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              }}
+            >
+              <HubLink
+                href="/spf/no-spf-record-found"
+                label="No SPF record found"
+                description="Start here when your domain publishes no SPF at all."
+              />
+              <HubLink
+                href="/spf/multiple-spf-records-found"
+                label="Multiple SPF records found"
+                description="Why duplicate SPF breaks evaluation and how to merge safely."
+              />
+              <HubLink
+                href="/spf/spf-permerror-too-many-dns-lookups"
+                label="SPF permerror: too many DNS lookups"
+                description="Identify every include/redirect that contributes to lookup bloat."
+              />
+              <HubLink
+                href="/spf/spf-softfail-vs-fail"
+                label="SPF softfail vs fail"
+                description="Choose the right qualifier for your enforcement stage."
+              />
+              <HubLink
+                href="/spf/spf-include-flattening"
+                label="SPF include flattening"
+                description="When to flatten, when to avoid it, and safer alternatives."
+              />
+              <HubLink
+                href="/spf/spf-redirect-explained"
+                label="SPF redirect explained"
+                description="Delegate SPF logic cleanly across subdomains or providers."
+              />
+              <HubLink
+                href="/spf/spf-ipv6-misconfiguration"
+                label="SPF IPv6 misconfiguration"
+                description="Make sure modern IPv6 ranges are correctly represented."
+              />
+              <HubLink
+                href="/spf/spf-neutral-result-explained"
+                label="SPF neutral result explained"
+                description="Understand why neutral is not the same as “pass”."
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* CROSS-PROTOCOL */}
+        <section
+          style={{
+            marginTop: 18,
+            display: "grid",
+            gap: 16,
+            gridTemplateColumns: "1.4fr 1fr",
+            alignItems: "start",
+          }}
+        >
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                How SPF fits with DKIM and DMARC
+              </h2>
+              <p>
+                SPF alone cannot fully protect your brand. Receivers treat the
+                full trio — SPF, DKIM, and DMARC — as a single story about
+                whether you are a trustworthy sender.
+              </p>
+              <p>
+                DKIM signs message content, proving it hasn’t been modified in
+                transit. DMARC then decides how to handle messages where SPF
+                and DKIM do not align with the visible From: domain. When all
+                three are aligned, you can confidently move from monitoring to
+                quarantine and finally to reject.
+              </p>
+              <p>
+                If you are planning a full rollout, stabilise SPF first, enable
+                DKIM for every sender, and only then tighten your DMARC policy.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              borderRadius: 14,
+              padding: 16,
+              border: "1px solid #111827",
+              background: "#111827",
+              color: "#fff",
+            }}
+          >
+            <div style={{ fontWeight: 800, marginBottom: 6 }}>
+              Next protocol hubs
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 12 }}>
+              Continue the journey with focused guides for the other protocols.
+            </div>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <Link href="/dkim" style={darkCardLink}>
+                <span>DKIM Hub – signed messages</span>
+                <span style={{ fontSize: 11, opacity: 0.75 }}>Integrity</span>
+              </Link>
+              <Link href="/dmarc" style={darkCardLink}>
+                <span>DMARC Hub – enforcement policy</span>
+                <span style={{ fontSize: 11, opacity: 0.75 }}>Control</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* responsive tweaks */}
+      <style>{`
+        @media (max-width: 980px) {
+          section[style*="grid-template-columns: 1.25fr 1fr"] { grid-template-columns: 1fr !important; }
+          section[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+          section[style*="grid-template-columns: 1.4fr 1fr"] { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </main>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    paddingTop: 64,
-    paddingBottom: 64,
-  },
-  hero: {
-    maxWidth: 760,
-    margin: "0 auto 72px",
-    textAlign: "center",
-    padding: "52px 24px",
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 700,
-    marginBottom: 16,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#4b5563",
-    marginBottom: 32,
-  },
-  cta: {
-    display: "inline-block",
-    padding: "14px 28px",
-    background: "#E0B100",
-    color: "#111827",
-    fontWeight: 600,
-    borderRadius: 6,
-    textDecoration: "none",
-  },
-  highlightBox: {
-    maxWidth: 760,
-    margin: "0 auto 64px",
-    padding: "36px 30px",
-    background: "#fffbea",
-    borderLeft: "6px solid #E0B100",
-    borderRadius: 8,
-  },
-  content: {
-    maxWidth: 760,
-    margin: "0 auto",
-    padding: "0 24px",
-    lineHeight: 1.7,
-  },
-  sectionTitle: {
-    marginTop: 56,
-    marginBottom: 20,
-  },
-  paragraph: {
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  warningBox: {
-    marginTop: 56,
-    padding: "32px 26px",
-    background: "#fff5f5",
-    borderLeft: "6px solid #dc2626",
-    borderRadius: 8,
-  },
-  boxTitle: {
-    fontSize: 22,
-    fontWeight: 700,
-    marginBottom: 16,
-  },
-  boxText: {
-    fontSize: 15,
-    lineHeight: 1.7,
-  },
-  code: {
-    background: "#f6f6f6",
-    padding: 18,
-    borderRadius: 6,
-    marginTop: 16,
-    marginBottom: 20,
-    overflowX: "auto",
-  },
-  finalCta: {
-    maxWidth: 760,
-    margin: "80px auto 0",
-    textAlign: "center",
-    padding: "44px 24px",
-    background: "#ffffff",
-    borderTop: "1px solid #e5e7eb",
-  },
+function HubLink({
+  href,
+  label,
+  description,
+}: {
+  href: string;
+  label: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+        padding: 12,
+        borderRadius: 12,
+        border: "1px solid #e5e7eb",
+        background: "rgba(249,250,251,0.8)",
+        textDecoration: "none",
+      }}
+    >
+      <span style={{ fontWeight: 700, color: "#111827" }}>{label}</span>
+      <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+    </Link>
+  );
+}
+
+/** shared styles */
+const card: React.CSSProperties = {
+  border: "1px solid #e5e7eb",
+  background: "#ffffff",
+  borderRadius: 14,
+  padding: 18,
+  boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
+};
+
+const primaryBtn: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: 40,
+  padding: "0 14px",
+  borderRadius: 10,
+  border: "1px solid #c79c00",
+  background: "#E0B100",
+  color: "#111827",
+  fontWeight: 800,
+  textDecoration: "none",
+};
+
+const codeBox: React.CSSProperties = {
+  margin: "10px 0",
+  padding: 12,
+  borderRadius: 12,
+  background: "#111827",
+  color: "#f9fafb",
+  fontSize: 12,
+  lineHeight: 1.5,
+  overflowX: "auto",
+};
+
+const darkCardLink: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 10,
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.18)",
+  background: "rgba(255,255,255,0.06)",
+  color: "#fff",
+  textDecoration: "none",
 };

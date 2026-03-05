@@ -1,0 +1,35 @@
+---
+description: "Page Template Lock – Prevent Layout Drift"
+globs: "app/**/*.{ts,tsx}"
+alwaysApply: true
+---
+
+# Template Lock Rule
+
+The layout structure of the site is locked.
+
+Cursor must NOT modify:
+
+- SiteHeader
+- SiteFooter
+- PageShell
+- CodeBlock component structure
+- Callout component structure
+- Prose component structure
+
+Cursor may ONLY modify:
+
+- page text content
+- metadata
+- links to related fixes
+- DNS values inside CodeBlock
+
+Cursor MUST NOT:
+
+- introduce inline styles
+- change Tailwind classes
+- alter layout hierarchy
+- move or remove the One-Minute Fix section
+- replace reusable components with raw HTML
+
+If a change requires layout modification, Cursor must STOP and request approval.

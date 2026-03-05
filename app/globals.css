@@ -7,8 +7,8 @@
 
 html,
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
   background-color: #f9fafb;
   color: #111827;
   line-height: 1.6;
@@ -19,6 +19,12 @@ body {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px;
+}
+
+.site-main {
+  min-height: 60vh;
+  padding-top: 32px;
+  padding-bottom: 32px;
 }
 
 /* HEADER */
@@ -34,18 +40,11 @@ body {
   height: 64px;
 }
 
-.logo {
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: #2563eb;
-  text-decoration: none;
-}
-
 .nav a {
   margin-left: 24px;
   text-decoration: none;
   color: #374151;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .nav a:hover {
@@ -59,13 +58,50 @@ body {
   margin-top: 80px;
 }
 
-.footer-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 0;
+.footer-wrap {
+  padding: 28px 0;
+}
+
+.footer-hubs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.footer-hub strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.footer-hub-link {
+  display: block;               /* <-- fixes “SPF HubSPF Checker...” */
+  margin-bottom: 8px;
   font-size: 0.875rem;
   color: #6b7280;
+  text-decoration: none;
+}
+
+.footer-hub-link:hover {
+  color: #2563eb;
+}
+
+.footer-bottom {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.footer-copy {
+  margin: 0;
 }
 
 .footer-links a {
@@ -87,4 +123,235 @@ h3 {
 
 a {
   transition: color 0.15s ease;
+}
+
+/* ------------------------------------------------------------------ */
+/* TYPOGRAPHY WRAPPER (optional for your long “fix pages”)             */
+/* ------------------------------------------------------------------ */
+
+.prose {
+  max-width: 760px;
+}
+
+.prose h1 {
+  font-size: 44px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 28px 0 10px;
+}
+
+.prose h2 {
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 28px 0 10px;
+}
+
+.prose h3 {
+  font-size: 20px;
+  margin: 20px 0 8px;
+}
+
+.prose p {
+  margin: 10px 0;
+  color: #111827;
+}
+
+.prose ul {
+  margin: 10px 0 10px 20px;
+}
+
+.prose li {
+  margin: 6px 0;
+}
+
+.prose a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose a:hover {
+  color: #1d4ed8;
+}
+
+/* --------------------------------------------------- */
+/* CHECKER UI (if you ever switch off Tailwind classes) */
+/* --------------------------------------------------- */
+
+.checker-hero {
+  display: flex;
+  justify-content: center;
+  padding: 70px 0 40px;
+}
+
+.checker-card {
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 34px 34px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.checker-title {
+  font-size: 44px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.checker-subtitle {
+  color: #374151;
+  margin-bottom: 18px;
+  max-width: 56ch;
+}
+
+.domain-form {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.domain-input {
+  flex: 1;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 16px;
+  outline: none;
+}
+
+.domain-input:focus {
+  border-color: #e0b100;
+  box-shadow: 0 0 0 4px rgba(224, 177, 0, 0.15);
+}
+
+.domain-button {
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid #c79c00;
+  background: #e0b100;
+  color: #111827;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.domain-button:hover {
+  filter: brightness(0.98);
+}
+
+.domain-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.results-grid {
+  width: 100%;
+  max-width: 760px;
+  margin: 22px auto 0;
+  display: grid;
+  gap: 14px;
+}
+
+.result-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.result-left {
+  min-width: 0;
+}
+
+.result-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.result-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  color: #111827;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  margin-bottom: 8px;
+}
+
+.result-desc {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.status-pill {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.status-pass {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.status-warn {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.status-fail {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footer-hubs {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .footer-links a {
+    margin-left: 0;
+    margin-right: 16px;
+  }
+}
+
+@media (max-width: 720px) {
+  .checker-card {
+    padding: 22px 18px;
+  }
+  .checker-title {
+    font-size: 34px;
+  }
+  .domain-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .domain-button {
+    width: 100%;
+  }
 }
