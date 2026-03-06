@@ -1,0 +1,82 @@
+---
+description: "Query Intent Differentiation – Prevent Programmatic SEO Doorway Clusters"
+globs: "app/spf/**/page.tsx,app/dkim/**/page.tsx,app/dmarc/**/page.tsx"
+alwaysApply: true
+---
+
+# Query Intent Differentiation Rule
+
+When generating or updating fix pages, Cursor must ensure each page targets a **distinct user intent**.
+
+Pages must not only differ by keywords or providers — they must solve a **different technical problem**.
+
+---
+
+# 1) Intent clarity
+
+Each page must clearly answer:
+
+• What specific error or misconfiguration occurred  
+• Why this error happens  
+• What exact DNS change fixes it  
+
+The explanation must be tailored to the specific issue.
+
+---
+
+# 2) Avoid near-duplicate explanations
+
+Cursor must NOT reuse identical paragraphs across many pages.
+
+Content must adapt to:
+
+- provider context (Google, Microsoft, etc.)
+- DNS host differences (Cloudflare, GoDaddy, etc.)
+- specific SPF/DKIM/DMARC error condition
+
+---
+
+# 3) Distinct problem framing
+
+Each page should frame the issue differently, for example:
+
+- configuration missing
+- syntax error
+- provider alignment issue
+- lookup limits
+- selector problems
+- DNS propagation delays
+
+This ensures pages represent **different troubleshooting scenarios**.
+
+---
+
+# 4) Unique opening explanation
+
+The first 120–150 words of every page must be unique and explain:
+
+• what the error means  
+• what usually causes it  
+• why it matters for deliverability
+
+This helps search engines recognize the page as **unique documentation**, not a doorway variation.
+
+---
+
+# 5) Structural consistency is allowed
+
+Pages may share the same layout structure:
+
+- One-Minute Fix
+- Explanation
+- Common mistakes
+- Next steps
+- Related fixes
+
+But the **technical explanation inside each section must vary**.
+
+---
+
+# Goal
+
+Ensure programmatic pages behave like **technical documentation pages**, not doorway pages generated from templates.

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CodeBlock from "../../components/CodeBlock";
 
 export const metadata = {
   title: "No SPF Record Found – How to Fix SPF (Step-by-Step)",
@@ -13,29 +14,39 @@ export default function NoSpfRecordFoundPage() {
         <h1 style={styles.title}>No SPF Record Found</h1>
 
         <p style={styles.subtitle}>
-          Your domain does not publish an SPF record. As a result, receiving mail
-          servers cannot verify which servers are allowed to send email on your
-          behalf.
+          Your domain does not publish an SPF record. As a result, receiving
+          mail servers cannot verify which servers are allowed to send email on
+          your behalf, so even fully legitimate traffic can look
+          indistinguishably similar to spoofed messages. This page explains what
+          “no SPF record found” means in practice, how it impacts inbox
+          placement, and how to safely add a correct record without breaking
+          existing mail flows.
         </p>
 
-        {/* One-Minute Fix */}
         <div style={styles.fixBox}>
           <h2 style={styles.sectionTitle}>One-Minute Fix</h2>
 
           <p style={styles.text}>
-            Publish a single SPF record in your domain’s DNS that authorizes your
-            email sending services.
+            Publish a single SPF record in your domain’s DNS that authorizes
+            your email sending services. Start by listing only the providers
+            that send mail for your primary domain, for example your hosted
+            mailbox provider and one marketing platform, and avoid copying
+            example SPF strings from random blogs that include IP ranges you do
+            not control.
           </p>
 
-          <pre style={styles.code}>
-{`Basic SPF example (safe starting point):
-
-v=spf1 include:spf.protection.outlook.com -all`}
-          </pre>
+          <CodeBlock
+            title="One-Minute SPF Fix"
+            language="DNS TXT"
+            code={`v=spf1 include:spf.protection.outlook.com -all`}
+          />
 
           <p style={styles.note}>
             This example allows Microsoft 365 to send email for your domain and
-            blocks all other sources.
+            blocks all other sources. If you use a different provider, replace
+            <code> include:spf.protection.outlook.com</code> with the include
+            mechanism recommended in that provider’s documentation and keep the
+            <code> -all</code> ending so that unauthorized senders fail SPF.
           </p>
 
           <Link href="/" style={styles.button}>
@@ -43,7 +54,6 @@ v=spf1 include:spf.protection.outlook.com -all`}
           </Link>
         </div>
 
-        {/* Why this matters */}
         <div style={styles.infoBox}>
           <h2 style={styles.sectionTitle}>Why missing SPF is a problem</h2>
 
@@ -56,23 +66,54 @@ v=spf1 include:spf.protection.outlook.com -all`}
 
           <p style={styles.text}>
             While SPF is not strictly required, most modern mail systems expect
-            it to be present.
+            it to be present. Large providers such as Gmail, Microsoft 365, and
+            Yahoo use SPF as one of several inputs to decide whether to accept a
+            message, put it in the spam folder, or reject it outright.
+          </p>
+
+          <h3 style={styles.h3Spacing}>How SPF affects deliverability</h3>
+
+          <p style={styles.text}>
+            From a deliverability perspective, SPF is your domain’s public list
+            of allowed senders. When a message arrives claiming to be from your
+            domain, the receiving server checks the connecting IP and compares
+            it against the mechanisms in your SPF record. If there is no record
+            at all, the server has less confidence that the message is genuine,
+            so aggressive spam filters will often downgrade or quarantine it.
+          </p>
+
+          <p style={styles.text}>
+            SPF also feeds into DMARC alignment. When DMARC is configured to
+            require SPF alignment, passing SPF on your legitimate traffic makes
+            it easier for providers to distinguish between real mail and
+            phishing that spoofs your domain. That means fewer false positives
+            for marketing campaigns and a clearer reputation signal for the IPs
+            and services that you actually use.
           </p>
         </div>
 
-        {/* What we checked */}
         <div style={styles.infoBox}>
           <h2 style={styles.sectionTitle}>What we checked</h2>
+
           <p style={styles.text}>
             We queried your domain’s DNS for TXT records and searched for an SPF
             record starting with <strong>v=spf1</strong>.
           </p>
+
+          <p style={styles.text}>
+            If your DNS provider splits long TXT values into multiple segments,
+            we combine them to reconstruct the full SPF string before checking
+            it. We only look at live DNS, so if you recently added a record but
+            your authoritative name servers have not been updated yet, this page
+            will continue to show “no SPF record found” until propagation
+            completes.
+          </p>
+
           <p style={styles.trust}>
             Live DNS lookup. No assumptions. No cached results.
           </p>
         </div>
 
-        {/* Escape hatch */}
         <div style={styles.escapeBox}>
           <h3 style={styles.escapeTitle}>Still seeing “No SPF record found”?</h3>
 
@@ -88,30 +129,60 @@ v=spf1 include:spf.protection.outlook.com -all`}
           </p>
 
           <p style={styles.text}>Next steps:</p>
+
           <ul style={styles.list}>
             <li>
-              <Link href="/spf/spf-permerror-too-many-dns-lookups">
-                Fix SPF permerror (too many DNS lookups)
-              </Link>
+              Confirm that the SPF record is created as a TXT record on the root
+              of your sending domain, for example <code>example.com</code>, not
+              just <code>www.example.com</code>.
             </li>
             <li>
-              <Link href="/dmarc">
-                Review your DMARC configuration
-              </Link>
+              <Link href="/dmarc">Review your DMARC configuration</Link>
             </li>
             <li>
-              <Link href="/">
-                Run a full SPF, DKIM & DMARC check
-              </Link>
+              <Link href="/">Run a full SPF, DKIM & DMARC check</Link>
             </li>
           </ul>
+        </div>
+
+        <div style={styles.infoBox}>
+          <h2 style={styles.sectionTitle}>Related SPF fixes</h2>
+
+          <ul style={styles.list}>
+            <li>
+              <Link href="/spf/multiple-spf-records-found">
+                Fix “multiple SPF records found” for your domain
+              </Link>{" "}
+              – when more than one SPF TXT record exists, receivers treat the
+              policy as invalid, which can look similar to having no usable SPF
+              at all.
+            </li>
+            <li>
+              <Link href="/spf/spf-syntax-error">
+                Fix SPF syntax errors in your TXT record
+              </Link>{" "}
+              – a missing space, colon, or mechanism can cause SPF parsing to
+              fail and make your record unusable.
+            </li>
+            <li>
+              <Link href="/spf/spf-include-flattening">
+                Safely flatten SPF includes to stay within DNS limits
+              </Link>{" "}
+              – if you later add multiple providers, this helps prevent lookups
+              from growing until they cause SPF permerrors.
+            </li>
+          </ul>
+
+          <p style={styles.text}>
+            Need a broader overview of SPF checks and how they fit with DKIM and
+            DMARC? <Link href="/spf">Return to the SPF Hub</Link> for
+            protocol-level guidance and additional troubleshooting paths.
+          </p>
         </div>
       </section>
     </main>
   );
 }
-
-/* ---------- STYLES ---------- */
 
 const styles: Record<string, React.CSSProperties> = {
   wrapper: {
@@ -146,16 +217,6 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 24,
     marginBottom: 40,
   },
-  code: {
-    background: "#0f172a",
-    color: "#e5e7eb",
-    padding: 16,
-    borderRadius: 8,
-    fontSize: 14,
-    marginTop: 12,
-    marginBottom: 12,
-    overflowX: "auto",
-  },
   note: {
     fontSize: 14,
     color: "#374151",
@@ -186,6 +247,13 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 18,
     fontWeight: 600,
     marginBottom: 8,
+  },
+  h3Spacing: {
+    fontSize: 18,
+    fontWeight: 600,
+    marginTop: 24,
+    marginBottom: 8,
+    color: "#111827",
   },
   list: {
     paddingLeft: 18,

@@ -1,0 +1,66 @@
+---
+description: "Error Page Scope Lock – No wrappers, no abstractions"
+globs: "app/spf/**/page.tsx,app/dkim/**/page.tsx,app/dmarc/**/page.tsx"
+alwaysApply: true
+---
+
+# Error Page Scope Lock
+
+### Layout Exception
+
+Error pages are intentionally standalone and do NOT need to adopt the full layout system.
+
+Cursor must NOT refactor these pages to use:
+
+- PageShell
+- SiteHeader
+- SiteFooter
+- Prose wrapper
+- shared layout templates
+
+These pages must remain self-contained to avoid large-scale refactoring when scaling programmatic pages.
+
+Only the **content inside the page** may be modified.
+
+---
+
+# Structural Restrictions
+
+These error pages must remain standalone pages.
+
+Cursor must NOT:
+
+- create wrappers
+- create shared page templates
+- create error page data files
+- move page content into components
+- convert pages into config-driven rendering
+- change routing or folder structure
+
+---
+
+# Allowed Improvements
+
+Cursor may ONLY:
+
+- improve on-page content
+- add internal links
+- add link back to the protocol hub
+- expand explanations
+- add FAQ-style sections if they fit the page
+- keep existing component structure
+
+---
+
+# Scaling Rule
+
+If asked to scale, Cursor must update each page **in place**.
+
+Cursor must NOT:
+
+- refactor architecture
+- create page factories
+- introduce shared rendering logic
+- move page logic into configuration files
+
+Each page remains a **standalone document optimized for SEO**.

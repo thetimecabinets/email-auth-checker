@@ -78,7 +78,7 @@ body {
 }
 
 .footer-hub-link {
-  display: block;               /* <-- fixes “SPF HubSPF Checker...” */
+  display: block;
   margin-bottom: 8px;
   font-size: 0.875rem;
   color: #6b7280;
@@ -126,7 +126,7 @@ a {
 }
 
 /* ------------------------------------------------------------------ */
-/* TYPOGRAPHY WRAPPER (optional for your long “fix pages”)             */
+/* TYPOGRAPHY WRAPPER                                                 */
 /* ------------------------------------------------------------------ */
 
 .prose {
@@ -176,7 +176,7 @@ a {
 }
 
 /* --------------------------------------------------- */
-/* CHECKER UI (if you ever switch off Tailwind classes) */
+/* CHECKER UI                                          */
 /* --------------------------------------------------- */
 
 .checker-hero {
@@ -328,12 +328,80 @@ a {
   color: #991b1b;
 }
 
+/* --------------------------------------------------- */
+/* CODE BLOCK COMPONENT                                */
+/* --------------------------------------------------- */
+
+.codeblock {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #1f2937;
+  background: #111827;
+  margin: 16px 0;
+}
+
+.codeblock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.codeblock-title {
+  font-weight: 700;
+  color: #f9fafb;
+  font-size: 14px;
+}
+
+.codeblock-language {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.codeblock-copy {
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.codeblock-copy:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.codeblock-body {
+  padding: 0;
+}
+
+.codeblock-pre {
+  margin: 0;
+  padding: 16px 20px 18px 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #f9fafb;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.codeblock textarea,
+.codeblock input {
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .footer-hubs {
     grid-template-columns: 1fr;
     gap: 18px;
   }
+
   .footer-links a {
     margin-left: 0;
     margin-right: 16px;
@@ -344,13 +412,16 @@ a {
   .checker-card {
     padding: 22px 18px;
   }
+
   .checker-title {
     font-size: 34px;
   }
+
   .domain-form {
     flex-direction: column;
     align-items: stretch;
   }
+
   .domain-button {
     width: 100%;
   }

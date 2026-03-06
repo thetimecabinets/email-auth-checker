@@ -1,3 +1,96 @@
 ---
+description: "DNS Fix Code Blocks with Copy Button (Utility Requirement)"
+globs: "app/**/*.{ts,tsx}, components/**/*.{ts,tsx}"
 alwaysApply: true
 ---
+
+# DNS Code Block Rules
+
+The “One-Minute Fix” DNS record is the core utility of the site.
+Every DNS example MUST appear inside a reusable `CodeBlock` component with a copy button.
+
+This applies to:
+- SPF records
+- DKIM selectors
+- DMARC policies
+- Any DNS TXT record examples
+
+---
+
+# 1) Required component
+
+Create and reuse a component:
+
+components/ui/CodeBlock.tsx
+
+Requirements:
+
+- Monospace font
+- Dark background
+- Horizontal scroll on mobile
+- Copy-to-clipboard button
+- Visual feedback after copy ("Copied!")
+
+---
+
+# 2) UX behavior
+
+The component must include:
+
+• Copy button (top-right corner)  
+• Clipboard API  
+• Button text changes to "Copied!" for ~2 seconds  
+• Accessible for keyboard users  
+
+Example behavior:
+
+User clicks "Copy"  
+↓  
+DNS record copied  
+↓  
+Button changes to "Copied!"
+
+---
+
+# 3) Visual design
+
+The code block must include:
+
+- rounded-lg
+- dark neutral background
+- monospace font
+- padding
+- horizontal scroll for long records
+
+Example style:
+
+- bg-neutral-900
+- text-neutral-100
+- font-mono
+- text-sm
+- overflow-x-auto
+
+---
+
+# 4) Placement rules
+
+The CodeBlock must appear:
+
+• inside the "One-Minute Fix" section  
+• near the top of the page  
+• above long explanations  
+
+This ensures fast triage for:
+
+- founders
+- IT admins
+
+---
+
+# 5) Example usage
+
+Example DNS record block:
+
+v=spf1 include:_spf.google.com ~all
+
+This must render inside the reusable component:
