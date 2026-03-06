@@ -58,10 +58,10 @@ export default function NoSpfRecordFoundPage() {
           <h2 style={styles.sectionTitle}>Why missing SPF is a problem</h2>
 
           <ul style={styles.list}>
-            <li>Emails may fail SPF checks</li>
-            <li>Messages are more likely to land in spam</li>
-            <li>DMARC cannot fully protect your domain</li>
-            <li>Attackers can spoof your domain more easily</li>
+            <li>Emails may fail SPF checks entirely or fall back to heuristics</li>
+            <li>Messages are more likely to land in spam or “Promotions” tabs</li>
+            <li>DMARC cannot use SPF to protect your brand from spoofing</li>
+            <li>Attackers can send mail that looks indistinguishable from you</li>
           </ul>
 
           <p style={styles.text}>
@@ -79,7 +79,8 @@ export default function NoSpfRecordFoundPage() {
             domain, the receiving server checks the connecting IP and compares
             it against the mechanisms in your SPF record. If there is no record
             at all, the server has less confidence that the message is genuine,
-            so aggressive spam filters will often downgrade or quarantine it.
+            so aggressive spam filters will often downgrade or quarantine it,
+            especially for bulk or marketing campaigns.
           </p>
 
           <p style={styles.text}>
@@ -90,6 +91,34 @@ export default function NoSpfRecordFoundPage() {
             for marketing campaigns and a clearer reputation signal for the IPs
             and services that you actually use.
           </p>
+        </div>
+
+        <div style={styles.infoBox}>
+          <h2 style={styles.sectionTitle}>Common causes of “No SPF record found”</h2>
+          <ul style={styles.list}>
+            <li>
+              The SPF TXT record was created on{" "}
+              <code>www.example.com</code> instead of the root{" "}
+              <code>example.com</code> zone.
+            </li>
+            <li>
+              Your DNS provider split a long SPF string into multiple TXT
+              records instead of one logical SPF policy.
+            </li>
+            <li>
+              A previous SPF record was deleted during a DNS cleanup or
+              migration and never re-created.
+            </li>
+            <li>
+              Multiple SPF records were attempted and the panel silently
+              rejected them, leaving you with no valid{" "}
+              <code>v=spf1</code> policy at all.
+            </li>
+            <li>
+              DNS changes are still propagating and the new record is not yet
+              visible to external resolvers.
+            </li>
+          </ul>
         </div>
 
         <div style={styles.infoBox}>
@@ -115,20 +144,7 @@ export default function NoSpfRecordFoundPage() {
         </div>
 
         <div style={styles.escapeBox}>
-          <h3 style={styles.escapeTitle}>Still seeing “No SPF record found”?</h3>
-
-          <ul style={styles.list}>
-            <li>The SPF record was added to the wrong DNS zone</li>
-            <li>Multiple SPF records exist (invalid configuration)</li>
-            <li>DNS changes haven’t propagated yet</li>
-          </ul>
-
-          <p style={styles.text}>
-            Ensure there is exactly <strong>one</strong> SPF record and allow up
-            to 24 hours for DNS propagation.
-          </p>
-
-          <p style={styles.text}>Next steps:</p>
+          <h3 style={styles.escapeTitle}>Next steps</h3>
 
           <ul style={styles.list}>
             <li>
@@ -137,10 +153,12 @@ export default function NoSpfRecordFoundPage() {
               just <code>www.example.com</code>.
             </li>
             <li>
-              <Link href="/dmarc">Review your DMARC configuration</Link>
+              Check that there is exactly <strong>one</strong> SPF record and
+              that it begins with <code>v=spf1</code>.
             </li>
             <li>
-              <Link href="/">Run a full SPF, DKIM & DMARC check</Link>
+              Allow up to 24 hours for DNS propagation, then re-run an external
+              SPF check to confirm the record is visible.
             </li>
           </ul>
         </div>
@@ -158,11 +176,11 @@ export default function NoSpfRecordFoundPage() {
               at all.
             </li>
             <li>
-              <Link href="/spf/spf-syntax-error">
-                Fix SPF syntax errors in your TXT record
+              <Link href="/spf/spf-permerror-too-many-dns-lookups">
+                Fix SPF permerror caused by too many DNS lookups
               </Link>{" "}
-              – a missing space, colon, or mechanism can cause SPF parsing to
-              fail and make your record unusable.
+              – keep your mechanisms under the 10-lookup limit so SPF can be
+              evaluated reliably.
             </li>
             <li>
               <Link href="/spf/spf-include-flattening">
