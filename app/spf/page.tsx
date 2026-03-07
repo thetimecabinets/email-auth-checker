@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { spfCluster } from "@/app/data/internalLinks";
+
+const MAX_HUB_CARDS = 12;
 
 export const metadata: Metadata = {
   title:
@@ -198,46 +201,15 @@ export default function SPFHubPage() {
                 gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
               }}
             >
-              <HubLink
-                href="/spf/no-spf-record-found"
-                label="No SPF record found"
-                description="Start here when your domain publishes no SPF at all."
-              />
-              <HubLink
-                href="/spf/multiple-spf-records-found"
-                label="Multiple SPF records found"
-                description="Why duplicate SPF breaks evaluation and how to merge safely."
-              />
-              <HubLink
-                href="/spf/spf-permerror-too-many-dns-lookups"
-                label="SPF permerror: too many DNS lookups"
-                description="Identify every include/redirect that contributes to lookup bloat."
-              />
-              <HubLink
-                href="/spf/spf-softfail-vs-fail"
-                label="SPF softfail vs fail"
-                description="Choose the right qualifier for your enforcement stage."
-              />
-              <HubLink
-                href="/spf/spf-include-flattening"
-                label="SPF include flattening"
-                description="When to flatten, when to avoid it, and safer alternatives."
-              />
-              <HubLink
-                href="/spf/spf-redirect-explained"
-                label="SPF redirect explained"
-                description="Delegate SPF logic cleanly across subdomains or providers."
-              />
-              <HubLink
-                href="/spf/spf-ipv6-misconfiguration"
-                label="SPF IPv6 misconfiguration"
-                description="Make sure modern IPv6 ranges are correctly represented."
-              />
-              <HubLink
-                href="/spf/spf-neutral-result-explained"
-                label="SPF neutral result explained"
-                description="Understand why neutral is not the same as “pass”."
-              />
+              {/* Future: add "View all issues" page when clusters exceed MAX_HUB_CARDS */}
+              {spfCluster.slice(0, MAX_HUB_CARDS).map((link) => (
+                <HubLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  description={link.description}
+                />
+              ))}
             </div>
           </div>
         </section>
@@ -325,7 +297,7 @@ function HubLink({
 }: {
   href: string;
   label: string;
-  description: string;
+  description?: string;
 }) {
   return (
     <Link
@@ -342,7 +314,9 @@ function HubLink({
       }}
     >
       <span style={{ fontWeight: 700, color: "#111827" }}>{label}</span>
-      <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+      {description && (
+        <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+      )}
     </Link>
   );
 }

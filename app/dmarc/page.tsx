@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { dmarcCluster } from "@/app/data/internalLinks";
+
+const MAX_HUB_CARDS = 12;
 
 export const metadata: Metadata = {
   title:
@@ -186,36 +189,15 @@ ruf=mailto:dmarc@yourdomain.com; fo=1; pct=100`}
                 gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
               }}
             >
-              <HubLink
-                href="/dmarc/no-dmarc-record-found"
-                label="No DMARC record found"
-                description="Publish your first DMARC policy safely."
-              />
-              <HubLink
-                href="/dmarc/dmarc-policy-none-vs-quarantine-vs-reject"
-                label="DMARC policy levels"
-                description="None vs quarantine vs reject explained."
-              />
-              <HubLink
-                href="/dmarc/dmarc-alignment-failed"
-                label="DMARC alignment failed"
-                description="Fix SPF/DKIM alignment issues."
-              />
-              <HubLink
-                href="/dmarc/dmarc-rua-ruf-not-working"
-                label="DMARC reports missing"
-                description="Diagnose RUA/RUF problems."
-              />
-              <HubLink
-                href="/dmarc/dmarc-pct-tag-explained"
-                label="DMARC pct tag"
-                description="Gradual rollout strategy."
-              />
-              <HubLink
-                href="/dmarc/multiple-dmarc-records-found"
-                label="Multiple DMARC records"
-                description="Merge conflicting records."
-              />
+              {/* Future: add "View all issues" page when clusters exceed MAX_HUB_CARDS */}
+              {dmarcCluster.slice(0, MAX_HUB_CARDS).map((link) => (
+                <HubLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  description={link.description}
+                />
+              ))}
             </div>
           </div>
         </section>
@@ -286,7 +268,7 @@ function HubLink({
 }: {
   href: string;
   label: string;
-  description: string;
+  description?: string;
 }) {
   return (
     <Link
@@ -303,7 +285,9 @@ function HubLink({
       }}
     >
       <span style={{ fontWeight: 700, color: "#111827" }}>{label}</span>
-      <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+      {description && (
+        <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+      )}
     </Link>
   );
 }

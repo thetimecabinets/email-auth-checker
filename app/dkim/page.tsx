@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { dkimCluster } from "@/app/data/internalLinks";
+
+const MAX_HUB_CARDS = 12;
 
 export const metadata: Metadata = {
   title:
@@ -209,46 +212,15 @@ Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`}
                 gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
               }}
             >
-              <HubLink
-                href="/dkim/no-dkim-record-found"
-                label="No DKIM record found"
-                description="Start here when your domain publishes no DKIM key at all."
-              />
-              <HubLink
-                href="/dkim/dkim-selector-not-found"
-                label="DKIM selector not found"
-                description="Fix missing selector records so receivers can verify your signature."
-              />
-              <HubLink
-                href="/dkim/invalid-dkim-key"
-                label="Invalid DKIM key"
-                description="Repair malformed, truncated, or badly formatted public keys."
-              />
-              <HubLink
-                href="/dkim/dkim-alignment-failed"
-                label="DKIM alignment failed"
-                description="Understand why the signing domain does not align with From."
-              />
-              <HubLink
-                href="/dkim/dkim-key-length-too-short"
-                label="DKIM key length too short"
-                description="Upgrade legacy keys to modern recommended sizes."
-              />
-              <HubLink
-                href="/dkim/dkim-selector-explained"
-                label="DKIM selector explained"
-                description="Learn how selectors work and why rotation depends on them."
-              />
-              <HubLink
-                href="/dkim/dkim-selector-mismatch"
-                label="DKIM selector mismatch"
-                description="Fix cases where the sender uses a different selector than DNS."
-              />
-              <HubLink
-                href="/dkim/dkim-body-hash-mismatch"
-                label="DKIM body hash mismatch"
-                description="See why gateways, footers, or forwarding can break signatures."
-              />
+              {/* Future: add "View all issues" page when clusters exceed MAX_HUB_CARDS */}
+              {dkimCluster.slice(0, MAX_HUB_CARDS).map((link) => (
+                <HubLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  description={link.description}
+                />
+              ))}
             </div>
           </div>
         </section>
@@ -343,7 +315,7 @@ function HubLink({
 }: {
   href: string;
   label: string;
-  description: string;
+  description?: string;
 }) {
   return (
     <Link
@@ -360,7 +332,9 @@ function HubLink({
       }}
     >
       <span style={{ fontWeight: 700, color: "#111827" }}>{label}</span>
-      <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+      {description && (
+        <span style={{ fontSize: 13, color: "#6b7280" }}>{description}</span>
+      )}
     </Link>
   );
 }

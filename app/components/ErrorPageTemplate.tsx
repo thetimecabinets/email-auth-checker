@@ -65,6 +65,9 @@ type ErrorPageData = {
   related?: RelatedLink[];
 };
 
+const MAX_EXPLORE_LINKS = 10;
+const MAX_RELATED_LINKS = 4;
+
 export default function ErrorPageTemplate(data: ErrorPageData) {
   const pathname = usePathname();
 
@@ -90,8 +93,12 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
   if (data.hub?.href === "/dkim") autoLinks = dkimCluster;
   if (data.hub?.href === "/dmarc") autoLinks = dmarcCluster;
 
-  // Remove current page from cluster links
-  autoLinks = autoLinks.filter((link) => link.href !== pathname);
+  // Remove current page from cluster links, then limit
+  const visibleExploreLinks = autoLinks
+    .filter((link) => link.href !== pathname)
+    .slice(0, MAX_EXPLORE_LINKS);
+
+  const visibleRelatedLinks = data.related?.slice(0, MAX_RELATED_LINKS);
 
   return (
     <main style={styles.wrapper}>
@@ -296,12 +303,12 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
           </div>
         )}
 
-        {data.related && data.related.length > 0 && (
+        {visibleRelatedLinks && visibleRelatedLinks.length > 0 && (
           <div style={styles.infoBox}>
             <h2 style={styles.sectionTitle}>Related fixes</h2>
 
             <ul style={styles.list}>
-              {data.related.map((link, index) => (
+              {visibleRelatedLinks.map((link, index) => (
                 <li key={index}>
                   <Link href={link.href}>{link.label}</Link>
                 </li>
@@ -310,12 +317,12 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
           </div>
         )}
 
-        {autoLinks.length > 0 && (
+        {visibleExploreLinks.length > 0 && (
           <div style={styles.infoBox}>
             <h2 style={styles.sectionTitle}>Explore more issues</h2>
 
             <ul style={styles.list}>
-              {autoLinks.map((link, index) => (
+              {visibleExploreLinks.map((link, index) => (
                 <li key={index}>
                   <Link href={link.href}>{link.label}</Link>
                 </li>
