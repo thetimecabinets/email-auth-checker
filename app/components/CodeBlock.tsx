@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import * as React from "react";
 
 type CodeBlockProps = {
   title?: string;
@@ -13,60 +13,52 @@ export default function CodeBlock({
   title,
   code,
   language,
-  className = "",
+  className,
 }: CodeBlockProps) {
-  const [copied, setCopied] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [copied, setCopied] = React.useState(false);
 
-  const handleCopy = async () => {
+  async function handleCopy() {
     try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(code);
-      } else {
-        const el = textareaRef.current;
-        if (!el) return;
-
-        el.value = code;
-        el.select();
-        document.execCommand("copy");
-      }
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = code;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
 
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Copy failed:", err);
+      window.setTimeout(() => setCopied(false), 1200);
     }
-  };
+  }
 
   return (
-    <div className={`codeblock ${className}`}>
-      <div className="codeblock-header">
-        <div>
-          {title && <div className="codeblock-title">{title}</div>}
-          {language && <div className="codeblock-language">{language}</div>}
+    <section className={`codeblock ${className ?? ""}`}>
+      {(title || language) && (
+        <div className="codeblock-header">
+          <div>
+            {title && <div className="codeblock-title">{title}</div>}
+            {language && <div className="codeblock-language">{language}</div>}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="codeblock-copy"
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
         </div>
+      )}
 
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="codeblock-copy"
-        >
-          {copied ? "Copied!" : "Copy"}
-        </button>
-      </div>
-
-      <div className="codeblock-wrapper">
+      <div className="codeblock-body">
         <pre className="codeblock-pre">
           <code>{code}</code>
         </pre>
-
-        {/* hidden fallback textarea */}
-        <textarea
-          ref={textareaRef}
-          readOnly
-          className="codeblock-hidden"
-        />
       </div>
-    </div>
+    </section>
   );
 }

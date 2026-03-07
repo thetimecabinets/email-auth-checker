@@ -1,5 +1,5 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
-import { errorPages } from "@/app/data/errorPages";
+import { dkimErrors } from "@/app/data/dkimErrors";
 
 export const metadata = {
   title: "DKIM Selector Mismatch – Fix DKIM Selector Problems",
@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default function Page() {
-  const data = errorPages["dkim/dkim-selector-mismatch"];
+  const data = dkimErrors["dkim/dkim-selector-mismatch"];
 
   if (!data) {
     return <div>Missing error page data</div>;
