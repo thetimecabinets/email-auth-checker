@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import CodeBlock from "@/app/components/CodeBlock";
 import { spfCluster, dkimCluster, dmarcCluster } from "@/app/data/internalLinks";
 
@@ -63,6 +66,8 @@ type ErrorPageData = {
 };
 
 export default function ErrorPageTemplate(data: ErrorPageData) {
+  const pathname = usePathname();
+
   const faqSchema =
     data.faq && data.faq.length > 0
       ? {
@@ -84,6 +89,9 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
   if (data.hub?.href === "/spf") autoLinks = spfCluster;
   if (data.hub?.href === "/dkim") autoLinks = dkimCluster;
   if (data.hub?.href === "/dmarc") autoLinks = dmarcCluster;
+
+  // Remove current page from cluster links
+  autoLinks = autoLinks.filter((link) => link.href !== pathname);
 
   return (
     <main style={styles.wrapper}>
@@ -254,10 +262,35 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
               ))}
 
               {data.hub && (
-                <li>
-                  Review the full troubleshooting guidance in the{" "}
-                  <Link href={data.hub.href}>{data.hub.label}</Link>.
-                </li>
+                <>
+                  <li>
+                    Review the full troubleshooting guidance in the{" "}
+                    <Link href={data.hub.href}>{data.hub.label}</Link>.
+                  </li>
+                  {[
+                    {
+                      href: "/spf",
+                      label: "SPF Hub",
+                      prefix: "Explore sender authorization issues in the",
+                    },
+                    {
+                      href: "/dkim",
+                      label: "DKIM Hub",
+                      prefix: "Check signing and selector issues in the",
+                    },
+                    {
+                      href: "/dmarc",
+                      label: "DMARC Hub",
+                      prefix: "Review alignment and policy issues in the",
+                    },
+                  ]
+                    .filter((h) => h.href !== data.hub!.href)
+                    .map((h) => (
+                      <li key={h.href}>
+                        {h.prefix} <Link href={h.href}>{h.label}</Link>.
+                      </li>
+                    ))}
+                </>
               )}
             </ul>
           </div>

@@ -1,3 +1,24 @@
 ---
+description: "Internal Linking Placement Rule"
+globs: "app/spf/**/page.tsx,app/dkim/**/page.tsx,app/dmarc/**/page.tsx"
 alwaysApply: true
 ---
+
+# Internal Linking Placement
+
+Internal links must appear in TWO specific places only.
+
+1) Inside the "Next steps" section
+2) Inside a "Related fixes" section near the bottom
+
+Rules:
+
+- Maximum 3–4 related links
+- Use descriptive anchor text
+- Never output long link paragraphs
+- Never repeat the same link multiple times
+
+Every error page must include:
+
+• link back to its protocol hub
+• 2–3 related fixes from the same protocol cluster

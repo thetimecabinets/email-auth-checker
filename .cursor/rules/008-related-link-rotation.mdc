@@ -1,3 +1,32 @@
 ---
+description: "Related Fix Rotation – Prevent identical internal linking"
+globs: "app/spf/**/page.tsx,app/dkim/**/page.tsx,app/dmarc/**/page.tsx"
 alwaysApply: true
 ---
+
+# Related Fix Rotation Rule
+
+Internal links must be contextually relevant and rotated.
+
+Cursor must NOT output the same 3 related links on every page.
+
+Rules:
+
+1. Related fixes must belong to the same protocol cluster:
+   - SPF pages → link to other SPF fixes
+   - DKIM pages → link to other DKIM fixes
+   - DMARC pages → link to other DMARC fixes
+
+2. Select 3 related pages that are technically relevant to the issue.
+
+3. The same set of links must not appear identically across many pages.
+
+4. Use descriptive anchor text (not raw URLs).
+
+5. Always include ONE link back to the protocol hub:
+   - /spf
+   - /dkim
+   - /dmarc
+
+Goal:
+Create a natural internal link graph instead of repetitive patterns.

@@ -761,5 +761,550 @@ export const spfErrors = {
           label: "Multiple SPF records found"
         }
       ]
+    },
+
+    "spf/spf-record-syntax-error": {
+      title: "SPF Record Syntax Error",
+
+      intro:
+        "An SPF record syntax error means the TXT record published for your domain cannot be parsed as valid SPF. SPF records follow strict formatting rules: mechanisms like include or ip4 require specific syntax, and a missing colon, extra space, typo in a mechanism name, or malformed qualifier can cause receivers to treat the entire record as invalid. When that happens, SPF evaluation fails before it can reach a normal pass, fail, or softfail result.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Correct the syntax by fixing typos in mechanism names, removing stray spaces, and ensuring every include or other mechanism uses the exact format documented in the SPF specification.",
+
+      codeTitle: "Valid SPF record",
+      codeLanguage: "DNS TXT",
+      code: `v=spf1 include:_spf.google.com -all`,
+
+      afterCodeText:
+        "Each mechanism must be spelled correctly and follow the expected pattern. Include requires a colon immediately after the keyword with no space, then the domain.",
+
+      wrongExampleTitle: "Invalid syntax",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include _spf.google.com -all`,
+      wrongExampleText:
+        "This is wrong because include requires a colon before the domain. Without it, receivers cannot parse the record as valid SPF.",
+
+      correctExampleTitle: "Valid syntax",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 include:_spf.google.com -all`,
+      correctExampleText:
+        "The colon directly after include and no stray spaces let receivers parse the record correctly.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "Syntax errors often creep in when records are hand-edited, copied from incomplete documentation, or migrated between DNS providers. A trailing space, missing hyphen in -all, or typo such as inclide instead of include is enough to invalidate the whole record.",
+
+      problemTitle: "Why this is a problem",
+
+      problemPoints: [
+        "Receivers cannot evaluate the SPF policy and may return permerror or ignore the record.",
+        "Legitimate mail loses SPF authentication even when the intent of the policy is correct.",
+        "DMARC alignment can fail when SPF cannot provide a usable result.",
+        "Troubleshooting becomes harder because the policy looks present but is unusable."
+      ],
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "When SPF cannot be parsed, mailbox providers see a broken authentication layer. That weakens sender trust and can contribute to spam placement, especially for domains that rely on SPF for DMARC alignment.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "A typo in a mechanism name such as include, ip4, or -all.",
+        "Missing colon after include or redirect.",
+        "Extra spaces inside the record where none are allowed.",
+        "The record was copy-pasted from a source that introduced invisible or wrong characters."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We inspected the SPF TXT record for syntax validity. If mechanisms are malformed or the record does not follow the SPF specification, we report a syntax error.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Can a single typo break the whole SPF record?",
+          answer:
+            "Yes. SPF parsers expect exact mechanism names and structure. One typo or formatting error can cause the entire record to be treated as invalid."
+        },
+        {
+          question: "How do I find syntax errors in my SPF record?",
+          answer:
+            "Use an SPF validation tool to check your published TXT record. Look for missing colons, extra spaces, or misspelled mechanisms."
+        },
+        {
+          question: "Is SPF syntax error the same as permerror?",
+          answer:
+            "Not always. Syntax errors often lead to permerror, but permerror can also come from other issues such as too many DNS lookups."
+        }
+      ],
+
+      nextSteps: [
+        "Copy the current SPF record from live DNS and inspect it character by character.",
+        "Verify every mechanism follows the SPF specification format.",
+        "Fix typos, missing colons, and stray spaces.",
+        "Publish the corrected record and allow time for propagation.",
+        "Re-run the check to confirm the syntax error is resolved."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/multiple-spf-records-found",
+          label: "Multiple SPF records found"
+        },
+        {
+          href: "/spf/spf-permerror-too-many-dns-lookups",
+          label: "SPF permerror: too many DNS lookups"
+        },
+        {
+          href: "/spf/spf-include-flattening",
+          label: "SPF include flattening"
+        }
+      ]
+    },
+
+    "spf/spf-softfail-explained": {
+      title: "SPF Softfail Explained",
+
+      intro:
+        "SPF softfail is the result produced when your SPF record ends with ~all and the connecting IP does not match any authorized mechanism. It means the sender is probably not authorized, but the policy does not make a hard denial. Mailbox providers typically treat softfail less aggressively than hard fail (-all), which is why many domains use ~all during rollout or when they are not yet confident that every legitimate sender is covered.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "If you intend to use softfail, ensure your SPF record ends with ~all. If you want stricter enforcement once your sender inventory is complete, replace ~all with -all.",
+
+      codeTitle: "Softfail SPF example",
+      codeLanguage: "DNS TXT",
+      code: `v=spf1 include:_spf.google.com ~all`,
+
+      afterCodeText:
+        "The ~all qualifier tells receivers that IPs not matching your mechanisms should be treated as probably unauthorized, but not as a definite denial.",
+
+      wrongExampleTitle: "Missing qualifier",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include:_spf.google.com`,
+      wrongExampleText:
+        "An SPF record without an all mechanism does not tell receivers what to do with unmatched IPs. Most parsers default to neutral, which weakens the policy.",
+
+      correctExampleTitle: "Softfail policy",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 include:_spf.google.com ~all`,
+      correctExampleText:
+        "This explicitly uses softfail so receivers get a clear policy signal while you retain flexibility during sender verification.",
+
+      whyTitle: "Why this matters",
+
+      whyText:
+        "Softfail exists because moving to hard fail too early can break legitimate mail if any sender was forgotten. Domains often start with ~all, validate that all real senders pass SPF, and then switch to -all when they are confident.",
+
+      problemTitle: "Why this is a problem",
+
+      problemPoints: [
+        "Softfail by itself is not a problem. It becomes one if you stay at ~all indefinitely when hard fail would be appropriate.",
+        "Some receivers may treat softfail and fail differently for filtering decisions.",
+        "Domains that never tighten beyond softfail may leave spoofing protection weaker than intended.",
+        "Teams sometimes misunderstand when to move from ~all to -all."
+      ],
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "Mailbox providers generally accept softfail as a valid policy signal. The main deliverability risk is staying at ~all when your record is incomplete, because that can allow spoofed mail to be treated less strictly. Once your sender map is complete, moving to -all can strengthen anti-spoofing without hurting legitimate traffic.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "The domain is in transition and uses ~all as a safer rollout stage.",
+        "Administrators have not yet verified every legitimate sending source.",
+        "A third-party system sends mail and was never added to SPF.",
+        "The team prefers softfail over hard fail for operational reasons."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We reviewed whether your SPF record ends with a valid all qualifier and whether the chosen qualifier (softfail, fail, or neutral) matches your stated policy intent.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "When should I use softfail instead of hard fail?",
+          answer:
+            "Use softfail when you are still verifying all legitimate senders or want a safer transition. Move to hard fail only when your record is complete and trusted."
+        },
+        {
+          question: "Does softfail hurt deliverability?",
+          answer:
+            "No. Softfail is a valid policy. The risk is staying at softfail too long when hard fail would better protect your domain from spoofing."
+        },
+        {
+          question: "How do I know when to switch from ~all to -all?",
+          answer:
+            "Once you have inventoried every legitimate sender, verified that approved mail passes SPF, and removed obsolete providers, you can safely move to -all."
+        }
+      ],
+
+      nextSteps: [
+        "Verify every legitimate sender is in your SPF record.",
+        "Check live headers to confirm approved mail passes SPF.",
+        "Keep ~all if you still need flexibility during rollout.",
+        "Switch to -all when your sender map is complete and stable.",
+        "Review related SPF policy topics in the SPF Hub."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-softfail-vs-fail",
+          label: "SPF softfail vs fail"
+        },
+        {
+          href: "/spf/spf-neutral-result-explained",
+          label: "SPF neutral result explained"
+        },
+        {
+          href: "/spf/spf-redirect-explained",
+          label: "SPF redirect explained"
+        }
+      ]
+    },
+
+    "spf/spf-missing-all-mechanism": {
+      title: "SPF Missing All Mechanism",
+
+      intro:
+        "An SPF record must end with an all mechanism that tells receivers what to do with IPs that do not match any other mechanism. The all mechanism is usually ~all (softfail) or -all (hard fail). If your record has no all mechanism, receivers do not get a clear policy for unmatched senders. Many parsers treat such records as neutral or invalid, which weakens SPF as an authentication and anti-spoofing signal.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Add ~all or -all to the end of your SPF record. Use ~all while you are still validating senders; use -all when your record is complete.",
+
+      codeTitle: "SPF with all mechanism",
+      codeLanguage: "DNS TXT",
+      code: `v=spf1 include:_spf.google.com ~all`,
+
+      afterCodeText:
+        "The all mechanism is required for a complete SPF policy. Without it, receivers cannot interpret how to treat unmatched IPs.",
+
+      wrongExampleTitle: "Record without all",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include:_spf.google.com include:sendgrid.net`,
+      wrongExampleText:
+        "This record authorizes Google and SendGrid but does not define what happens for other IPs. Receivers may default to neutral, which weakens the policy.",
+
+      correctExampleTitle: "Record with all",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 include:_spf.google.com include:sendgrid.net ~all`,
+      correctExampleText:
+        "Adding ~all defines the default for unmatched IPs and gives receivers a clear, complete policy.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "Incomplete SPF records often come from copy-pasting partial examples, adding only the include lines from provider documentation, or editing DNS without understanding that every SPF record must end with an all qualifier.",
+
+      problemTitle: "Why this is a problem",
+
+      problemPoints: [
+        "Receivers cannot apply a consistent default for unauthorized IPs.",
+        "SPF may evaluate as neutral instead of softfail or fail for spoofed traffic.",
+        "DMARC alignment can be harder to achieve when SPF results are ambiguous.",
+        "The policy looks incomplete and may reduce trust with mailbox providers."
+      ],
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "When SPF lacks an all mechanism, receivers treat the policy as incomplete. That can weaken anti-spoofing and make authentication less predictable. Adding ~all or -all gives a clear signal and improves the usefulness of SPF for deliverability.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "Provider documentation showed only the include line without the all qualifier.",
+        "The record was truncated during manual editing or migration.",
+        "Multiple people edited DNS and the final all was accidentally removed.",
+        "An old template or tutorial omitted the all mechanism."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We verified whether your SPF record ends with a valid all mechanism (~all, -all, ?all, or +all). Records without all are reported as incomplete.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "What is the difference between ~all and -all?",
+          answer:
+            "~all (softfail) means probably not authorized. -all (hard fail) means definitely not authorized. Use ~all during rollout; -all when your sender list is complete."
+        },
+        {
+          question: "Can I use ?all or +all instead?",
+          answer:
+            "?all is neutral and usually too weak. +all means all IPs pass, which defeats SPF. In practice, use ~all or -all."
+        },
+        {
+          question: "Where exactly does all go in the record?",
+          answer:
+            "The all mechanism must be the last mechanism in the record, after all include, ip4, ip6, and other mechanisms."
+        }
+      ],
+
+      nextSteps: [
+        "Open your current SPF record in DNS and check the end.",
+        "Add ~all if you are still validating senders.",
+        "Add -all if your record is complete and you want stricter enforcement.",
+        "Publish the updated record and allow propagation.",
+        "Re-run the check to confirm the all mechanism is present."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-softfail-explained",
+          label: "SPF softfail explained"
+        },
+        {
+          href: "/spf/spf-softfail-vs-fail",
+          label: "SPF softfail vs fail"
+        },
+        {
+          href: "/spf/spf-neutral-result-explained",
+          label: "SPF neutral result explained"
+        }
+      ]
+    },
+
+    "spf/spf-ip-not-authorized": {
+      title: "SPF IP Not Authorized",
+
+      intro:
+        "SPF IP not authorized means the server that sent your email is not listed in your SPF record. SPF checks the connecting IP address against the mechanisms in your policy. If the IP does not match any include, ip4, ip6, mx, or a mechanism, SPF fails. This often happens when a new sending service was added without updating SPF, when a relay or gateway changed its outbound IPs, or when the wrong IP range was published in DNS.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Identify the actual sending IP from your message headers, then add that IP or the correct provider include to your SPF record.",
+
+      codeTitle: "SPF authorizing an IP range",
+      codeLanguage: "DNS TXT",
+      code: `v=spf1 ip4:198.51.100.0/24 include:_spf.google.com ~all`,
+
+      afterCodeText:
+        "Use the exact IP or range published by your provider. Do not guess. Check your provider's documentation or use a header analyzer to get the real connecting IP.",
+
+      wrongExampleTitle: "Missing sender IP",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include:_spf.google.com -all`,
+      wrongExampleText:
+        "If your mail goes through a relay or gateway that uses different IPs than Google's include, those IPs are not authorized and SPF will fail.",
+
+      correctExampleTitle: "Including relay IPs",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 ip4:198.51.100.10 include:_spf.google.com ~all`,
+      correctExampleText:
+        "Adding the actual sending IP or the provider include that covers it ensures SPF passes for your legitimate traffic.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "SPF evaluates the connecting IP, not the From address. When you add a new ESP, change relays, or move to a different outbound path, the IP that connects to the receiving server may no longer be covered by your existing SPF record.",
+
+      problemTitle: "Why this is a problem",
+
+      problemPoints: [
+        "Legitimate mail fails SPF even though it comes from your approved systems.",
+        "DMARC may fail when SPF was expected to provide alignment.",
+        "Receivers may treat the message as unauthenticated or spoofed.",
+        "Troubleshooting is confusing if you assume your SPF record covers all senders."
+      ],
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "When SPF fails because the IP is not authorized, mailbox providers see authentication failure. That can lead to spam placement, rejection, or inconsistent filtering. Fixing the SPF record to include the real sending IPs restores authentication and improves deliverability.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "A new email provider or relay was added without updating SPF.",
+        "The provider changed its outbound IP ranges and the include or IP list was not updated.",
+        "Mail goes through a secure gateway or third-party relay with different IPs.",
+        "The wrong IP range was copied from documentation or a generic example."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We compared the connecting IP from your mail flow against the mechanisms in your SPF record. If the IP does not match any authorized mechanism, we report SPF IP not authorized.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "How do I find the IP that is failing SPF?",
+          answer:
+            "Look at the Received headers or use a header analyzer. The IP in the final receiving server's Received line is the one SPF checks."
+        },
+        {
+          question: "Should I add the IP directly or use an include?",
+          answer:
+            "Prefer an include when the provider maintains the IP list. Add ip4 or ip6 only when you have a fixed, provider-published range and no include is available."
+        },
+        {
+          question: "Can multiple IPs cause SPF to fail?",
+          answer:
+            "Yes. If your mail can originate from several IPs (e.g. load-balanced relays), each must be covered by your SPF record."
+        }
+      ],
+
+      nextSteps: [
+        "Extract the actual connecting IP from a recent message's headers.",
+        "Check whether your provider has an include that covers that IP.",
+        "Add the include or the correct ip4/ip6 mechanism to your SPF record.",
+        "Remove obsolete IP ranges that no longer send mail.",
+        "Re-send a test message and verify SPF passes in the headers."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-ipv6-misconfiguration",
+          label: "SPF IPv6 misconfiguration"
+        },
+        {
+          href: "/spf/spf-include-flattening",
+          label: "SPF include flattening"
+        },
+        {
+          href: "/spf/spf-permerror-too-many-dns-lookups",
+          label: "SPF permerror: too many DNS lookups"
+        }
+      ]
+    },
+
+    "spf/spf-record-too-long": {
+      title: "SPF Record Too Long",
+
+      intro:
+        "DNS TXT records have practical length limits. While the theoretical maximum is around 255 characters per string, many DNS providers and protocols use 255-character chunks. SPF records that exceed these limits can be truncated, split incorrectly, or rejected. When that happens, receivers may not see your full policy, and SPF evaluation can fail or return unexpected results.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Shorten your SPF record by removing obsolete providers, flattening includes to IP ranges where appropriate, and consolidating redundant mechanisms.",
+
+      codeTitle: "Shorter SPF record",
+      codeLanguage: "DNS TXT",
+      code: `v=spf1 include:_spf.google.com include:sendgrid.net ~all`,
+
+      afterCodeText:
+        "Keeping the record under 255 characters per TXT string avoids truncation. Use flattening or provider consolidation when you have many includes.",
+
+      wrongExampleTitle: "Overlong SPF record",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include:_spf.google.com include:sendgrid.net include:mailgun.org include:amazonses.com include:spf.protection.outlook.com include:_spf1.constantcontact.com include:spf.mtasv.net ~all`,
+      wrongExampleText:
+        "This record may exceed safe TXT length and can be truncated by some DNS systems. Long records also increase the risk of exceeding the SPF lookup limit.",
+
+      correctExampleTitle: "Consolidated record",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 include:_spf.google.com include:sendgrid.net ~all`,
+      correctExampleText:
+        "A shorter record with only active providers stays within DNS limits and is easier to maintain.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "Domains accumulate include mechanisms over time as they add ESPs, marketing tools, and relays. Each new provider adds more characters. Eventually the record grows past DNS chunk limits or becomes hard to manage.",
+
+      problemTitle: "Why this is a problem",
+
+      problemPoints: [
+        "Truncated records may omit critical mechanisms, causing SPF to fail for legitimate senders.",
+        "Some DNS providers reject or mishandle very long TXT records.",
+        "Long records often correlate with high lookup counts, increasing permerror risk.",
+        "Maintenance becomes harder as the record grows."
+      ],
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "When an SPF record is truncated or malformed due to length, receivers may see an incomplete or invalid policy. That can break authentication and hurt deliverability. Shortening the record and keeping it within DNS limits restores reliable SPF evaluation.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "Several ESPs and marketing platforms were added over time.",
+        "Legacy providers remained in SPF after they stopped sending.",
+        "IP ranges were added manually instead of using shorter includes.",
+        "No one reviewed total record length after adding new services."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We measured the length of your SPF record and whether it fits within typical DNS TXT limits. Records that exceed safe length or are split across too many strings may cause parsing issues.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "What is the maximum SPF record length?",
+          answer:
+            "DNS TXT strings are typically limited to 255 characters per string. SPF can use multiple strings, but long records increase truncation and lookup risks."
+        },
+        {
+          question: "Should I flatten includes to shorten the record?",
+          answer:
+            "Flattening can shorten the visible record, but flattened IPs can become stale. Prefer removing obsolete providers first; flatten only when necessary."
+        },
+        {
+          question: "Can I split SPF across multiple TXT records?",
+          answer:
+            "No. SPF allows one logical record that may be split into multiple DNS strings, but you cannot have multiple SPF policies. Merging into one record is required."
+        }
+      ],
+
+      nextSteps: [
+        "List every provider that actually sends mail for your domain.",
+        "Remove obsolete includes and IP mechanisms.",
+        "Consider flattening only if cleanup is not enough.",
+        "Keep the record under 255 characters per string where possible.",
+        "Re-check SPF after changes to confirm the record is valid and complete."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-permerror-too-many-dns-lookups",
+          label: "SPF permerror: too many DNS lookups"
+        },
+        {
+          href: "/spf/spf-include-flattening",
+          label: "SPF include flattening"
+        },
+        {
+          href: "/spf/multiple-spf-records-found",
+          label: "Multiple SPF records found"
+        }
+      ]
     }
   };

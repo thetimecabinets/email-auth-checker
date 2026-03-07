@@ -1,3 +1,21 @@
 ---
+description: "Master SEO Strategy - Anti-Thin Content & Authority"
+globs: "app/**/*.{ts,tsx}"
 alwaysApply: true
 ---
+
+# 2026 SEO Master Rules (Strict Compliance)
+
+## 1. Anti-Thin Content Rule
+- **Minimum Word Count:** Every generated page MUST contain at least 300 words of unique, non-repetitive, high-value technical text.
+- **No Generic Slop:** Do not use identical "how-to" templates. The AI must vary the technical advice based on the specific Provider (Google, Outlook, etc.) and Registrar (GoDaddy, Cloudflare, etc.).
+- **Functional Value:** Every page must include a "One-Minute Fix" code block or a DNS validator component to ensure it is a "Utility" and not just a "Gateway" page.
+
+## 2. Gateway/Doorway Penalty Avoidance
+- **Natural Language H1s:** NO keyword fragments (e.g., "SPF Gmail Fix"). Use: "How to Resolve SPF Record Alignment Issues for Gmail on Cloudflare (2026 Guide)".
+- **Browsable Hierarchy:** Every page must be part of a hub-and-spoke system. It must link back to its Topic Hub (SPF, DKIM, or DMARC) and 2-3 "Related Fixes."
+- **Internal Linking:** Zero "Island Pages." Every page must be accessible via the main site navigation or a hub page.
+
+## 3. Authority & Trust (Exposure Ninja Style)
+- **First-Party Experience:** Use expert language: "Our technical audit shows..." or "In 2026, Google and Yahoo's new sender requirements state...".
+- **Psychographic Targeting:** Address the "Panicked Founder" (clear solution at the top) and the "IT Admin" (deep technical details below) on every page.
