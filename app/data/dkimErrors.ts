@@ -923,5 +923,212 @@ export const dkimErrors = {
           label: "DKIM alignment failed"
         }
       ]
+    },
+
+    "dkim/dkim-record-example": {
+      title: "DKIM Record Examples",
+
+      intro:
+        "DKIM records are TXT records published under a selector subdomain, for example selector1._domainkey.example.com. The value contains the version, key type, and public key. This page shows realistic examples for Google Workspace, Microsoft 365, and custom selectors, and explains how to read each field. Use these as reference when validating or troubleshooting DKIM.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Publish the exact DKIM TXT record your provider supplies. Ensure the selector hostname matches what the sender uses, and that the p= value contains the full public key without truncation.",
+
+      codeTitle: "Google Workspace DKIM record",
+      codeLanguage: "DNS TXT",
+      code: `google._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA..."`,
+
+      afterCodeText:
+        "The hostname is selector._domainkey.yourdomain. The value starts with v=DKIM1, includes k=rsa (or ed25519), and p= holds the base64 public key. Replace the ellipsis with the full key from your provider.",
+
+      wrongExampleTitle: "Truncated or partial record",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjAN"`,
+      wrongExampleText:
+        "The p= value is truncated. DKIM verification fails when the public key is incomplete. The key must be the full base64 string from the provider.",
+
+      correctExampleTitle: "Complete DKIM record",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA..."`,
+      correctExampleText:
+        "The full public key is present. Receivers can verify signatures that use this selector. Copy the entire p= value from your provider without shortening it.",
+
+      whyTitle: "Why examples help",
+
+      whyText:
+        "Teams often truncate the public key during copy-paste, publish under the wrong hostname, or confuse the selector. Working examples show the correct structure and reduce setup errors.",
+
+      problemTitle: "Why incorrect record structure causes problems",
+
+      problemPoints: [
+        "Truncated keys cause verification failures.",
+        "Wrong selector hostname means receivers cannot find the key.",
+        "Missing k= or p= fields make the record invalid.",
+        "Publishing under the wrong domain breaks alignment."
+      ],
+
+      deliverabilityTitle: "How correct DKIM records affect deliverability",
+
+      deliverabilityText:
+        "Valid DKIM records allow receivers to verify signatures. That strengthens authentication, supports DMARC alignment, and improves trust. Malformed or truncated records break verification and weaken deliverability.",
+
+      causesTitle: "Common record mistakes",
+
+      causes: [
+        "The public key was truncated when pasting into DNS.",
+        "The selector hostname did not match the sender's selector.",
+        "The record was published at the wrong domain or subdomain.",
+        "An old record was left in place after a key rotation."
+      ],
+
+      checkedTitle: "What we checked",
+
+      checkedText:
+        "We validated DKIM record structure: version, key type, and completeness of the public key. We also check that the selector hostname matches common patterns.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "What does k=rsa mean?",
+          answer:
+            "k=rsa indicates the key algorithm. RSA is common; some providers use k=ed25519. The receiver uses this to verify the signature."
+        },
+        {
+          question: "Can the p= value be split across multiple strings?",
+          answer:
+            "Yes. DNS TXT allows multiple strings that are concatenated. Ensure the full key is present when combined; truncation causes failure."
+        },
+        {
+          question: "How long should the public key be?",
+          answer:
+            "RSA keys are typically several hundred characters in base64. Ed25519 keys are shorter. Use the full key from your provider."
+        }
+      ],
+
+      nextSteps: [
+        "Obtain the full DKIM record from your provider.",
+        "Publish it at the exact selector._domainkey hostname.",
+        "Ensure the p= value is complete and not truncated.",
+        "Send a test email and verify DKIM passes in headers.",
+        "Re-check after key rotation or provider changes."
+      ],
+
+      hub: {
+        href: "/dkim",
+        label: "DKIM Hub"
+      },
+
+      related: [
+        { href: "/dkim/no-dkim-record-found", label: "No DKIM record found" },
+        { href: "/dkim/dkim-signature-explained", label: "DKIM signature explained" },
+        { href: "/dkim/dkim-selector-explained", label: "DKIM selector explained" }
+      ]
+    },
+
+    "dkim/dkim-signature-explained": {
+      title: "DKIM Signature Explained",
+
+      intro:
+        "The DKIM-Signature header is added by the sending server and contains the signature, the selector, the domain, and hashes of the signed headers and body. Receivers use this to fetch the public key from DNS and verify that the message was not modified. Understanding the header fields helps you debug verification failures and alignment issues.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Ensure the domain (d=) and selector (s=) in the DKIM-Signature header match the DNS record location. If the body hash fails, check for modifications (gateways, footers, forwarding) that occur after signing.",
+
+      codeTitle: "DKIM-Signature header fields",
+      codeLanguage: "Plain text",
+      code: `v=1; a=rsa-sha256; d=example.com; s=selector1;
+  h=From:To:Subject:Date; bh=base64hash; b=base64signature`,
+
+      afterCodeText:
+        "d= is the signing domain, s= is the selector. The receiver fetches the public key from s._domainkey.d. bh= is the body hash; b= is the signature over the listed headers.",
+
+      wrongExampleTitle: "Mismatched domain or selector",
+      wrongExampleLanguage: "Plain text",
+      wrongExampleCode: `d=mail.example.com; s=selector1
+  DNS: selector1._domainkey.example.com`,
+      wrongExampleText:
+        "The header says d=mail.example.com but the DNS record is under example.com. Alignment fails when the From domain is example.com and d= does not match.",
+
+      correctExampleTitle: "Aligned signature",
+      correctExampleLanguage: "Plain text",
+      correctExampleCode: `d=example.com; s=selector1
+  DNS: selector1._domainkey.example.com`,
+      correctExampleText:
+        "The signing domain matches the DNS location. For DMARC alignment, d= should match or be a subdomain of the From domain.",
+
+      whyTitle: "Why the signature matters",
+
+      whyText:
+        "The signature proves the message was not altered in transit. If the body or signed headers change after signing, the verification fails. Gateways, mailing lists, and forwarded mail often cause body hash mismatches.",
+
+      problemTitle: "Why signature verification fails",
+
+      problemPoints: [
+        "Body hash mismatch when content is modified after signing.",
+        "Selector or domain mismatch between header and DNS.",
+        "Expired or missing public key in DNS.",
+        "Wrong headers included in the signed set."
+      ],
+
+      deliverabilityTitle: "How signatures affect deliverability",
+
+      deliverabilityText:
+        "Passing DKIM verification is a strong trust signal. When signatures fail, receivers treat the message with less confidence. Fixing alignment and body hash issues restores full DKIM value for deliverability.",
+
+      causesTitle: "Common verification failures",
+
+      causes: [
+        "A gateway or relay modified the message body.",
+        "Footer insertion or tracking pixels changed the body.",
+        "The selector in the header does not match DNS.",
+        "The signing domain (d=) does not align with From."
+      ],
+
+      checkedTitle: "What we checked",
+
+      checkedText:
+        "We inspect DKIM-Signature headers when available and compare d= and s= to DNS. We also flag common causes of body hash mismatch.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "What is the body hash (bh=)?",
+          answer:
+            "bh= is a hash of the message body. If the body changes after signing, the hash no longer matches and verification fails."
+        },
+        {
+          question: "What does h= specify?",
+          answer:
+            "h= lists the headers that were signed. The receiver recomputes the signature over those headers to verify integrity."
+        },
+        {
+          question: "Why does forwarding break DKIM?",
+          answer:
+            "Forwarding often adds headers or modifies the body. The original signature no longer matches, so verification fails."
+        }
+      ],
+
+      nextSteps: [
+        "Inspect the DKIM-Signature header in a test message.",
+        "Verify d= and s= match your DNS record location.",
+        "Check for modifications (gateways, footers) that affect the body.",
+        "Ensure signing happens after all content changes.",
+        "Re-test with a clean delivery path."
+      ],
+
+      hub: {
+        href: "/dkim",
+        label: "DKIM Hub"
+      },
+
+      related: [
+        { href: "/dkim/dkim-body-hash-mismatch", label: "DKIM body hash mismatch" },
+        { href: "/dkim/dkim-record-example", label: "DKIM record examples" },
+        { href: "/dkim/dkim-alignment-failed", label: "DKIM alignment failed" }
+      ]
     }
   };

@@ -1306,5 +1306,323 @@ export const spfErrors = {
           label: "Multiple SPF records found"
         }
       ]
+    },
+
+    "spf/spf-record-example": {
+      title: "SPF Record Examples",
+
+      intro:
+        "This page provides copy-paste SPF record examples for the most common sender setups. Each example is ready to adapt: replace the domain in include mechanisms with your provider's exact hostname, and ensure you publish only one SPF record for your domain. These examples cover single-provider and hybrid configurations for Google Workspace, Microsoft 365, SendGrid, and similar services.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Choose the example that matches your sending setup, adapt the include mechanisms if needed, and publish it as a single TXT record at the root of your domain.",
+
+      codeTitle: "Google Workspace only",
+      codeLanguage: "DNS TXT",
+      code: `v=spf1 include:_spf.google.com ~all`,
+
+      afterCodeText:
+        "This authorizes Google's mail servers to send for your domain. For Microsoft 365 only, use include:spf.protection.outlook.com. For both, merge the includes into one record.",
+
+      wrongExampleTitle: "Generic or incomplete example",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include:example.com ~all`,
+      wrongExampleText:
+        "This is wrong because example.com is a placeholder. The include hostname must be the exact value published by your provider, such as _spf.google.com or spf.protection.outlook.com.",
+
+      correctExampleTitle: "Google + SendGrid hybrid",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 include:_spf.google.com include:sendgrid.net ~all`,
+      correctExampleText:
+        "This pattern works when both Google Workspace and SendGrid send mail for your domain. Add one include per provider and end with ~all or -all.",
+
+      whyTitle: "Why examples matter",
+
+      whyText:
+        "New teams often copy the wrong include hostname, publish multiple SPF records, or omit the final qualifier. Working examples reduce mistakes and show the correct structure for single-provider and hybrid setups.",
+
+      problemTitle: "Why getting the example wrong is a problem",
+
+      problemPoints: [
+        "Wrong include hostnames cause SPF to fail for legitimate senders.",
+        "Multiple records lead to permerror instead of pass or fail.",
+        "Missing or wrong qualifiers leave policy ambiguous for receivers.",
+        "Using a generic template without adapting it breaks authentication."
+      ],
+
+      deliverabilityTitle: "How correct examples help deliverability",
+
+      deliverabilityText:
+        "Receivers expect SPF to authorise the actual sending IPs. When your record matches a proven pattern and uses the correct include hostnames, authentication passes consistently and DMARC alignment becomes easier to achieve.",
+
+      causesTitle: "Common mistakes with examples",
+
+      causes: [
+        "Copying an example without replacing placeholder domains.",
+        "Adding a second SPF record instead of merging includes.",
+        "Using an outdated include that the provider no longer supports.",
+        "Ending with ?all or omitting the all mechanism entirely."
+      ],
+
+      checkedTitle: "What we checked",
+
+      checkedText:
+        "We validated that these examples use valid SPF syntax and provider hostnames that are currently in use. Always confirm the exact include from your provider's documentation before publishing.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Can I use these examples for any domain?",
+          answer:
+            "Yes, but replace any placeholder domain with your actual domain. The include hostnames (e.g. _spf.google.com) stay the same across domains."
+        },
+        {
+          question: "What if I use more than two providers?",
+          answer:
+            "Add one include per provider, but stay under the 10-DNS-lookup limit. If you exceed it, consider flattening or consolidating providers."
+        },
+        {
+          question: "Should I use ~all or -all?",
+          answer:
+            "Use ~all while validating all senders; -all when your record is complete and you want strict enforcement."
+        }
+      ],
+
+      nextSteps: [
+        "List every service that sends email for your domain.",
+        "Choose the matching example or combine includes from several.",
+        "Publish one SPF TXT record at the root of your domain.",
+        "Run a live check to confirm the record is valid.",
+        "Re-check after adding or removing providers."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        { href: "/spf/no-spf-record-found", label: "No SPF record found" },
+        { href: "/spf/spf-record-syntax-explained", label: "SPF record syntax explained" },
+        { href: "/spf/spf-record-generator", label: "How to build an SPF record" }
+      ]
+    },
+
+    "spf/spf-record-syntax-explained": {
+      title: "SPF Record Syntax Explained",
+
+      intro:
+        "SPF records follow a strict syntax: a version prefix, a sequence of mechanisms, and a final all qualifier. Each mechanism (include, ip4, ip6, mx, a, redirect) has a specific format and meaning. Understanding the structure helps you read existing records, debug failures, and build correct policies from scratch.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Ensure your SPF record starts with v=spf1, uses mechanisms in the correct format (e.g. include:domain.com with a colon and no extra spaces), and ends with an all qualifier such as ~all or -all.",
+
+      codeTitle: "Syntax breakdown",
+      codeLanguage: "Plain text",
+      code: `v=spf1          → version (required)
+  include:domain  → mechanism:value (colon, no space)
+  ip4:192.0.2.0/24 → IP range
+  ~all            → qualifier + all (softfail)`,
+
+      afterCodeText:
+        "Mechanisms are evaluated left to right. The first match determines the result. The all mechanism is always last and defines the default for unmatched IPs.",
+
+      wrongExampleTitle: "Malformed syntax",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include _spf.google.com -all`,
+      wrongExampleText:
+        "The include mechanism requires a colon before the domain. A space instead of a colon causes a syntax error and makes the record unparseable.",
+
+      correctExampleTitle: "Valid syntax",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 include:_spf.google.com -all`,
+      correctExampleText:
+        "Colon after include, no extra spaces, and -all at the end. Receivers can parse this and evaluate it correctly.",
+
+      whyTitle: "Why syntax matters",
+
+      whyText:
+        "SPF parsers are strict. A missing colon, extra space, or typo in a mechanism name invalidates the entire record. Receivers may treat it as a permanent error rather than attempting a fallback.",
+
+      problemTitle: "Why syntax errors are a problem",
+
+      problemPoints: [
+        "Receivers cannot evaluate the policy and may return permerror.",
+        "Legitimate mail loses SPF even when the intent was correct.",
+        "DMARC alignment can fail when SPF cannot produce a result.",
+        "Debugging becomes harder when the record looks present but is invalid."
+      ],
+
+      deliverabilityTitle: "How syntax affects deliverability",
+
+      deliverabilityText:
+        "Invalid syntax prevents SPF from working at all. Mailbox providers see a broken record and may downgrade trust. Fixing syntax restores authentication and supports better deliverability.",
+
+      causesTitle: "Common syntax mistakes",
+
+      causes: [
+        "Missing colon after include, redirect, or other mechanisms.",
+        "Extra spaces inside the record where none are allowed.",
+        "Typo in mechanism names (e.g. inclide instead of include).",
+        "Malformed qualifier (e.g. - all with a space)."
+      ],
+
+      checkedTitle: "What we checked",
+
+      checkedText:
+        "We inspect SPF records for valid syntax: correct mechanism format, valid qualifiers, and proper structure. Records that fail parsing are reported as syntax errors.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "What are SPF qualifiers?",
+          answer:
+            "Qualifiers (+pass, -fail, ~softfail, ?neutral) modify the result of a mechanism. The all mechanism typically uses ~ or - to define the default for unmatched IPs."
+        },
+        {
+          question: "What is the order of mechanisms?",
+          answer:
+            "Mechanisms are evaluated left to right. The first match wins. The all mechanism is always last and applies when no earlier mechanism matches."
+        },
+        {
+          question: "Can I use multiple includes?",
+          answer:
+            "Yes. List them sequentially: include:_spf.google.com include:sendgrid.net. Each triggers a DNS lookup, so stay under the 10-lookup limit."
+        }
+      ],
+
+      nextSteps: [
+        "Read your current SPF record character by character.",
+        "Verify each mechanism has the correct format (mechanism:value).",
+        "Ensure the record ends with ~all, -all, or ?all.",
+        "Fix any typos or malformed syntax.",
+        "Re-run the check to confirm the record parses correctly."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        { href: "/spf/spf-record-syntax-error", label: "SPF record syntax error" },
+        { href: "/spf/spf-record-example", label: "SPF record examples" },
+        { href: "/spf/spf-missing-all-mechanism", label: "SPF missing all mechanism" }
+      ]
+    },
+
+    "spf/spf-record-generator": {
+      title: "How to Build an SPF Record",
+
+      intro:
+        "Building an SPF record from scratch involves identifying every sender, adding the right mechanisms in the correct order, and staying under the DNS lookup limit. This guide walks through the steps: start with v=spf1, add one include or ip4 per sending service, avoid unnecessary mx or a mechanisms, and end with a clear qualifier. Rushing or copying without understanding leads to permerrors, duplicates, or missing senders.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Start with v=spf1, add include: or ip4: for each sending provider, keep the total lookup count under ten, and end with ~all or -all.",
+
+      codeTitle: "Step-by-step build",
+      codeLanguage: "DNS TXT",
+      code: `# 1. Version
+  v=spf1
+
+  # 2. Add providers (one include each)
+  include:_spf.google.com include:sendgrid.net
+
+  # 3. End with qualifier
+  ~all
+
+  # Result: v=spf1 include:_spf.google.com include:sendgrid.net ~all`,
+
+      afterCodeText:
+        "Do not add mx or a unless you specifically need them. Prefer provider includes over manual IPs when possible, and always verify the include hostname from the provider's docs.",
+
+      wrongExampleTitle: "Building without planning",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=spf1 include:_spf.google.com include:sendgrid.net include:mailgun.org include:amazonses.com mx a ~all`,
+      wrongExampleText:
+        "Adding mx and a on top of many includes can push the lookup count over ten. Build incrementally and count lookups before publishing.",
+
+      correctExampleTitle: "Planned build",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=spf1 include:_spf.google.com include:sendgrid.net ~all`,
+      correctExampleText:
+        "Only the services that actually send mail. No unnecessary mx or a. Stays under the lookup limit and remains maintainable.",
+
+      whyTitle: "Why a structured build matters",
+
+      whyText:
+        "Teams often add mechanisms one by one without checking the total lookup count or removing obsolete senders. A deliberate build process reduces permerrors and keeps the record maintainable.",
+
+      problemTitle: "Why ad hoc building causes problems",
+
+      problemPoints: [
+        "Accumulating includes can exceed the 10-lookup limit.",
+        "Legacy senders left in the record create confusion.",
+        "Redundant mx or a mechanisms add lookups without clear benefit.",
+        "No single source of truth for which senders are authorised."
+      ],
+
+      deliverabilityTitle: "How a clean build helps deliverability",
+
+      deliverabilityText:
+        "A lean, correct SPF record passes evaluation reliably. Overbuilt records risk permerror; underbuilt records fail for legitimate senders. A structured build balances both.",
+
+      causesTitle: "Common build mistakes",
+
+      causes: [
+        "Adding mechanisms without tracking lookup count.",
+        "Keeping old provider includes after switching services.",
+        "Using mx or a when include would suffice.",
+        "Forgetting to add a new sender when onboarding a tool."
+      ],
+
+      checkedTitle: "What we checked",
+
+      checkedText:
+        "We evaluate SPF records for structure, lookup depth, and completeness. We flag records that are likely to exceed limits or that omit common senders.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "How many includes can I add?",
+          answer:
+            "The limit is 10 DNS lookups total, not 10 includes. Each include can trigger multiple lookups. Count carefully when combining several providers."
+        },
+        {
+          question: "Should I use ip4 or include?",
+          answer:
+            "Prefer include when the provider publishes one. Use ip4 only when you have a fixed, provider-documented range and no include is available."
+        },
+        {
+          question: "When do I need mx or a?",
+          answer:
+            "Only when your mail actually comes from your domain's MX or A records. Many hosted setups use include instead; mx and a add lookups."
+        }
+      ],
+
+      nextSteps: [
+        "List every service that sends mail for your domain.",
+        "Get the exact include hostname from each provider.",
+        "Build the record: v=spf1 plus includes plus ~all or -all.",
+        "Verify the lookup count stays under ten.",
+        "Publish and re-check after propagation."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        { href: "/spf/spf-record-example", label: "SPF record examples" },
+        { href: "/spf/spf-permerror-too-many-dns-lookups", label: "SPF permerror: too many DNS lookups" },
+        { href: "/spf/spf-include-flattening", label: "SPF include flattening" }
+      ]
     }
   };

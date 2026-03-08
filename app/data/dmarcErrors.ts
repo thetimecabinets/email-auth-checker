@@ -982,5 +982,215 @@ export const dmarcErrors = {
           label: "DMARC RUA / RUF not working"
         }
       ]
+    },
+
+    "dmarc/dmarc-record-example": {
+      title: "DMARC Record Examples",
+
+      intro:
+        "DMARC records are TXT records published at _dmarc.yourdomain.com. They define the policy (p=none, quarantine, or reject), reporting addresses (rua, ruf), and optional tags such as pct and fo. This page shows correct examples for monitoring, gradual enforcement, and full reject, with realistic rua and ruf values.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Start with p=none and a valid rua address. Once you have visibility, move to pct=10 for sampling, then increase enforcement. Use the examples below as templates and replace the mailto address with your own.",
+
+      codeTitle: "Monitoring policy (safe start)",
+      codeLanguage: "DNS TXT",
+      code: `v=DMARC1; p=none; rua=mailto:dmarc@example.com; ruf=mailto:dmarc@example.com; fo=1`,
+
+      afterCodeText:
+        "p=none collects data without blocking. rua receives aggregate reports; ruf receives forensic reports when fo=1 triggers them. Replace dmarc@example.com with your reporting mailbox.",
+
+      wrongExampleTitle: "Invalid or incomplete record",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `v=DMARC1; p=reject`,
+      wrongExampleText:
+        "Jumping straight to p=reject without rua means you get no visibility and may block legitimate mail before you finish auditing senders. Add rua and start with p=none.",
+
+      correctExampleTitle: "Enforcement with sampling",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `v=DMARC1; p=quarantine; pct=25; rua=mailto:dmarc@example.com`,
+      correctExampleText:
+        "pct=25 applies quarantine to 25% of failing mail first. Use this during rollout to reduce risk. Increase pct or move to p=reject once you are confident.",
+
+      whyTitle: "Why examples help",
+
+      whyText:
+        "Teams often omit rua, use invalid mailto syntax, or move to reject too quickly. Working examples show the right tag order and values for each rollout stage.",
+
+      problemTitle: "Why incorrect examples cause problems",
+
+      problemPoints: [
+        "Missing rua means no aggregate reports for visibility.",
+        "Invalid mailto syntax can break report delivery.",
+        "p=reject without prior monitoring risks blocking real mail.",
+        "Wrong tag order or typos can invalidate the record."
+      ],
+
+      deliverabilityTitle: "How correct DMARC records affect deliverability",
+
+      deliverabilityText:
+        "A staged rollout with valid reporting lets you fix alignment issues before enforcement blocks mail. Correct tag syntax ensures reports arrive and you can make informed policy decisions.",
+
+      causesTitle: "Common record mistakes",
+
+      causes: [
+        "Copying p=reject before auditing all senders.",
+        "Omitting rua or using an invalid mailto address.",
+        "Typos in tag names (e.g. ruo instead of rua).",
+        "Using pct=0 or omitting pct when sampling is intended."
+      ],
+
+      checkedTitle: "What we checked",
+
+      checkedText:
+        "We validate DMARC record structure: required tags, valid mailto URIs, and sensible policy values. We flag records that may block mail prematurely.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "What is the difference between rua and ruf?",
+          answer:
+            "rua receives aggregate reports (daily summaries). ruf receives forensic reports (per-message) when fo=1 triggers them. Both use mailto: addresses."
+        },
+        {
+          question: "Can I use multiple rua addresses?",
+          answer:
+            "Yes. Separate them with commas: rua=mailto:a@example.com,mailto:b@example.com. Each recipient gets a copy of the aggregate report."
+        },
+        {
+          question: "When should I use pct?",
+          answer:
+            "Use pct during rollout to apply quarantine or reject to a percentage of failing mail first. Increase gradually to 100."
+        }
+      ],
+
+      nextSteps: [
+        "Publish a p=none record with rua first.",
+        "Review aggregate reports for a few weeks.",
+        "Add pct when moving to quarantine or reject.",
+        "Replace the mailto address with your real mailbox.",
+        "Re-check after policy changes."
+      ],
+
+      hub: {
+        href: "/dmarc",
+        label: "DMARC Hub"
+      },
+
+      related: [
+        { href: "/dmarc/no-dmarc-record-found", label: "No DMARC record found" },
+        { href: "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject", label: "DMARC policy levels" },
+        { href: "/dmarc/dmarc-aggregate-reports-explained", label: "DMARC aggregate reports explained" }
+      ]
+    },
+
+    "dmarc/dmarc-aggregate-reports-explained": {
+      title: "DMARC Aggregate Reports Explained",
+
+      intro:
+        "DMARC aggregate reports (rua) are XML documents sent by receiving servers to the address you specify in your DMARC record. They summarise authentication results: how many messages passed or failed SPF, DKIM, and alignment. Understanding the report structure and fields helps you use the data to fix senders, tune policy, and roll out enforcement safely.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Ensure your DMARC record has a valid rua=mailto: address. Reports arrive as compressed XML. Use a parser or dashboard to interpret them, and focus on failed results to identify misconfigured senders before tightening policy.",
+
+      codeTitle: "Report structure overview",
+      codeLanguage: "Plain text",
+      code: `feedback
+  report_metadata (reporter, date range)
+  policy_published (domain, p=, sp=)
+  record (source_ip, count, disposition, dkim/spf results)`,
+
+      afterCodeText:
+        "Each record describes a source IP, how many messages, and whether they passed or failed SPF and DKIM. Use this to find senders that need alignment fixes.",
+
+      wrongExampleTitle: "Ignoring report data",
+      wrongExampleLanguage: "Plain text",
+      wrongExampleCode: `Moving to p=reject without reviewing rua reports`,
+      wrongExampleText:
+        "If you never review aggregate reports, you do not know which senders are failing. Tightening policy blindly can block legitimate traffic from undiscovered systems.",
+
+      correctExampleTitle: "Using reports for rollout",
+      correctExampleLanguage: "Plain text",
+      correctExampleCode: `1. Collect reports on p=none
+  2. Identify failing sources
+  3. Fix SPF/DKIM for those senders
+  4. Move to pct=10, then 100`,
+      correctExampleText:
+        "Reports tell you which IPs and domains fail. Fix them first, then increase enforcement. This reduces the risk of blocking real mail.",
+
+      whyTitle: "Why aggregate reports matter",
+
+      whyText:
+        "Reports are the only way to see authentication results across receivers. Without them, you are guessing which senders pass or fail. They are essential for safe DMARC rollout and ongoing monitoring.",
+
+      problemTitle: "Why missing or unused reports cause problems",
+
+      problemPoints: [
+        "No rua means no visibility into authentication failures.",
+        "Ignoring reports leads to blind policy changes.",
+        "Invalid mailto address means reports never arrive.",
+        "Moving to reject without report data risks blocking legitimate mail."
+      ],
+
+      deliverabilityTitle: "How reports support deliverability",
+
+      deliverabilityText:
+        "Reports help you fix alignment before enforcement bites. When you know which senders fail, you can correct SPF and DKIM, then tighten policy with confidence. That improves both security and deliverability.",
+
+      causesTitle: "Common report issues",
+
+      causes: [
+        "rua was omitted from the DMARC record.",
+        "The mailto address was invalid or unreachable.",
+        "Reports were sent but filtered as spam.",
+        "No parser or process to review report data."
+      ],
+
+      checkedTitle: "What we checked",
+
+      checkedText:
+        "We verify that the DMARC record includes a valid rua tag. We do not parse or store report content; we only confirm the reporting configuration.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "How often are aggregate reports sent?",
+          answer:
+            "Receivers decide. Most send daily. The report_metadata includes the date range. Reports may be batched or delayed."
+        },
+        {
+          question: "What format are the reports?",
+          answer:
+            "XML, often gzip-compressed. Many tools parse them. Look for record elements with policy_evaluated (disposition, dkim, spf results)."
+        },
+        {
+          question: "Do all receivers send reports?",
+          answer:
+            "No. Only receivers that support DMARC reporting will send. Major providers like Gmail and Microsoft do; some smaller ones do not."
+        }
+      ],
+
+      nextSteps: [
+        "Add rua=mailto: to your DMARC record.",
+        "Ensure the mailbox can receive compressed XML.",
+        "Use a parser or dashboard to interpret reports.",
+        "Identify failing sources and fix SPF/DKIM.",
+        "Use report data to guide policy rollout."
+      ],
+
+      hub: {
+        href: "/dmarc",
+        label: "DMARC Hub"
+      },
+
+      related: [
+        { href: "/dmarc/dmarc-rua-ruf-not-working", label: "DMARC reports not working" },
+        { href: "/dmarc/dmarc-record-example", label: "DMARC record examples" },
+        { href: "/dmarc/dmarc-fo-tag-explained", label: "DMARC fo tag explained" }
+      ]
     }
   };

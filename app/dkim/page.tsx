@@ -213,7 +213,11 @@ Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`}
               }}
             >
               {/* Future: add "View all issues" page when clusters exceed MAX_HUB_CARDS */}
-              {dkimCluster.slice(0, MAX_HUB_CARDS).map((link) => (
+              {Array.from(
+                new Map(dkimCluster.map((item) => [item.href, item])).values()
+              )
+                .slice(0, MAX_HUB_CARDS)
+                .map((link) => (
                 <HubLink
                   key={link.href}
                   href={link.href}

@@ -11,6 +11,36 @@ export type InternalLink = {
 
 export const spfCluster: InternalLink[] = [
   {
+    href: "/spf/spf-record-example",
+    label: "SPF record examples",
+    description: "Copy-paste SPF examples for Google, Microsoft 365, SendGrid.",
+    protocol: "spf",
+    category: "examples",
+    priority: 0,
+    featured: true,
+    relatedSlugs: ["spf-record-syntax-explained", "spf-record-generator"],
+  },
+  {
+    href: "/spf/spf-record-syntax-explained",
+    label: "SPF record syntax explained",
+    description: "Mechanisms, qualifiers, and record structure.",
+    protocol: "spf",
+    category: "syntax",
+    priority: 0,
+    featured: true,
+    relatedSlugs: ["spf-record-syntax-error", "spf-record-example"],
+  },
+  {
+    href: "/spf/spf-record-generator",
+    label: "How to build an SPF record",
+    description: "Step-by-step guide to building SPF correctly.",
+    protocol: "spf",
+    category: "examples",
+    priority: 0,
+    featured: true,
+    relatedSlugs: ["spf-record-example", "spf-permerror-too-many-dns-lookups"],
+  },
+  {
     href: "/spf/no-spf-record-found",
     label: "No SPF record found",
     description: "Start here when your domain publishes no SPF at all.",
@@ -144,6 +174,26 @@ export const spfCluster: InternalLink[] = [
 
 export const dkimCluster: InternalLink[] = [
   {
+    href: "/dkim/dkim-record-example",
+    label: "DKIM record examples",
+    description: "Real DNS TXT examples and how to read them.",
+    protocol: "dkim",
+    category: "examples",
+    priority: 0,
+    featured: true,
+    relatedSlugs: ["dkim-signature-explained", "dkim-selector-explained"],
+  },
+  {
+    href: "/dkim/dkim-signature-explained",
+    label: "DKIM signature explained",
+    description: "Header fields, verification, and body hash.",
+    protocol: "dkim",
+    category: "signature",
+    priority: 0,
+    featured: true,
+    relatedSlugs: ["dkim-record-example", "dkim-body-hash-mismatch"],
+  },
+  {
     href: "/dkim/no-dkim-record-found",
     label: "No DKIM record found",
     description: "Start here when your domain publishes no DKIM key at all.",
@@ -226,6 +276,26 @@ export const dkimCluster: InternalLink[] = [
 ];
 
 export const dmarcCluster: InternalLink[] = [
+  {
+    href: "/dmarc/dmarc-record-example",
+    label: "DMARC record examples",
+    description: "Monitoring and enforcement policy examples.",
+    protocol: "dmarc",
+    category: "examples",
+    priority: 0,
+    featured: true,
+    relatedSlugs: ["dmarc-aggregate-reports-explained", "no-dmarc-record-found"],
+  },
+  {
+    href: "/dmarc/dmarc-aggregate-reports-explained",
+    label: "DMARC aggregate reports explained",
+    description: "What RUA reports contain and how to use them.",
+    protocol: "dmarc",
+    category: "reporting",
+    priority: 0,
+    featured: true,
+    relatedSlugs: ["dmarc-record-example", "dmarc-rua-ruf-not-working"],
+  },
   {
     href: "/dmarc/no-dmarc-record-found",
     label: "No DMARC record found",
