@@ -1,45 +1,37 @@
 import type { MetadataRoute } from "next";
+import {
+  spfCluster,
+  dkimCluster,
+  dmarcCluster,
+} from "./data/internalLinks";
 
 const BASE_URL = "https://emaildnscheck.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = [
-    "",
-
-    // DKIM
-    "/dkim/no-dkim-record-found",
-    "/dkim/dkim-selector-not-found",
-    "/dkim/invalid-dkim-key",
-    "/dkim/dkim-alignment-failed",
-    "/dkim/dkim-key-length-too-short",
-    "/dkim/dkim-selector-explained",
-    "/dkim/dkim-selector-mismatch",
-    "/dkim/dkim-body-hash-mismatch",
-
-    // SPF
-    "/spf/spf-permerror-too-many-dns-lookups",
-    "/spf/spf-softfail-vs-fail",
-    "/spf/multiple-spf-records-found",
-    "/spf/spf-include-flattening",
-    "/spf/spf-redirect-explained",
-    "/spf/spf-neutral-result-explained",
-
-    // DMARC
-    "/dmarc/no-dmarc-record-found",
-    "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject",
-    "/dmarc/dmarc-alignment-failed",
-    "/dmarc/dmarc-rua-ruf-not-working",
-    "/dmarc/dmarc-pct-tag-explained",
-    "/dmarc/dmarc-sp-subdomain-policy-explained",
-    "/dmarc/dmarc-fo-tag-explained",
-    "/dmarc/dmarc-aspf-adkim-explained",
-    "/dmarc/multiple-dmarc-records-found",
+  const staticRoutes = [
+    { path: "", priority: 1 as const },
+    { path: "/spf", priority: 0.9 as const },
+    { path: "/dkim", priority: 0.9 as const },
+    { path: "/dmarc", priority: 0.9 as const },
   ];
 
-  return routes.map((route) => ({
-    url: `${BASE_URL}${route}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: route === "" ? 1 : 0.8,
-  }));
+  const clusterHrefs = [
+    ...spfCluster.map((item) => item.href),
+    ...dkimCluster.map((item) => item.href),
+    ...dmarcCluster.map((item) => item.href),
+  ];
+
+  const uniquePaths = Array.from(
+    new Set([...staticRoutes.map((r) => r.path), ...clusterHrefs])
+  );
+
+  return uniquePaths.map((path) => {
+    const staticEntry = staticRoutes.find((r) => r.path === path);
+    return {
+      url: `${BASE_URL}${path}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: staticEntry?.priority ?? 0.8,
+    };
+  });
 }
