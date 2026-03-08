@@ -51,12 +51,28 @@ export default function Home() {
       {/* HERO */}
       <section className="checker-hero" id="checker">
         <div className="checker-card">
-          <h1 className="checker-title">Email Authentication Checker</h1>
+          <h1 className="checker-title">
+            SPF, DKIM &amp; DMARC Checker for Email Deliverability
+          </h1>
 
           <p className="checker-subtitle">
-            Instantly check SPF, DKIM and DMARC records for any domain. This
-            tool runs a live DNS lookup and shows whether your email
-            authentication is configured correctly.
+            Emails landing in spam or failing authentication usually trace back
+            to SPF, DKIM, or DMARC misconfigurations.
+          </p>
+
+          <p
+            style={{
+              color: "#4b5563",
+              lineHeight: 1.7,
+              maxWidth: 760,
+              margin: "0 auto 18px",
+              textAlign: "center",
+            }}
+          >
+            This free checker performs a live DNS lookup and shows whether your
+            domain publishes valid authentication records. In seconds you can
+            spot missing records, weak policies, and common configuration
+            mistakes that hurt inbox placement.
           </p>
 
           <form onSubmit={runCheck} className="domain-form">
@@ -69,12 +85,25 @@ export default function Home() {
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
+              aria-label="Domain name"
             />
 
             <button type="submit" disabled={loading} className="domain-button">
-              {loading ? "Checking…" : "Check domain"}
+              {loading ? "Checking…" : "Check SPF, DKIM & DMARC"}
             </button>
           </form>
+
+          <p
+            style={{
+              marginTop: 12,
+              fontSize: 13,
+              color: "#6b7280",
+              textAlign: "center",
+            }}
+          >
+            No login required. Live DNS only. Built for fast email
+            authentication triage.
+          </p>
 
           {error && (
             <div
@@ -87,12 +116,16 @@ export default function Home() {
 
           {/* RESULTS */}
           {result && (
-            <div className="results-grid" style={{ marginTop: 22 }}>
+            <div
+              className="results-grid"
+              style={{ marginTop: 22 }}
+              aria-label="Results"
+            >
               <ResultCard
                 title="SPF"
                 status={result.spf ? "pass" : "fail"}
                 value={result.spf || "No SPF record found"}
-                hint="Controls which servers may send mail for your domain."
+                hint="Verifies which servers may send email for your domain."
               />
 
               <ResultCard
@@ -101,7 +134,7 @@ export default function Home() {
                 value={
                   result.dkimDetected ? "DKIM detected" : "No DKIM detected"
                 }
-                hint="Cryptographic signing of outgoing mail."
+                hint="Checks whether messages are cryptographically signed."
               />
 
               <ResultCard
@@ -114,17 +147,40 @@ export default function Home() {
                     : "fail"
                 }
                 value={result.dmarc || "No DMARC record found"}
-                hint="Policy for handling mail that fails SPF or DKIM."
+                hint="Defines how receivers handle SPF or DKIM failures."
               />
             </div>
           )}
+
+          <div
+            style={{
+              marginTop: 18,
+              display: "grid",
+              gap: 10,
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              textAlign: "left",
+            }}
+          >
+            <MiniInfoCard
+              title="SPF"
+              text="Verifies which servers may send email for your domain."
+            />
+            <MiniInfoCard
+              title="DKIM"
+              text="Cryptographically signs messages to protect integrity."
+            />
+            <MiniInfoCard
+              title="DMARC"
+              text="Defines what happens when authentication fails."
+            />
+          </div>
         </div>
       </section>
 
       {/* COMMON ISSUES */}
       <section className="container" style={{ paddingTop: 34 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
-          Common email authentication issues
+        <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>
+          Common SPF, DKIM and DMARC problems
         </h2>
 
         <p
@@ -132,11 +188,12 @@ export default function Home() {
             color: "#374151",
             lineHeight: 1.6,
             marginBottom: 16,
-            maxWidth: "56ch",
+            maxWidth: "62ch",
           }}
         >
-          These are the most common SPF, DKIM and DMARC problems we see when
-          diagnosing email deliverability issues.
+          These are the most common authentication issues we see when diagnosing
+          email deliverability problems. Each guide includes practical fixes,
+          DNS examples, and related troubleshooting paths.
         </p>
 
         <div
@@ -148,7 +205,7 @@ export default function Home() {
         >
           <ProtocolCard
             title="SPF"
-            description="Sender Policy Framework fixes."
+            description="Sender authorization problems and policy fixes."
             links={[
               { href: "/spf/no-spf-record-found", label: "No SPF record found" },
               {
@@ -168,7 +225,7 @@ export default function Home() {
 
           <ProtocolCard
             title="DKIM"
-            description="DomainKeys Identified Mail fixes."
+            description="Signing, selector, and key-related issues."
             links={[
               {
                 href: "/dkim/no-dkim-record-found",
@@ -184,7 +241,7 @@ export default function Home() {
 
           <ProtocolCard
             title="DMARC"
-            description="Domain-based authentication policy."
+            description="Policy, alignment, and reporting issues."
             links={[
               {
                 href: "/dmarc/no-dmarc-record-found",
@@ -203,6 +260,46 @@ export default function Home() {
         </div>
       </section>
 
+      {/* HOW AUTHENTICATION WORKS */}
+      <section className="container" style={{ paddingTop: 30 }}>
+        <div
+          style={{
+            border: "1px solid #e5e7eb",
+            borderRadius: 14,
+            background: "#fff",
+            padding: 22,
+          }}
+        >
+          <div className="prose" style={{ maxWidth: "none" }}>
+            <h2 style={{ marginTop: 0 }}>How email authentication works</h2>
+
+            <p>
+              Modern email authentication relies on three protocols working
+              together. <strong>SPF</strong> tells receiving servers which
+              infrastructure is allowed to send mail for your domain.
+              <strong> DKIM</strong> adds a cryptographic signature so receivers
+              can verify that the message was not altered in transit.
+              <strong> DMARC</strong> builds on top of SPF and DKIM by defining
+              policy and alignment rules for messages that fail checks.
+            </p>
+
+            <p>
+              When these records are configured correctly, mailbox providers can
+              trust your email more easily. When they are missing or broken,
+              legitimate messages often lose trust and drift toward spam.
+            </p>
+
+            <p>
+              <Link href="/spf">SPF Hub</Link>
+              {" · "}
+              <Link href="/dkim">DKIM Hub</Link>
+              {" · "}
+              <Link href="/dmarc">DMARC Hub</Link>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* TRUST BOX */}
       <section
         className="container"
@@ -216,6 +313,17 @@ export default function Home() {
             padding: 20,
           }}
         >
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 800,
+              marginBottom: 10,
+              color: "#111827",
+            }}
+          >
+            Why teams use this checker
+          </div>
+
           <ul
             style={{
               margin: 0,
@@ -233,7 +341,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SEO SECTION */}
+      {/* SEO / CTA SECTION */}
       <section className="container" style={{ paddingBottom: 60 }}>
         <div
           style={{
@@ -259,7 +367,8 @@ export default function Home() {
           </p>
 
           <p>
-            Learn more in the protocol hubs:
+            Start with the checker above, then use the protocol hubs for deeper
+            troubleshooting and copy-paste record examples.
           </p>
 
           <p>
@@ -299,6 +408,39 @@ function ResultCard({
 
       <div className={`status-pill status-${status}`}>{pillLabel}</div>
     </article>
+  );
+}
+
+function MiniInfoCard({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: 14,
+      }}
+    >
+      <div
+        style={{
+          fontWeight: 800,
+          fontSize: 14,
+          marginBottom: 4,
+          color: "#111827",
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>
+        {text}
+      </div>
+    </div>
   );
 }
 

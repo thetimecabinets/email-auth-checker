@@ -1,8 +1,27 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Logo() {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (pathname === "/") {
+      e.preventDefault();
+      router.refresh();
+      window.location.reload();
+    }
+  }
+
   return (
-    <Link href="/" style={styles.link} aria-label="Email DNS Check">
+    <Link
+      href="/"
+      onClick={handleClick}
+      style={styles.link}
+      aria-label="Email DNS Check"
+    >
       <svg
         width="36"
         height="36"
@@ -11,11 +30,7 @@ export default function Logo() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <rect width="36" height="36" rx="8" fill="#E0B100" />
-        <path
-          d="M9 12h18v12H9z"
-          fill="#111827"
-          opacity="0.15"
-        />
+        <path d="M9 12h18v12H9z" fill="#111827" opacity="0.15" />
         <path
           d="M9 12l9 7 9-7"
           stroke="#111827"
@@ -40,7 +55,7 @@ const styles: Record<string, React.CSSProperties> = {
   text: {
     fontWeight: 700,
     fontSize: "1.1rem",
-    color: "#E0B100", // mustard
+    color: "#E0B100",
     letterSpacing: "-0.2px",
   },
 };

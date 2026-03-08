@@ -12,13 +12,16 @@ body {
   background-color: #f9fafb;
   color: #111827;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 /* LAYOUT */
 .container {
+  width: 100%;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .site-main {
@@ -37,7 +40,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 64px;
+  gap: 20px;
+  min-height: 64px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .nav a {
@@ -59,7 +71,8 @@ body {
 }
 
 .footer-wrap {
-  padding: 28px 0;
+  padding-top: 28px;
+  padding-bottom: 28px;
 }
 
 .footer-hubs {
@@ -68,6 +81,10 @@ body {
   gap: 40px;
   padding-bottom: 22px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.footer-hub {
+  min-width: 0;
 }
 
 .footer-hub strong {
@@ -104,8 +121,13 @@ body {
   margin: 0;
 }
 
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+
 .footer-links a {
-  margin-left: 16px;
   color: #6b7280;
   text-decoration: none;
 }
@@ -399,16 +421,33 @@ a {
 @media (max-width: 900px) {
   .footer-hubs {
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 22px;
   }
 
-  .footer-links a {
-    margin-left: 0;
-    margin-right: 16px;
+  .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .footer-links {
+    justify-content: flex-start;
   }
 }
 
 @media (max-width: 720px) {
+  .container {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .header-inner {
+    gap: 14px;
+  }
+
+  .nav a {
+    margin-left: 16px;
+  }
+
   .checker-card {
     padding: 22px 18px;
   }
@@ -424,5 +463,55 @@ a {
 
   .domain-button {
     width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nav a {
+    margin-left: 0;
+    margin-right: 16px;
+  }
+
+  .footer-wrap {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .footer-hubs {
+    gap: 20px;
+    padding-bottom: 18px;
+  }
+
+  .footer-hub strong {
+    margin-bottom: 10px;
+  }
+
+  .footer-hub-link {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+
+  .footer-bottom {
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .footer-links {
+    gap: 8px 18px;
   }
 }
