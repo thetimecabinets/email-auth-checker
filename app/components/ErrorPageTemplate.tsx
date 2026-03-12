@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import CodeBlock from "@/app/components/CodeBlock";
-import { spfCluster, dkimCluster, dmarcCluster } from "@/app/data/internalLinks";
+import {
+  getClusterByHubHref,
+  getRelatedLinks,
+  getExploreLinks,
+} from "@/app/data/internalLinks";
 
 type RelatedLink = {
   href: string;
@@ -67,9 +71,52 @@ type ErrorPageData = {
 
 const MAX_EXPLORE_LINKS = 10;
 const MAX_RELATED_LINKS = 4;
+const BASE_URL = "https://emaildnscheck.com";
 
 export default function ErrorPageTemplate(data: ErrorPageData) {
   const pathname = usePathname();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: `${BASE_URL}/`,
+      },
+      ...(data.hub
+        ? [
+            {
+              "@type": "ListItem" as const,
+              position: 2,
+              name: data.hub.label,
+              item: `${BASE_URL}${data.hub.href}`,
+            },
+          ]
+        : []),
+      {
+        "@type": "ListItem" as const,
+        position: data.hub ? 3 : 2,
+        name: data.title,
+        item: `${BASE_URL}${pathname}`,
+      },
+    ],
+  };
+
+  const techArticleSchema = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: data.title,
+    description: data.intro,
+    mainEntityOfPage: `${BASE_URL}${pathname}`,
+    publisher: {
+      "@type": "Organization",
+      name: "Email DNS Check",
+      url: BASE_URL,
+    },
+  };
 
   const faqSchema =
     data.faq && data.faq.length > 0
@@ -87,21 +134,29 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
         }
       : null;
 
-  let autoLinks: RelatedLink[] = [];
-
-  if (data.hub?.href === "/spf") autoLinks = spfCluster;
-  if (data.hub?.href === "/dkim") autoLinks = dkimCluster;
-  if (data.hub?.href === "/dmarc") autoLinks = dmarcCluster;
-
-  // Remove current page from cluster links, then limit
-  const visibleExploreLinks = autoLinks
-    .filter((link) => link.href !== pathname)
-    .slice(0, MAX_EXPLORE_LINKS);
-
-  const visibleRelatedLinks = data.related?.slice(0, MAX_RELATED_LINKS);
+  const cluster = getClusterByHubHref(data.hub?.href ?? "");
+  const visibleRelatedLinks =
+    cluster.length > 0
+      ? getRelatedLinks(cluster, pathname, MAX_RELATED_LINKS)
+      : data.related?.slice(0, MAX_RELATED_LINKS) ?? [];
+  const visibleExploreLinks =
+    cluster.length > 0
+      ? getExploreLinks(cluster, {
+          limit: MAX_EXPLORE_LINKS,
+          excludePathname: pathname,
+        })
+      : [];
 
   return (
     <main style={styles.wrapper}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(techArticleSchema) }}
+      />
       {faqSchema && (
         <script
           type="application/ld+json"

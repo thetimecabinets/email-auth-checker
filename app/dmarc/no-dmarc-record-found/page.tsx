@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "No DMARC Record Found – Fix Missing DMARC",
-  description:
-    "Learn what it means when no DMARC record is found and how to publish a valid DMARC policy.",
-};
+const PAGE_PATH = "/dmarc/no-dmarc-record-found";
+const ERROR_PAGE_KEY = "dmarc/no-dmarc-record-found";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["dmarc/no-dmarc-record-found"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

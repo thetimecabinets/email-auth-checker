@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "DKIM Signature Explained – Header Fields, Verification, and Body Hash",
-  description:
-    "Understand the DKIM-Signature header: what each field means, how verification works, and why the body hash can fail.",
-};
+const PAGE_PATH = "/dkim/dkim-signature-explained";
+const ERROR_PAGE_KEY = "dkim/dkim-signature-explained";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["dkim/dkim-signature-explained"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

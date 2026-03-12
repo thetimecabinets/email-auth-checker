@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "DMARC Alignment Failed – Fix DMARC Alignment Issues",
-  description:
-    "Learn why DMARC alignment fails, how SPF and DKIM alignment work, and how to fix DMARC failures.",
-};
+const PAGE_PATH = "/dmarc/dmarc-alignment-failed";
+const ERROR_PAGE_KEY = "dmarc/dmarc-alignment-failed";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["dmarc/dmarc-alignment-failed"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

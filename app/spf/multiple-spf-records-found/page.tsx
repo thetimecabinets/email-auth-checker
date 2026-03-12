@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Multiple SPF Records Found – How to Fix SPF",
-  description:
-    "Your domain has multiple SPF records. Learn why this breaks SPF validation and how to merge SPF records correctly.",
-};
+const PAGE_PATH = "/spf/multiple-spf-records-found";
+const ERROR_PAGE_KEY = "spf/multiple-spf-records-found";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["spf/multiple-spf-records-found"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

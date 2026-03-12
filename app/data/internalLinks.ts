@@ -387,3 +387,120 @@ export const dmarcCluster: InternalLink[] = [
     relatedSlugs: ["dmarc-alignment-failed", "dmarc-sp-subdomain-policy-explained"],
   },
 ];
+
+// ─── SEO Linking Engine ─────────────────────────────────────────────────────
+
+const HUB_TO_CLUSTER: Record<string, InternalLink[]> = {
+  "/spf": spfCluster,
+  "/dkim": dkimCluster,
+  "/dmarc": dmarcCluster,
+} as const;
+
+export type HubHref = keyof typeof HUB_TO_CLUSTER;
+
+/**
+ * Returns the cluster for a given hub href.
+ */
+export function getClusterByHubHref(hubHref: string): InternalLink[] {
+  const cluster = HUB_TO_CLUSTER[hubHref as HubHref];
+  return cluster ?? [];
+}
+
+/**
+ * Derives the current slug from a pathname (e.g. /spf/spf-record-example → spf-record-example).
+ */
+export function getSlugFromPathname(pathname: string): string | null {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length < 2) return null;
+  return segments[segments.length - 1] ?? null;
+}
+
+/**
+ * Gets highly relevant related links using relatedSlugs first, then fills with featured/priority.
+ * Excludes the current page. Deduplicates by href.
+ */
+export function getRelatedLinks(
+  cluster: InternalLink[],
+  pathname: string,
+  limit: number = 4
+): InternalLink[] {
+  const slug = getSlugFromPathname(pathname);
+  const protocol = cluster[0]?.protocol;
+  if (!protocol || !slug) return [];
+
+  const hrefBySlug = new Map<string, string>();
+  const linkByHref = new Map<string, InternalLink>();
+  for (const link of cluster) {
+    const s = link.href.split("/").pop() ?? "";
+    hrefBySlug.set(s, link.href);
+    linkByHref.set(link.href, link);
+  }
+
+  const currentHref = `/${protocol}/${slug}`;
+  const currentLink = cluster.find((l) => l.href === currentHref);
+  const relatedSlugs = currentLink?.relatedSlugs ?? [];
+
+  const seen = new Set<string>();
+  const result: InternalLink[] = [];
+
+  for (const s of relatedSlugs) {
+    const href = hrefBySlug.get(s);
+    if (href && href !== currentHref && !seen.has(href)) {
+      const link = linkByHref.get(href);
+      if (link) {
+        seen.add(href);
+        result.push(link);
+      }
+    }
+  }
+
+  if (result.length >= limit) return result.slice(0, limit);
+
+  const sorted = [...cluster]
+    .filter((l) => l.href !== currentHref && !seen.has(l.href))
+    .sort((a, b) => {
+      const aFeatured = a.featured === true ? 1 : 0;
+      const bFeatured = b.featured === true ? 1 : 0;
+      if (bFeatured !== aFeatured) return bFeatured - aFeatured;
+      return (a.priority ?? 999) - (b.priority ?? 999);
+    });
+
+  for (const link of sorted) {
+    if (result.length >= limit) break;
+    seen.add(link.href);
+    result.push(link);
+  }
+
+  return result;
+}
+
+/**
+ * Gets explore links sorted by featured (true first) then priority (asc).
+ * Excludes the current pathname. Deduplicates by href.
+ */
+export function getExploreLinks(
+  cluster: InternalLink[],
+  options: {
+    limit?: number;
+    excludePathname?: string;
+  } = {}
+): InternalLink[] {
+  const { limit = 10, excludePathname } = options;
+
+  const unique = Array.from(
+    new Map(cluster.map((item) => [item.href, item])).values()
+  );
+
+  const filtered = excludePathname
+    ? unique.filter((l) => l.href !== excludePathname)
+    : unique;
+
+  const sorted = [...filtered].sort((a, b) => {
+    const aFeatured = a.featured === true ? 1 : 0;
+    const bFeatured = b.featured === true ? 1 : 0;
+    if (bFeatured !== aFeatured) return bFeatured - aFeatured;
+    return (a.priority ?? 999) - (b.priority ?? 999);
+  });
+
+  return sorted.slice(0, limit);
+}

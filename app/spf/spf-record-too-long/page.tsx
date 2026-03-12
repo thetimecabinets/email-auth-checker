@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "SPF Record Too Long – Fix TXT Length and DNS Limits",
-  description:
-    "Your SPF record exceeds DNS TXT length limits. Learn why SPF records can be truncated or rejected and how to shorten your policy safely.",
-};
+const PAGE_PATH = "/spf/spf-record-too-long";
+const ERROR_PAGE_KEY = "spf/spf-record-too-long";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["spf/spf-record-too-long"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

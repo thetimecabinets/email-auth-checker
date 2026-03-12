@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
-import { dkimErrors } from "@/app/data/dkimErrors";
+import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "DKIM Selector Mismatch – Fix DKIM Selector Problems",
-  description:
-    "Learn what a DKIM selector mismatch means and how to make the sender selector match the DNS record.",
-};
+const PAGE_PATH = "/dkim/dkim-selector-mismatch";
+const ERROR_PAGE_KEY = "dkim/dkim-selector-mismatch";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = dkimErrors["dkim/dkim-selector-mismatch"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

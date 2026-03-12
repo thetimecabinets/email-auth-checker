@@ -4,12 +4,11 @@ import {
   dkimCluster,
   dmarcCluster,
 } from "./data/internalLinks";
-
-const BASE_URL = "https://emaildnscheck.com";
+import { BASE_URL, LAST_UPDATED } from "./lib/metadata";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
-    { path: "", priority: 1 as const },
+    { path: "", priority: 1.0 as const },
     { path: "/spf", priority: 0.9 as const },
     { path: "/dkim", priority: 0.9 as const },
     { path: "/dmarc", priority: 0.9 as const },
@@ -29,9 +28,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const staticEntry = staticRoutes.find((r) => r.path === path);
     return {
       url: `${BASE_URL}${path}`,
-      lastModified: new Date(),
+      lastModified: LAST_UPDATED,
       changeFrequency: "monthly" as const,
-      priority: staticEntry?.priority ?? 0.8,
+      priority: staticEntry?.priority ?? 0.7,
     };
   });
 }

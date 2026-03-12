@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "DKIM Body Hash Mismatch – Fix DKIM Body Hash Errors",
-  description:
-    "Learn what a DKIM body hash mismatch means, why email content changes after signing break DKIM, and how to fix it.",
-};
+const PAGE_PATH = "/dkim/dkim-body-hash-mismatch";
+const ERROR_PAGE_KEY = "dkim/dkim-body-hash-mismatch";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["dkim/dkim-body-hash-mismatch"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

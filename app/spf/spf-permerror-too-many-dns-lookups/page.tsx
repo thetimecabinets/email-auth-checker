@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "SPF Permerror: Too Many DNS Lookups – Fix SPF Lookup Limit",
-  description:
-    "Your SPF record exceeds the DNS lookup limit. Learn why SPF permerror happens and how to fix it.",
-};
+const PAGE_PATH = "/spf/spf-permerror-too-many-dns-lookups";
+const ERROR_PAGE_KEY = "spf/spf-permerror-too-many-dns-lookups";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["spf/spf-permerror-too-many-dns-lookups"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;

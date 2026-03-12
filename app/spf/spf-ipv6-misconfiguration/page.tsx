@@ -1,14 +1,27 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
 import { errorPages } from "@/app/data/errorPages";
+import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "SPF IPv6 Misconfiguration – Fix SPF for IPv6 Senders",
-  description:
-    "Learn why SPF can fail for IPv6 senders and how to authorize the correct IPv6 ranges in your SPF record.",
-};
+const PAGE_PATH = "/spf/spf-ipv6-misconfiguration";
+const ERROR_PAGE_KEY = "spf/spf-ipv6-misconfiguration";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  if (!data) {
+    return { title: "Unknown" };
+  }
+  return {
+    title: data.title,
+    description: truncateIntro(data.intro),
+    alternates: {
+      canonical: `${BASE_URL}${PAGE_PATH}`,
+    },
+  };
+}
 
 export default function Page() {
-  const data = errorPages["spf/spf-ipv6-misconfiguration"];
+  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
 
   if (!data) {
     return <div>Missing error page data</div>;
