@@ -6,16 +6,51 @@ const MAX_HUB_CARDS = 12;
 
 export const metadata: Metadata = {
   title:
-    "DMARC Hub – Turn SPF and DKIM Signals into Enforced Policy (2026 Playbook)",
+    "DMARC Hub – Monitoring, Alignment and Policy Enforcement (2026 Guide)",
   description:
-    "Authoritative DMARC hub for policy design. Learn how to move from p=none to quarantine and reject, read DMARC reports, and fix common DMARC errors with one-minute examples.",
+    "Understand DMARC monitoring, alignment, and enforcement policies. Learn how to analyze DMARC reports and fix authentication failures.",
 };
 
 export default function DMARCHubPage() {
+  const foundationalLinks = [
+    {
+      href: "/dmarc/dmarc-guide",
+      label: "Complete DMARC Guide",
+      description:
+        "Full guide to DMARC policy, alignment, reporting, and safe enforcement.",
+    },
+    {
+      href: "/dmarc/dmarc-record-example",
+      label: "DMARC record examples",
+      description:
+        "Copy-paste DMARC TXT examples for monitoring, quarantine, and reject policies.",
+    },
+    {
+      href: "/dmarc/dmarc-aggregate-reports-explained",
+      label: "DMARC aggregate reports explained",
+      description:
+        "Learn how DMARC XML reports work and how to use them during rollout.",
+    },
+  ];
+
+  const troubleshootingLinks = Array.from(
+    new Map(dmarcCluster.map((item) => [item.href, item])).values()
+  )
+    .filter(
+      (item) =>
+        ![
+          "/dmarc/dmarc-guide",
+          "/dmarc/dmarc-record-example",
+          "/dmarc/dmarc-aggregate-reports-explained",
+        ].includes(item.href)
+    )
+    .slice(0, MAX_HUB_CARDS);
+
   return (
     <main style={{ padding: "36px 0 64px" }}>
       <div className="container">
-        {/* TOP STRIP */}
+
+        {/* Breadcrumb */}
         <div
           style={{
             display: "flex",
@@ -42,7 +77,7 @@ export default function DMARCHubPage() {
           <span style={{ color: "#111827", fontWeight: 700 }}>DMARC</span>
         </div>
 
-        {/* HERO + ONE-MINUTE FIX */}
+        {/* HERO */}
         <section
           style={{
             display: "grid",
@@ -54,38 +89,38 @@ export default function DMARCHubPage() {
           <div style={card}>
             <div className="prose">
               <h1 style={{ marginTop: 0 }}>
-                Design a DMARC policy that stops spoofing without breaking your
-                product emails
+                Control how receivers handle your domain&apos;s email
               </h1>
 
               <p>
-                Our 2026 audits show the same pattern in nearly every compromised
-                brand: SPF and DKIM exist, but DMARC is stuck on{" "}
-                <code>p=none</code>. That “monitor only” setting gives mailbox
-                providers visibility into abuse – but it never tells them to
-                block anything.
+                DMARC (Domain-based Message Authentication, Reporting and
+                Conformance) is the policy layer that sits on top of SPF and
+                DKIM. While SPF authorizes sending infrastructure and DKIM signs
+                message content, DMARC tells receiving servers what to do when
+                those checks fail or do not align with the visible sender.
               </p>
 
               <p>
-                DMARC is the policy brain that sits on top of SPF and DKIM. It
-                decides whether a suspicious message pretending to be you should
-                be delivered, junked, or rejected. Done well, DMARC dramatically
-                reduces spoofing and impersonation.
+                For many organizations, DMARC starts as a monitoring tool.
+                Publishing a record with <code>p=none</code> allows mailbox
+                providers to send aggregate reports describing how email using
+                your domain is authenticated across the internet. These reports
+                reveal unknown senders, forwarding behavior, and configuration
+                mistakes before you enforce stricter policies.
               </p>
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                 <Link href="/" style={primaryBtn}>
-                  Run DMARC, SPF & DKIM check
+                  Run email authentication check
                 </Link>
-
                 <span style={{ fontSize: 12, color: "#6b7280" }}>
-                  Live DNS results – ideal for policy rollouts.
+                  SPF, DKIM and DMARC analysis
                 </span>
               </div>
             </div>
           </div>
 
-          {/* ONE MINUTE FIX */}
+          {/* One minute baseline */}
           <aside
             style={{
               ...card,
@@ -95,91 +130,41 @@ export default function DMARCHubPage() {
           >
             <div className="prose">
               <h2 style={{ marginTop: 0, fontSize: 18 }}>
-                One-Minute DMARC starter policy
+                One-minute DMARC starting policy
               </h2>
 
-              <p style={{ fontSize: 14 }}>
-                Use this when you are just starting your DMARC journey. It
-                collects data without blocking mail.
-              </p>
-
               <pre style={codeBox}>
-{`v=DMARC1; p=none; rua=mailto:dmarc@yourdomain.com;
-ruf=mailto:dmarc@yourdomain.com; fo=1; pct=100`}
+{`v=DMARC1; p=none; rua=mailto:dmarc@example.com`}
               </pre>
 
-              <p style={{ fontSize: 14 }}>
-                Once SPF and DKIM are aligned for all senders, you can move to
-                <code> p=quarantine </code> and eventually <code>p=reject</code>.
+              <p style={{ fontSize: 14, color: "#374151" }}>
+                This record enables DMARC monitoring without blocking mail.
+                Start with <code>p=none</code>, review the incoming reports,
+                identify legitimate senders, and only then move toward stronger
+                enforcement policies.
               </p>
             </div>
           </aside>
         </section>
 
-        {/* STRATEGY VIEW */}
-        <section
-          style={{
-            marginTop: 18,
-            display: "grid",
-            gap: 16,
-            gridTemplateColumns: "1fr 1fr",
-          }}
-        >
-          <div style={card}>
-            <div className="prose">
-              <h2 style={{ marginTop: 0, fontSize: 18 }}>
-                For panicked founders
-              </h2>
-
-              <p>
-                When customers forward phishing emails that appear to come from
-                your domain, it usually means DMARC has never been allowed to
-                enforce policy.
-              </p>
-
-              <p>
-                Receivers can see messages failing SPF or DKIM but without a
-                policy they may still accept them. DMARC enforcement fixes that.
-              </p>
-
-              <p>
-                The key is gradual rollout: monitor → quarantine → reject.
-              </p>
-            </div>
-          </div>
-
-          <div style={card}>
-            <div className="prose">
-              <h2 style={{ marginTop: 0, fontSize: 18 }}>
-                For IT admins
-              </h2>
-
-              <p>
-                Modern mailbox providers require alignment between SPF,
-                DKIM, and the visible From domain.
-              </p>
-
-              <p>
-                DMARC tags such as <code>aspf</code>, <code>adkim</code>,
-                <code>pct</code>, and reporting addresses control enforcement
-                and rollout strategy.
-              </p>
-
-              <p>
-                Use aggregate reports to monitor real traffic before increasing
-                enforcement.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* CLUSTER LINKS */}
+        {/* START HERE */}
         <section style={{ marginTop: 18 }}>
           <div style={card}>
-            <div style={{ marginBottom: 12 }}>
-              <h2 style={{ margin: 0, fontSize: 18 }}>
-                DMARC troubleshooting playbook
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 18, color: "#111827" }}>
+                Start here
               </h2>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                Foundational DMARC pages
+              </span>
             </div>
 
             <div
@@ -189,12 +174,78 @@ ruf=mailto:dmarc@yourdomain.com; fo=1; pct=100`}
                 gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
               }}
             >
-              {/* Future: add "View all issues" page when clusters exceed MAX_HUB_CARDS */}
-              {Array.from(
-                new Map(dmarcCluster.map((item) => [item.href, item])).values()
-              )
-                .slice(0, MAX_HUB_CARDS)
-                .map((link) => (
+              {foundationalLinks.map((link) => (
+                <HubLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  description={link.description}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* HOW DMARC WORKS */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                How DMARC evaluation actually works
+              </h2>
+
+              <p>
+                When a message arrives claiming to be from your domain, the
+                receiving server first checks SPF and DKIM authentication.
+                DMARC then verifies whether either result aligns with the
+                visible From: domain.
+              </p>
+
+              <p>
+                If at least one aligned authentication method passes, DMARC
+                passes. If neither SPF nor DKIM aligns, the receiver consults
+                your DMARC policy and decides whether to monitor, quarantine, or
+                reject the message.
+              </p>
+
+              <p>
+                Because of this alignment requirement, DMARC often exposes
+                problems that SPF or DKIM alone would not reveal — especially
+                with forwarding systems, mailing lists, and multi-service email
+                infrastructures.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* TROUBLESHOOTING */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 18, color: "#111827" }}>
+                DMARC troubleshooting playbook
+              </h2>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                Deep dives for specific DMARC errors
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              }}
+            >
+              {troubleshootingLinks.map((link) => (
                 <HubLink
                   key={link.href}
                   href={link.href}
@@ -218,18 +269,22 @@ ruf=mailto:dmarc@yourdomain.com; fo=1; pct=100`}
           <div style={card}>
             <div className="prose">
               <h2 style={{ marginTop: 0, fontSize: 18 }}>
-                DMARC works only with SPF and DKIM
+                Why DMARC depends on SPF and DKIM
               </h2>
 
               <p>
-                DMARC is the final enforcement layer. It interprets SPF and
-                DKIM signals and tells receivers what to do when authentication
-                fails.
+                DMARC does not replace SPF or DKIM. Instead, it coordinates
+                them. SPF validates the sending infrastructure. DKIM validates
+                the message content. DMARC evaluates both and ensures that at
+                least one authentication method aligns with the visible domain
+                identity.
               </p>
 
               <p>
-                A healthy email authentication stack always includes all three
-                protocols working together.
+                Without SPF and DKIM configured correctly, DMARC cannot enforce
+                policy reliably. This is why DMARC deployments usually follow a
+                three-step path: stabilize SPF, enable DKIM across all senders,
+                then gradually enforce DMARC policies.
               </p>
             </div>
           </div>
@@ -243,24 +298,29 @@ ruf=mailto:dmarc@yourdomain.com; fo=1; pct=100`}
               color: "#fff",
             }}
           >
-            <div style={{ fontWeight: 800, marginBottom: 8 }}>
-              Next protocol hubs
+            <div style={{ fontWeight: 800, marginBottom: 6 }}>
+              Related authentication hubs
             </div>
 
             <div style={{ display: "grid", gap: 10 }}>
               <Link href="/spf" style={darkCardLink}>
-                <span>SPF Hub</span>
-                <span style={{ fontSize: 11, opacity: 0.7 }}>Sources</span>
+                SPF Hub
               </Link>
-
               <Link href="/dkim" style={darkCardLink}>
-                <span>DKIM Hub</span>
-                <span style={{ fontSize: 11, opacity: 0.7 }}>Integrity</span>
+                DKIM Hub
               </Link>
             </div>
           </div>
         </section>
+
       </div>
+
+      <style>{`
+        @media (max-width: 980px) {
+          section[style*="grid-template-columns: 1.25fr 1fr"] { grid-template-columns: 1fr !important; }
+          section[style*="grid-template-columns: 1.4fr 1fr"] { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </main>
   );
 }
@@ -284,7 +344,7 @@ function HubLink({
         padding: 12,
         borderRadius: 12,
         border: "1px solid #e5e7eb",
-        background: "#f9fafb",
+        background: "rgba(249,250,251,0.8)",
         textDecoration: "none",
       }}
     >
@@ -301,6 +361,7 @@ const card: React.CSSProperties = {
   background: "#ffffff",
   borderRadius: 14,
   padding: 18,
+  boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
 };
 
 const primaryBtn: React.CSSProperties = {
@@ -313,7 +374,7 @@ const primaryBtn: React.CSSProperties = {
   border: "1px solid #c79c00",
   background: "#E0B100",
   color: "#111827",
-  fontWeight: 700,
+  fontWeight: 800,
   textDecoration: "none",
 };
 
@@ -328,13 +389,10 @@ const codeBox: React.CSSProperties = {
 };
 
 const darkCardLink: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
+  display: "block",
   padding: "10px 12px",
   borderRadius: 12,
   border: "1px solid rgba(255,255,255,0.18)",
-  background: "rgba(255,255,255,0.06)",
   color: "#fff",
   textDecoration: "none",
 };

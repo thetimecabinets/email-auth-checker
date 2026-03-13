@@ -12,6 +12,37 @@ export const metadata: Metadata = {
 };
 
 export default function DKIMHubPage() {
+  const foundationalLinks = [
+    {
+      href: "/dkim/dkim-guide",
+      label: "Complete DKIM Guide",
+      description:
+        "Full guide to DKIM signatures, selectors, keys, alignment, and troubleshooting.",
+    },
+    {
+      href: "/dkim/dkim-record-example",
+      label: "DKIM record examples",
+      description:
+        "Real DNS TXT examples for common DKIM setups and how to read them.",
+    },
+    {
+      href: "/dkim/dkim-signature-explained",
+      label: "DKIM signature explained",
+      description:
+        "Understand header fields, verification flow, and body hash behavior.",
+    },
+  ];
+
+  const troubleshootingLinks = dkimCluster
+    .filter(
+      (item) =>
+        ![
+          "/dkim/dkim-record-example",
+          "/dkim/dkim-signature-explained",
+        ].includes(item.href)
+    )
+    .slice(0, MAX_HUB_CARDS);
+
   return (
     <main style={{ padding: "36px 0 64px" }}>
       <div className="container">
@@ -58,19 +89,21 @@ export default function DKIMHubPage() {
               </h1>
 
               <p>
-                Our 2026 DKIM audit data shows the same pattern again and again:
-                teams publish a selector once, assume everything is fine, and
-                then months later discover broken signatures, missing keys, or
-                alignment failures quietly damaging inbox placement. This hub
-                turns that confusion into a clear, repeatable DKIM playbook.
+                DKIM is the integrity layer of email authentication. It lets
+                receiving servers verify that a message really came from an
+                authorized sender and was not modified after it was signed. When
+                DKIM is healthy, it strengthens trust, supports DMARC
+                enforcement, and makes legitimate mail more resilient across
+                forwarding and multi-provider setups.
               </p>
 
               <p>
-                DomainKeys Identified Mail (DKIM) adds a cryptographic signature
-                to your messages so receiving servers can verify that the email
-                really came from an authorized sender and was not altered in
-                transit. When selectors are missing, keys are malformed, or
-                signing domains do not align, legitimate emails can lose trust.
+                This hub brings together the core educational pages, the most
+                common DKIM troubleshooting paths, and the protocol context you
+                need before tightening DMARC policy. Use it if you are trying to
+                understand selectors, fix missing keys, investigate alignment
+                failures, or verify that your providers are signing the right
+                traffic in the right way.
               </p>
 
               <div
@@ -123,6 +156,45 @@ Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`}
           </aside>
         </section>
 
+        {/* START HERE */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 18, color: "#111827" }}>
+                Start here
+              </h2>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                Foundational DKIM pages
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              }}
+            >
+              {foundationalLinks.map((link) => (
+                <HubLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  description={link.description}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* FOUNDER + IT */}
         <section
           style={{
@@ -135,25 +207,22 @@ Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`}
           <div style={card}>
             <div className="prose">
               <h2 style={{ marginTop: 0, fontSize: 18 }}>
-                For panicked founders: what “DKIM is broken” really means
+                For founders: what “DKIM is broken” usually means
               </h2>
               <p>
-                When our team audits poor inbox placement, DKIM problems are
-                often hidden behind vague delivery warnings. The domain looks
-                legitimate, but signatures fail because a selector is missing,
-                the wrong system is sending mail, or a gateway changes the
-                message after signing.
+                DKIM problems often hide behind vague delivery warnings. A
+                domain can look legitimate on the surface, yet signatures fail
+                because a selector is missing, the wrong platform is signing, or
+                a downstream gateway changes the message after it leaves your
+                system.
               </p>
               <p>
-                The fastest path to stability is to identify every system that
-                sends mail for your brand, confirm each one signs with DKIM, and
-                make sure the published selector record matches what the sender
-                actually uses.
-              </p>
-              <p>
-                If you only take one action today: send a real test message,
-                inspect the DKIM result in the headers, and confirm the selector
-                and signing domain are exactly what you expect.
+                The practical fix is to inventory every service that sends mail
+                as your brand, confirm which one actually signs each message,
+                and make sure the published selector record matches the signer
+                that appears in the live headers. DKIM is rarely broken because
+                of one dramatic mistake. It is usually broken because ownership
+                drifted across tools over time.
               </p>
             </div>
           </div>
@@ -165,21 +234,45 @@ Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`}
               </h2>
               <p>
                 Major receivers expect DKIM to be both technically valid and
-                operationally consistent. That means the selector must resolve,
-                the public key must be complete, the key length must be modern,
-                and the signing domain should align with the visible From:
-                domain when DMARC is enabled.
+                operationally consistent. The selector must resolve, the public
+                key must be complete, the key length should be modern, and the
+                signing domain should align with the visible From: domain when
+                DMARC is enabled.
               </p>
               <p>
-                Our checks help you isolate whether the problem comes from a
-                missing selector, malformed key, weak key length, alignment
-                issue, or body hash mismatch caused by message modifications in
-                transit.
+                The common traps are straightforward but painful: a missing
+                selector during key rotation, a truncated TXT record, a weak
+                legacy key, or a message body changed by a secure gateway after
+                signing. In each case, the message may still be legitimate, but
+                the authentication story no longer holds together.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* HOW DKIM WORKS */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div className="prose">
+              <h2 style={{ marginTop: 0, fontSize: 18 }}>
+                How DKIM verification works in practice
+              </h2>
+              <p>
+                When a message is sent, the sender adds a DKIM-Signature header.
+                That header includes a selector (<code>s=</code>), a signing
+                domain (<code>d=</code>), a body hash (<code>bh=</code>), and
+                the cryptographic signature itself. The receiving server uses
+                the selector and signing domain to retrieve the public key from
+                DNS under <code>selector._domainkey.example.com</code>.
               </p>
               <p>
-                Treat DKIM as a living system, not a one-time DNS task. Version
-                selector changes, document which provider signs what traffic,
-                and rotate keys deliberately rather than during incidents.
+                If the public key is present and valid, the receiver verifies
+                the signature against the signed headers and message body. If
+                the message body changed after signing, the body hash fails. If
+                the selector is missing, the key is malformed, or the signature
+                references the wrong domain, DKIM fails even when the sender is
+                otherwise legitimate. For the full flow, read the{" "}
+                <Link href="/dkim/dkim-guide">Complete DKIM Guide</Link>.
               </p>
             </div>
           </div>
@@ -212,12 +305,7 @@ Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`}
                 gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
               }}
             >
-              {/* Future: add "View all issues" page when clusters exceed MAX_HUB_CARDS */}
-              {Array.from(
-                new Map(dkimCluster.map((item) => [item.href, item])).values()
-              )
-                .slice(0, MAX_HUB_CARDS)
-                .map((link) => (
+              {troubleshootingLinks.map((link) => (
                 <HubLink
                   key={link.href}
                   href={link.href}
@@ -242,24 +330,27 @@ Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`}
           <div style={card}>
             <div className="prose">
               <h2 style={{ marginTop: 0, fontSize: 18 }}>
-                How DKIM fits with SPF and DMARC
+                When DKIM alone is not enough
               </h2>
               <p>
-                DKIM alone cannot fully protect your brand. Receivers interpret
-                SPF, DKIM, and DMARC together as one trust story about whether
-                your messages are legitimate.
+                DKIM is only one part of the full authentication stack. It helps
+                prove message integrity and domain ownership, but it does not
+                authorize sending infrastructure by itself and it does not tell
+                receivers how to enforce failures against your visible brand.
               </p>
               <p>
-                SPF authorizes sending infrastructure, DKIM signs message
-                content, and DMARC decides what to do when those signals do not
-                align with the visible From: domain. When all three work
-                together, you can move from monitoring to stronger enforcement
-                with much more confidence.
+                SPF validates the sending path. DKIM validates the message.
+                DMARC evaluates whether either authentication path aligns with
+                the visible From: domain and then applies your published policy.
+                That is why a technically valid signature is still not enough if
+                the signing domain does not align, or if your SPF and DKIM
+                implementation across providers is inconsistent.
               </p>
               <p>
-                If you are planning a full rollout, stabilize SPF first, make
-                sure every sender signs correctly with DKIM, and then tighten
-                DMARC once alignment is proven.
+                For stable deployment, clean SPF first, make sure every real
+                sender signs correctly with DKIM, and only then tighten DMARC
+                once alignment is proven across the traffic that actually
+                matters.
               </p>
             </div>
           </div>
