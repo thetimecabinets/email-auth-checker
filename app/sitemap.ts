@@ -12,6 +12,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/spf", priority: 0.9 as const },
     { path: "/dkim", priority: 0.9 as const },
     { path: "/dmarc", priority: 0.9 as const },
+    { path: "/spf/spf-record-guide", priority: 0.8 as const },
+    { path: "/dkim/dkim-guide", priority: 0.8 as const },
+    { path: "/dmarc/dmarc-guide", priority: 0.8 as const },
   ];
 
   const clusterHrefs = [
