@@ -108,7 +108,7 @@ export const spfErrors = {
     },
 
     "spf/sendgrid-spf-not-working": {
-      title: "SendGrid SPF Not Working – Fix SPF Include Error (2026)",
+      title: "SendGrid SPF Not Working? Fix SPF Include Errors (2026)",
 
       intro:
         "You added SendGrid to your SPF record, or thought you did, but tests still show SPF failing for messages sent through SendGrid. In most cases this happens because the include:sendgrid.net mechanism is missing, placed on the wrong host, or split across multiple SPF records so receivers cannot evaluate a single, clear policy.",

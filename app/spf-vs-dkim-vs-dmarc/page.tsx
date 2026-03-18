@@ -7,7 +7,7 @@ import { BASE_URL } from "@/app/lib/metadata";
 const PAGE_PATH = "/spf-vs-dkim-vs-dmarc";
 
 export const metadata: Metadata = {
-  title: "SPF vs DKIM vs DMARC (2026) | Email DNS Check",
+  title: "SPF vs DKIM vs DMARC: What Each One Does (2026)",
   description:
     "Compare SPF, DKIM, and DMARC in one place. See what each protocol checks, how they differ, and how to combine them into a practical email authentication strategy.",
   alternates: {
@@ -85,24 +85,41 @@ export default function SPFvsDKIMvsDMARCPage() {
           <div className="prose">
             <h2>SPF in two sentences</h2>
             <p>
-              SPF authorizes sending infrastructure. It tells receivers which IPs
-              or providers are allowed to send on behalf of a domain and fails
-              when a message comes from somewhere else.
+              SPF authorizes sending infrastructure and is often where{" "}
+              <Link href="/spf/spf-record-syntax-error">SPF errors</Link> first
+              show up when a record is misconfigured. It tells receivers which
+              IPs or providers are allowed to send on behalf of a domain and
+              fails when a message comes from somewhere else or your policy
+              triggers{" "}
+              <Link href="/spf/spf-permerror-too-many-dns-lookups">
+                too many DNS lookups
+              </Link>
+              .
             </p>
 
             <h2>DKIM in two sentences</h2>
             <p>
-              DKIM signs messages with a private key so receivers can verify that
-              they were not altered and that they were signed by a domain that
-              published the matching public key. It focuses on message integrity
-              and the identity of the signer, not on the IP alone.
+              DKIM signs messages with a private key so receivers can verify
+              that the{" "}
+              <Link href="/dkim/dkim-signature-explained">DKIM signature</Link>{" "}
+              matches a domain that published the matching public key. When the
+              key is broken or rotated incorrectly, you may see an{" "}
+              <Link href="/dkim/invalid-dkim-key">invalid DKIM key</Link> even
+              though mail is still sending. It focuses on message integrity and
+              the identity of the signer, not on the IP alone.
             </p>
 
             <h2>DMARC in two sentences</h2>
             <p>
               DMARC tells receivers how to handle mail when SPF and/or DKIM do
               not align with the visible From domain. It adds policy and
-              reporting on top of the raw authentication results.
+              reporting on top of the raw authentication results, using the{" "}
+              <Link href="/dmarc/no-dmarc-record-found">DMARC record</Link> you
+              publish to decide where{" "}
+              <Link href="/dmarc/dmarc-aggregate-reports-explained">
+                DMARC reports
+              </Link>{" "}
+              should be sent and how strictly to treat failures.
             </p>
           </div>
         </section>

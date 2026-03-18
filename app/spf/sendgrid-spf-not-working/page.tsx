@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return { title: "Unknown" };
   }
   return {
-    title: `${data.title} | Email DNS Check`,
+    title: "SendGrid SPF Not Working? Fix SPF Include Errors (2026)",
     description: buildMetaDescription(data.title, data.intro),
     alternates: {
       canonical: `${BASE_URL}${PAGE_PATH}`,

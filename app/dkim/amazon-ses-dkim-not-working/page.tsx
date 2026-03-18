@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: `${data.title} | Email DNS Check`,
+    title: "Amazon SES DKIM Not Working? Fix the 3 CNAME Records (2026)",
     description: buildMetaDescription(data.title, data.intro),
     alternates: {
       canonical: `${BASE_URL}${PAGE_PATH}`,

@@ -7,7 +7,7 @@ import { BASE_URL } from "@/app/lib/metadata";
 const PAGE_PATH = "/email-authentication-explained";
 
 export const metadata: Metadata = {
-  title: "Email Authentication Explained (2026) | Email DNS Check",
+  title: "Email Authentication Explained: SPF, DKIM, DMARC (2026)",
   description:
     "Understand SPF, DKIM, and DMARC in plain language. Learn why email authentication exists, how it prevents spoofing, and what a healthy setup looks like in 2026.",
   alternates: {
@@ -119,9 +119,15 @@ export default function EmailAuthenticationExplainedPage() {
             <p>
               Sender Policy Framework (SPF) answers a simple question: &quot;Is
               this server allowed to send mail for this domain?&quot; You publish
-              an SPF record in DNS listing the IPs and providers that are
-              allowed to send on your behalf. When a message arrives, the
-              receiver checks the connecting IP against that list.
+              an{" "}
+              <Link href="/spf/no-spf-record-found">SPF record</Link> in DNS
+              listing the IPs and providers that are allowed to send on your
+              behalf, and avoid publishing{" "}
+              <Link href="/spf/multiple-spf-records-found">
+                multiple SPF records
+              </Link>{" "}
+              for the same domain. When a message arrives, the receiver checks
+              the connecting IP against that list.
             </p>
             <p>
               If the IP is listed, SPF passes. If it is not, SPF fails or
@@ -157,7 +163,12 @@ export default function EmailAuthenticationExplainedPage() {
               DomainKeys Identified Mail (DKIM) attaches a cryptographic
               signature to each message. Your sending platform signs selected
               headers and the body with a private key. The corresponding public
-              key is published in DNS under a DKIM selector record.
+              key is published in DNS under a{" "}
+              <Link href="/dkim/dkim-selector-not-found">DKIM selector</Link>{" "}
+              record, and if the{" "}
+              <Link href="/dkim/no-dkim-record-found">DKIM record</Link> is
+              missing or mismatched, receivers cannot validate those
+              signatures.
             </p>
             <p>
               When a receiver gets the message, it looks up the selector, pulls
@@ -191,9 +202,14 @@ export default function EmailAuthenticationExplainedPage() {
             <h2>How DMARC ties everything together</h2>
             <p>
               DMARC is the policy layer that sits on top of SPF and DKIM. It
-              lets a domain owner publish a rule in DNS that says, in effect:
-              &quot;If neither SPF nor DKIM passes in alignment with my domain,
-              here is how I want you to treat the message.&quot;
+              lets a domain owner publish a{" "}
+              <Link href="/dmarc/dmarc-policy-none-vs-quarantine-vs-reject">
+                DMARC policy
+              </Link>{" "}
+              in DNS that says, in effect: &quot;If neither SPF nor DKIM passes
+              in{" "}
+              <Link href="/dmarc/dmarc-alignment-failed">alignment</Link> with
+              my domain, here is how I want you to treat the message.&quot;
             </p>
             <p>
               The DMARC record can request monitoring only (<code>p=none</code>),

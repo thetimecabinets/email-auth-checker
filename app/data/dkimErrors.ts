@@ -109,7 +109,7 @@ export const dkimErrors = {
   },
 
   "dkim/google-workspace-dkim-not-working": {
-    title: "Google Workspace DKIM Not Working – Fix DKIM in Gmail (2026)",
+    title: "Google Workspace DKIM Not Working? Fix It Fast (2026)",
 
     intro:
       "You enabled DKIM in the Google Admin console, but Gmail still shows DKIM as failing or not present. This usually means the selector record from the Google Admin setup screen was never added to DNS, was added under the wrong hostname, or does not match the selector Gmail is actually using to sign outbound mail.",
@@ -222,7 +222,7 @@ google._domainkey.example.com TXT "v=DKIM1; k=rsa;"`,
   },
 
   "dkim/microsoft-365-dkim-not-working": {
-    title: "Microsoft 365 DKIM Not Working – Fix DKIM in Office 365 (2026)",
+    title: "Microsoft 365 DKIM Not Working? Fix CNAME Setup (2026)",
 
     intro:
       "You turned on DKIM in the Microsoft 365 admin portals, but messages from your domain still show DKIM as failing or not present. With Microsoft 365, this almost always comes down to missing or incorrect CNAME records for selector1 and selector2._domainkey, or DKIM not being fully enabled after the DNS records were created.",
@@ -340,7 +340,7 @@ selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.
   },
 
   "dkim/amazon-ses-dkim-not-working": {
-    title: "Amazon SES DKIM Not Working – Fix DKIM in AWS SES (2026)",
+    title: "Amazon SES DKIM Not Working? Fix the 3 CNAME Records (2026)",
 
     intro:
       "You enabled DKIM for your domain in Amazon SES, but tests still show DKIM as failing or not present. With Easy DKIM, SES expects three separate CNAME records in DNS, and DKIM keeps failing when one of those records is missing, pointed at the wrong hostname, or never fully verified in the SES console.",
