@@ -108,6 +108,358 @@ export const dkimErrors = {
     ]
   },
 
+  "dkim/google-workspace-dkim-not-working": {
+    title: "Google Workspace DKIM Not Working – Fix DKIM in Gmail (2026)",
+
+    intro:
+      "You enabled DKIM in the Google Admin console, but Gmail still shows DKIM as failing or not present. This usually means the selector record from the Google Admin setup screen was never added to DNS, was added under the wrong hostname, or does not match the selector Gmail is actually using to sign outbound mail.",
+
+    fixTitle: "One-Minute Fix",
+
+    fixText:
+      "In Google Admin, go to Apps → Google Workspace → Gmail → Authenticate email, enable DKIM for the correct domain, copy the exact TXT record shown there, and publish it at the selector._domainkey hostname in your DNS. Wait for DNS propagation, then send a new test message and re-check DKIM.",
+
+    codeTitle: "Correct Google Workspace DKIM record",
+    codeLanguage: "DNS TXT",
+    code: `google._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANBg..."`,
+
+    afterCodeText:
+      "The host name must exactly match the selector value shown in Google Admin followed by ._domainkey.yourdomain.com. If Google shows google as the selector, the TXT record must live at google._domainkey.yourdomain.com, not on the root zone or under www.",
+
+    wrongExampleTitle: "Wrong setup",
+    wrongExampleLanguage: "DNS TXT",
+    wrongExampleCode: `example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANBg..."
+google._domainkey.example.com TXT "v=DKIM1; k=rsa;"`,
+    wrongExampleText:
+      "Here DKIM is either published on the root domain instead of under google._domainkey, or the p= value is truncated. Gmail will happily send mail, but receivers cannot fetch a valid public key, so DKIM verification fails for every message.",
+
+    correctExampleTitle: "Correct setup",
+    correctExampleLanguage: "DNS TXT",
+    correctExampleCode: `google._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A..."`,
+    correctExampleText:
+      "This matches what Google Admin expects: DKIM is enabled for the right domain, the selector in DNS matches the selector in the Admin console, and the full public key is published without truncation.",
+
+    whyTitle: "Why this happens",
+
+    whyText:
+      "With Google Workspace, DKIM is only fully active after you turn it on in the Admin console and publish the provided TXT record at your DNS provider. DKIM keeps failing when that TXT record is never added, is added under the wrong domain or zone, when the selector name is copied incorrectly, or when you test before external DNS resolvers can see the new record.",
+
+    problemTitle: "Why this is a problem",
+
+    problemText:
+      "Gmail continues to send messages even when DKIM is missing or broken, but receivers treat that traffic as less trustworthy. DMARC policies that rely on DKIM alignment may fail, and over time important transactional and product emails can be pushed from the inbox into spam or promotions as providers see an incomplete authentication story.",
+
+    deliverabilityTitle: "How this affects deliverability",
+
+    deliverabilityText:
+      "For Google Workspace domains, a working DKIM setup is one of the clearest signals that your mail is intentional and properly configured. When DKIM is not working, Gmail-signed mail looks the same as test or half-finished setups, which can make it harder to build and maintain inbox placement for high-value messages.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "DKIM was never fully activated for this domain in the Google Admin console.",
+      "The TXT record from Google Admin was not added at the selector._domainkey hostname in DNS.",
+      "The selector name in DNS does not match the selector Gmail is using to sign messages.",
+      "The record was added under the wrong domain or DNS zone (for example, a staging domain instead of the production sending domain).",
+      "DNS changes were made recently and external resolvers are still seeing the old state.",
+      "DKIM was configured in DNS but 'Start authentication' was never clicked in Google Admin."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We queried the selector._domainkey hostname that Google Workspace uses for this domain and looked for a DKIM TXT record starting with v=DKIM1, with k=rsa and a non-empty p= public key. If no matching record exists, or the key appears truncated or published under a different hostname, Gmail-signed messages cannot be validated correctly.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Where do I enable DKIM for Google Workspace?",
+        answer:
+          "In the Google Admin console, open Apps → Google Workspace → Gmail → Authenticate email. Choose the domain you send from, generate or reuse a selector, publish the TXT record in DNS at the specified host, then come back and click Start authentication."
+      },
+      {
+        question: "How long does it take for Google Workspace DKIM to start working?",
+        answer:
+          "Once the TXT record is published correctly, DKIM usually starts passing as soon as DNS caches refresh. That can be a few minutes to a couple of hours depending on TTL and your DNS provider, but in edge cases it can take up to 24–48 hours."
+      },
+      {
+        question: "Can I have multiple DKIM selectors for Google Workspace?",
+        answer:
+          "Yes. You can rotate keys by creating a new selector and publishing its TXT record while the old one is still in place. Just make sure the selector Gmail uses in the DKIM-Signature header always has a matching DNS record."
+      },
+      {
+        question: "Why is DKIM still failing after I followed the Google guide?",
+        answer:
+          "Most persistent failures come from publishing the TXT record in the wrong zone, copying the selector incorrectly, or testing before DNS propagation is complete. Double-check the exact host name, use external DNS tools to confirm the record is visible, then send a fresh test from a Workspace mailbox. You can also open a real message in Gmail, click 'Show original', and check whether DKIM shows as pass or fail for your domain."
+      }
+    ],
+
+    nextSteps: [
+      "Confirm that DKIM is enabled for the correct domain in Google Admin.",
+      "Copy the exact selector and TXT value from the Google DKIM setup screen.",
+      "Publish the TXT record at selector._domainkey.yourdomain.com in your DNS provider.",
+      "Wait for DNS propagation and send a new test message from a Google Workspace account.",
+      "Re-run your DKIM and DMARC checks to confirm signatures now pass and align."
+    ],
+
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+
+    related: [
+      {
+        href: "/dkim/dkim-selector-not-found",
+        label: "DKIM selector not found"
+      },
+      {
+        href: "/dkim/invalid-dkim-key",
+        label: "Invalid DKIM key"
+      },
+      {
+        href: "/dkim/dkim-alignment-failed",
+        label: "DKIM alignment failed"
+      }
+    ]
+  },
+
+  "dkim/microsoft-365-dkim-not-working": {
+    title: "Microsoft 365 DKIM Not Working – Fix DKIM in Office 365 (2026)",
+
+    intro:
+      "You turned on DKIM in the Microsoft 365 admin portals, but messages from your domain still show DKIM as failing or not present. With Microsoft 365, this almost always comes down to missing or incorrect CNAME records for selector1 and selector2._domainkey, or DKIM not being fully enabled after the DNS records were created.",
+
+    fixTitle: "One-Minute Fix",
+
+    fixText:
+      "In the Microsoft 365 Defender or Exchange admin center, open the DKIM settings for your custom domain, make sure DKIM is turned on, and create both selector1 and selector2 CNAME records exactly as shown in the portal. Each selector._domainkey hostname must point to the corresponding selector-domain._domainkey.onmicrosoft.com target, and DKIM must be enabled after DNS propagation completes.",
+
+    codeTitle: "Correct Microsoft 365 DKIM records",
+    codeLanguage: "DNS",
+    code: `selector1._domainkey.example.com CNAME selector1-example._domainkey.onmicrosoft.com
+selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.com`,
+
+    afterCodeText:
+      "Microsoft 365 does not expect TXT records for DKIM on your custom domain. Instead, each selector must be a CNAME that points to the matching _domainkey hostname under your onmicrosoft.com domain. Both selector1 and selector2 should be created so that Microsoft can rotate keys cleanly.",
+
+    wrongExampleTitle: "Wrong setup",
+    wrongExampleLanguage: "DNS",
+    wrongExampleCode: `selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=..."
+selector1._domainkey.example.com CNAME selector1-example._domainkey.onmicrosoft.com`,
+    wrongExampleText:
+      "Here only one selector is configured and the first attempt used a TXT record instead of a CNAME. Mixed or duplicate records under the same host confuse resolvers, and with only one selector configured, Microsoft 365 DKIM can still fail or behave unpredictably.",
+
+    correctExampleTitle: "Correct setup",
+    correctExampleLanguage: "DNS",
+    correctExampleCode: `selector1._domainkey.example.com CNAME selector1-example._domainkey.onmicrosoft.com
+selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.com`,
+    correctExampleText:
+      "This pattern matches Microsoft’s guidance: both selector1 and selector2 CNAME records are present, each pointing at the correct onmicrosoft.com target. After DNS propagation and enabling DKIM in the admin center, outbound mail from this domain should pass DKIM using one of these selectors.",
+
+    whyTitle: "Why this happens",
+
+    whyText:
+      "Microsoft 365’s DKIM implementation is slightly different from many other providers because it uses CNAMEs, not TXT records, on your custom domain. DKIM keeps failing when only one selector is created, when the CNAME target points at the wrong onmicrosoft.com hostname, when DKIM was never actually enabled after DNS was configured, when the domain in the CNAME target does not match the sending domain, or when you test before those CNAMEs have propagated across DNS.",
+
+    problemTitle: "Why this is a problem",
+
+    problemText:
+      "Microsoft 365 will continue to send mail even when DKIM is not correctly configured, but receivers see messages that lack a reliable DKIM signal. DMARC policies that depend on DKIM alignment can fail, and business-critical mail such as invoices, meeting invites, and account notifications becomes more likely to land in spam or low-priority folders.",
+
+    deliverabilityTitle: "How this affects deliverability",
+
+    deliverabilityText:
+      "For business domains hosted on Microsoft 365, consistent DKIM is a major part of your reputation story. When DKIM does not work, your messages look more like generic bulk mail from shared infrastructure. That makes it harder for mailbox providers to distinguish trusted line-of-business mail from unwanted traffic, and it can reduce inbox placement over time.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "The required CNAME records for selector1._domainkey and selector2._domainkey were never added in DNS.",
+      "Only one selector CNAME was created, leaving the second selector missing.",
+      "The CNAME targets point to the wrong onmicrosoft.com hostname or a different tenant.",
+      "DKIM was not actually enabled in the Microsoft 365 Defender or Exchange admin center after DNS was configured.",
+      "DNS propagation has not completed yet, so external resolvers still do not see the new CNAME records."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We looked up the selector1._domainkey and selector2._domainkey hostnames for your domain and verified whether they return CNAME records pointing at the expected _domainkey hostnames under your onmicrosoft.com domain. If either selector is missing, misdirected, or returns no usable record, Microsoft 365 DKIM will not validate correctly.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Why does Microsoft 365 use CNAME instead of TXT for DKIM?",
+        answer:
+          "Microsoft hosts the actual DKIM keys under the onmicrosoft.com domain and uses CNAMEs on your custom domain to point there. This lets them rotate and manage keys centrally while you only have to maintain the CNAME pointers."
+      },
+      {
+        question: "Do I need both selector1 and selector2 records?",
+        answer:
+          "Yes. Microsoft 365 recommends configuring both selectors so it can rotate keys without interrupting DKIM. Missing one of the selectors can cause failures or complicate future rotations."
+      },
+      {
+        question: "Where do I enable DKIM in Microsoft 365?",
+        answer:
+          "You enable DKIM in the Microsoft 365 Defender or Exchange admin center, under the DKIM settings for your custom domain. After the CNAME records are in place and visible, return to that screen and turn DKIM on."
+      },
+      {
+        question: "Why is DKIM still failing after I added the CNAME records?",
+        answer:
+          "The most common reasons are that the CNAME targets are slightly wrong, that only one selector was created, that DKIM was never enabled in the admin center, or that DNS propagation is still in progress. You can send a test message to an external mailbox, view the message headers, and confirm whether DKIM=pass appears for your domain."
+      }
+    ],
+
+    nextSteps: [
+      "Add both selector1._domainkey and selector2._domainkey CNAME records exactly as shown in the Microsoft 365 admin portals.",
+      "Wait for DNS propagation and use external DNS tools to confirm both selectors resolve to the correct onmicrosoft.com targets.",
+      "In the Microsoft 365 Defender or Exchange admin center, enable DKIM for your custom domain.",
+      "Send a test email from a mailbox hosted on Microsoft 365 to an external recipient.",
+      "Inspect the message headers and verify that DKIM=pass appears for your domain and that DMARC shows a passing or aligned result."
+    ],
+
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+
+    related: [
+      {
+        href: "/dkim/dkim-selector-not-found",
+        label: "DKIM selector not found"
+      },
+      {
+        href: "/dkim/invalid-dkim-key",
+        label: "Invalid DKIM key"
+      },
+      {
+        href: "/dkim/dkim-alignment-failed",
+        label: "DKIM alignment failed"
+      },
+      {
+        href: "/dkim/google-workspace-dkim-not-working",
+        label: "Google Workspace DKIM not working"
+      }
+    ]
+  },
+
+  "dkim/amazon-ses-dkim-not-working": {
+    title: "Amazon SES DKIM Not Working – Fix DKIM in AWS SES (2026)",
+
+    intro:
+      "You enabled DKIM for your domain in Amazon SES, but tests still show DKIM as failing or not present. With Easy DKIM, SES expects three separate CNAME records in DNS, and DKIM keeps failing when one of those records is missing, pointed at the wrong hostname, or never fully verified in the SES console.",
+
+    fixTitle: "One-Minute Fix",
+
+    fixText:
+      "In the AWS console, open Amazon SES, go to Verified identities, select your domain, enable Easy DKIM for that identity, and add all three DKIM CNAME records exactly as shown to your DNS provider. Wait for SES to mark the identity as verified before retesting.",
+
+    codeTitle: "Correct Amazon SES DKIM records",
+    codeLanguage: "DNS",
+    code: `abcde12345._domainkey.example.com CNAME abcde12345.dkim.amazonses.com
+fghij67890._domainkey.example.com CNAME fghij67890.dkim.amazonses.com
+klmno54321._domainkey.example.com CNAME klmno54321.dkim.amazonses.com`,
+
+    afterCodeText:
+      "In a real SES setup, the selector values are long, random-looking strings generated by AWS for your specific domain. All three CNAMEs must exist on the same domain you verified in SES, and each one must point exactly to the dkim.amazonses.com target provided in the console.",
+
+    wrongExampleTitle: "Wrong setup",
+    wrongExampleLanguage: "DNS",
+    wrongExampleCode: `abcde12345._domainkey.example.com CNAME abcde12345.dkim.amazonses.com
+fghij67890._domainkey.example.com CNAME fghij67890.dkim.amazonses.co
+# third DKIM record missing`,
+    wrongExampleText:
+      "Here only two of the three DKIM CNAMEs exist, and one target contains a typo in the amazonses.com hostname. SES will continue to show DKIM as not fully configured, and receivers cannot reliably validate signatures on outbound mail.",
+
+    correctExampleTitle: "Correct setup",
+    correctExampleLanguage: "DNS",
+    correctExampleCode: `abcde12345._domainkey.example.com CNAME abcde12345.dkim.amazonses.com
+fghij67890._domainkey.example.com CNAME fghij67890.dkim.amazonses.com
+klmno54321._domainkey.example.com CNAME klmno54321.dkim.amazonses.com`,
+    correctExampleText:
+      "This matches what Amazon SES expects when Easy DKIM is enabled: all three CNAMEs are present, each pointing to the exact dkim.amazonses.com target. Once DNS has propagated and SES shows DKIM as verified, messages from this identity should pass DKIM.",
+
+    whyTitle: "Why this happens",
+
+    whyText:
+      "Amazon SES generates three DKIM CNAME records for each domain to support key rotation and redundancy. DKIM fails when only one or two of those records are created, when they are added under the wrong domain, when the CNAME targets are mistyped, or when you test before SES has finished verifying the identity after DNS changes.",
+
+    problemTitle: "Why this is a problem",
+
+    problemText:
+      "When DKIM is not working for an SES identity, your messages still send but lack a strong cryptographic signal that they came from an approved sender. DMARC policies that expect DKIM alignment can start to fail, and mailbox providers may treat your campaigns, notifications, and transactional messages as less trustworthy.",
+
+    deliverabilityTitle: "How this affects deliverability",
+
+    deliverabilityText:
+      "For domains that rely on Amazon SES, a working DKIM configuration is a core requirement for production sending. Without it, SES mail can look indistinguishable from test traffic or misconfigured environments, which makes it harder to earn and maintain stable inbox placement at large providers.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "Only one or two of the three required DKIM CNAME records were added to DNS.",
+      "At least one CNAME target contains a typo or points to the wrong amazonses.com hostname.",
+      "The wrong domain or subdomain was verified in SES compared to what actually sends mail.",
+      "Recent DNS changes have not finished propagating to external resolvers.",
+      "DKIM was enabled in the console, but verification never reached a green, verified state."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We looked for all three DKIM selector hostnames that Amazon SES expects for this identity and confirmed whether each one is a CNAME pointing to a dkim.amazonses.com target. If any selector record is missing or misconfigured, SES DKIM will not be fully active.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Why does Amazon SES require three DKIM records?",
+        answer:
+          "SES uses three DKIM selectors to support key rotation and resilience. Having multiple keys available lets AWS rotate or replace keys without interrupting mail flow, but it only works if all three CNAMEs exist in DNS."
+      },
+      {
+        question: "Do all three DKIM CNAME records need to exist?",
+        answer:
+          "Yes. For Easy DKIM to work reliably, all three CNAME records must be present and correctly pointed at the amazonses.com targets shown in the SES console."
+      },
+      {
+        question: "How long does DKIM verification take in SES?",
+        answer:
+          "After you add the CNAMEs, SES usually verifies them within minutes once DNS has propagated. However, delays of a few hours are possible depending on your DNS provider’s TTL settings and caching."
+      },
+      {
+        question: "What is Easy DKIM in Amazon SES?",
+        answer:
+          "Easy DKIM is SES’s managed DKIM feature. Instead of generating your own keys and TXT records, SES creates the keys for you and asks you to publish CNAME records that point to those keys, simplifying setup and rotation."
+      }
+    ],
+
+    nextSteps: [
+      "Open Amazon SES in the AWS console and locate the Verified identity for your sending domain.",
+      "Make sure Easy DKIM is enabled and copy all three DKIM CNAME records exactly as shown.",
+      "Add or correct those CNAME records at your DNS provider on the same domain you verified.",
+      "Wait for SES to mark DKIM as verified for the identity.",
+      "Send a fresh test email and confirm that DKIM now shows as pass in your headers and DMARC reports."
+    ],
+
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+
+    related: [
+      {
+        href: "/dkim/dkim-selector-not-found",
+        label: "DKIM selector not found"
+      },
+      {
+        href: "/dkim/invalid-dkim-key",
+        label: "Invalid DKIM key"
+      },
+      {
+        href: "/dkim/dkim-alignment-failed",
+        label: "DKIM alignment failed"
+      },
+      {
+        href: "/dkim/microsoft-365-dkim-not-working",
+        label: "Microsoft 365 DKIM not working"
+      }
+    ]
+  },
+
   "dkim/dkim-selector-not-found": {
     title: "DKIM Selector Not Found – How to Fix DKIM Selector (2026)",
 

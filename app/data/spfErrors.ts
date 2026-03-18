@@ -106,6 +106,113 @@ export const spfErrors = {
         }
       ]
     },
+
+    "spf/sendgrid-spf-not-working": {
+      title: "SendGrid SPF Not Working – Fix SPF Include Error (2026)",
+
+      intro:
+        "You added SendGrid to your SPF record, or thought you did, but tests still show SPF failing for messages sent through SendGrid. In most cases this happens because the include:sendgrid.net mechanism is missing, placed on the wrong host, or split across multiple SPF records so receivers cannot evaluate a single, clear policy.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Publish a single SPF TXT record for your sending domain that includes SendGrid and remove any duplicate SPF records. Start with your existing SPF policy and add include:sendgrid.net to it, then delete extra v=spf1 records so only one SPF policy remains.",
+
+      codeTitle: "Correct SendGrid SPF record",
+      codeLanguage: "DNS TXT",
+      code: `example.com TXT "v=spf1 include:sendgrid.net -all"`,
+
+      afterCodeText:
+        "This example authorizes only SendGrid to send mail for example.com and fails all other sources. In real deployments you will usually combine SendGrid with other providers in a single v=spf1 policy rather than publishing separate SPF records.",
+
+      wrongExampleTitle: "Wrong setup",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `example.com TXT "v=spf1 include:_spf.google.com -all"
+example.com TXT "v=spf1 include:sendgrid.net -all"`,
+      wrongExampleText:
+        "Here SendGrid is technically present in SPF, but because there are two separate v=spf1 records, SPF evaluation returns a permerror instead of a clean result. Receivers cannot safely decide which policy to apply.",
+
+      correctExampleTitle: "Correct setup",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `example.com TXT "v=spf1 include:_spf.google.com include:sendgrid.net -all"`,
+      correctExampleText:
+        "This merges Google Workspace and SendGrid into a single SPF record so receivers see one clear policy. As long as include:sendgrid.net is present in this combined record, SendGrid traffic can pass SPF.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "SendGrid’s SPF instructions require adding include:sendgrid.net to your existing policy, not publishing a second SPF TXT record. SPF only supports one policy per domain. Failures appear when the include mechanism is missing, added to a different hostname than the one you send from, or split into a second v=spf1 record that causes permerror.",
+
+      problemTitle: "Why this is a problem",
+
+      problemText:
+        "When SPF fails for SendGrid traffic, some providers will treat your mail as suspicious or apply DMARC policies more aggressively. Transactional notifications, password resets, and marketing campaigns sent through SendGrid become more likely to land in spam or get throttled, even if the content and engagement are healthy.",
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "SPF is one of the baseline signals receivers use to decide whether infrastructure is authorized. If SendGrid is not correctly represented in SPF, your sending IPs look like unapproved sources for your domain. That weakens trust in your mail streams and can reduce inbox placement over time.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "include:sendgrid.net was never added to the SPF record for the sending domain.",
+        "Multiple SPF TXT records were published instead of a single merged policy.",
+        "The SPF record was created on the wrong hostname (for example, www.example.com instead of example.com).",
+        "The SPF syntax contains typos or misplaced mechanisms that break evaluation.",
+        "Recent DNS changes, including the SendGrid include, have not finished propagating yet."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We looked for a single SPF TXT record on your sending domain that begins with v=spf1 and inspected whether it contains include:sendgrid.net. If more than one SPF record exists or the include mechanism is missing from the active policy, SendGrid mail will not authenticate correctly.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Can I have multiple SPF records if I use several providers?",
+          answer:
+            "No. SPF supports only one TXT record that starts with v=spf1 for a given domain. If you use SendGrid alongside other providers, they must all be combined into one SPF policy."
+        },
+        {
+          question: "What does include:sendgrid.net actually do?",
+          answer:
+            "The include mechanism tells receivers to fetch SendGrid’s own SPF policy and treat the IPs it authorizes as valid senders for your domain. Without include:sendgrid.net, SendGrid’s sending IPs are not covered by your SPF record."
+        },
+        {
+          question: "Why is SPF still failing after I added include:sendgrid.net?",
+          answer:
+            "The most common reasons are that another SPF record still exists, that the record was added on the wrong hostname, or that the SPF syntax is broken by extra spaces or mechanisms. Make sure only one v=spf1 record exists, that it lives on the domain you actually send from, and that syntax checks pass."
+        }
+      ],
+
+      nextSteps: [
+        "Identify the exact domain SendGrid uses in the MAIL FROM or Return-Path for your messages.",
+        "Update the SPF TXT record for that domain to include include:sendgrid.net alongside any other legitimate senders.",
+        "Remove any duplicate SPF TXT records so only one policy remains.",
+        "Wait for DNS propagation and re-run SPF checks for messages sent through SendGrid.",
+        "Confirm that DMARC now sees SPF as passing and aligned for SendGrid traffic."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-record-syntax-explained",
+          label: "SPF record syntax explained"
+        },
+        {
+          href: "/spf/multiple-spf-records-found",
+          label: "Multiple SPF records found"
+        },
+        {
+          href: "/dmarc/dmarc-alignment-failed",
+          label: "DMARC alignment failed"
+        }
+      ]
+    },
   
     "spf/spf-include-flattening": {
       title: "SPF Include Flattening – Reduce DNS Lookups Safely (2026)",

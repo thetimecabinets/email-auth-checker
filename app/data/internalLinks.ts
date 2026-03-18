@@ -21,6 +21,21 @@ export const spfCluster: InternalLink[] = [
     relatedSlugs: ["spf-record-syntax-explained", "spf-record-generator"],
   },
   {
+    href: "/spf/sendgrid-spf-not-working",
+    label: "SendGrid SPF not working",
+    description:
+      "Fix SPF failures when SendGrid is not correctly included in your SPF policy.",
+    protocol: "spf",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "spf-record-syntax-explained",
+      "multiple-spf-records-found",
+      "spf-permerror-too-many-dns-lookups",
+    ],
+  },
+  {
     href: "/spf/spf-record-syntax-explained",
     label: "SPF record syntax explained",
     description: "Mechanisms, qualifiers, and record structure.",
@@ -182,6 +197,53 @@ export const dkimCluster: InternalLink[] = [
     priority: 0,
     featured: true,
     relatedSlugs: ["dkim-signature-explained", "dkim-selector-explained"],
+  },
+  {
+    href: "/dkim/google-workspace-dkim-not-working",
+    label: "Google Workspace DKIM not working",
+    description:
+      "Fix Gmail DKIM failures when the Google Workspace selector or DNS record is misconfigured.",
+    protocol: "dkim",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "dkim-selector-not-found",
+      "invalid-dkim-key",
+      "dkim-alignment-failed",
+    ],
+  },
+  {
+    href: "/dkim/microsoft-365-dkim-not-working",
+    label: "Microsoft 365 DKIM not working",
+    description:
+      "Fix Office 365 DKIM failures caused by missing or incorrect selector CNAME records.",
+    protocol: "dkim",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "dkim-selector-not-found",
+      "invalid-dkim-key",
+      "dkim-alignment-failed",
+      "google-workspace-dkim-not-working",
+    ],
+  },
+  {
+    href: "/dkim/amazon-ses-dkim-not-working",
+    label: "Amazon SES DKIM not working",
+    description:
+      "Fix DKIM failures when Easy DKIM CNAME records are missing or misconfigured in Amazon SES.",
+    protocol: "dkim",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "dkim-selector-not-found",
+      "invalid-dkim-key",
+      "dkim-alignment-failed",
+      "microsoft-365-dkim-not-working",
+    ],
   },
   {
     href: "/dkim/dkim-signature-explained",

@@ -9,7 +9,20 @@ export function truncateIntro(intro: string, maxLen: number = 160): string {
 }
 
 export function buildMetaDescription(title: string, intro: string) {
-  const base = intro.length > 120 ? intro.slice(0, 120) : intro;
+  const cleanIntro = truncateIntro(intro, 110);
+  const t = title.toLowerCase();
 
-  return `${title}. ${base} Learn causes, real examples, and step-by-step fixes to restore email deliverability.`;
+  if (t.includes("spf")) {
+    return `${title}. ${cleanIntro} Learn what causes this SPF issue, how to fix it correctly, and how it can affect email delivery.`;
+  }
+
+  if (t.includes("dkim")) {
+    return `${title}. ${cleanIntro} Learn why this DKIM issue happens, how to fix it step by step, and how it affects authentication and deliverability.`;
+  }
+
+  if (t.includes("dmarc")) {
+    return `${title}. ${cleanIntro} Learn what this DMARC result means, how to troubleshoot it, and how it impacts domain protection and inbox placement.`;
+  }
+
+  return `${title}. ${cleanIntro} Learn the cause, see examples, and follow the steps to fix the issue.`;
 }
