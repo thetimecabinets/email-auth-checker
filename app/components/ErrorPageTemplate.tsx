@@ -147,6 +147,8 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
         })
       : [];
 
+  const contextualLink = getContextualLink(data.hub?.href, pathname);
+
   return (
     <main style={styles.wrapper}>
       <script
@@ -168,6 +170,22 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
         <h1 style={styles.title}>{data.title}</h1>
 
         <p style={styles.subtitle}>{data.intro}</p>
+
+        {contextualLink}
+
+        <div style={styles.infoBox}>
+          <p style={styles.text}>
+            Learn the bigger picture in our{" "}
+            <Link href="/email-authentication-explained">
+              Email Authentication Explained guide
+            </Link>{" "}
+            and compare{" "}
+            <Link href="/spf-vs-dkim-vs-dmarc">
+              SPF vs DKIM vs DMARC
+            </Link>{" "}
+            to understand how these protocols work together.
+          </p>
+        </div>
 
         <div style={styles.fixBox}>
           <h2 style={styles.sectionTitle}>{data.fixTitle}</h2>
@@ -390,45 +408,79 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
   );
 }
 
+function getContextualLink(hubHref?: string, pathname?: string) {
+  if (hubHref === "/spf" && pathname !== "/spf/spf-permerror-too-many-dns-lookups") {
+    return (
+      <p style={styles.text}>
+        If your SPF setup is complex, review the{" "}
+        <Link href="/spf/spf-permerror-too-many-dns-lookups">
+          SPF lookup limit guide
+        </Link>
+        .
+      </p>
+    );
+  }
+
+  if (hubHref === "/dkim" && pathname !== "/dkim/dkim-selector-not-found") {
+    return (
+      <p style={styles.text}>
+        If signatures fail, check the{" "}
+        <Link href="/dkim/dkim-selector-not-found">
+          DKIM selector troubleshooting guide
+        </Link>
+        .
+      </p>
+    );
+  }
+
+  if (hubHref === "/dmarc" && pathname !== "/dmarc/no-dmarc-record-found") {
+    return (
+      <p style={styles.text}>
+        If policies are not enforced, review the{" "}
+        <Link href="/dmarc/no-dmarc-record-found">
+          DMARC setup guide
+        </Link>
+        .
+      </p>
+    );
+  }
+
+  return null;
+}
+
 const styles: Record<string, React.CSSProperties> = {
   wrapper: {
     maxWidth: 860,
     margin: "80px auto",
     padding: "0 24px",
   },
-
   card: {
     background: "#ffffff",
     border: "1px solid #e5e7eb",
     borderRadius: 12,
     padding: 32,
   },
-
   title: {
     fontSize: 32,
     fontWeight: 700,
     marginBottom: 12,
   },
-
   subtitle: {
     color: "#374151",
     marginBottom: 32,
     lineHeight: 1.6,
   },
-
   sectionTitle: {
     fontSize: 20,
     fontWeight: 600,
     marginBottom: 12,
   },
-
   fixBox: {
     background: "#f9fafb",
     borderRadius: 10,
     padding: 24,
     marginBottom: 40,
   },
-
   button: {
     display: "inline-block",
     padding: "12px 20px",
@@ -439,60 +491,49 @@ const styles: Record<string, React.CSSProperties> = {
     textDecoration: "none",
     marginTop: 16,
   },
-
   infoBox: {
     marginBottom: 40,
   },
-
   trust: {
     fontSize: 14,
     color: "#6b7280",
     marginTop: 8,
   },
-
   escapeBox: {
     borderTop: "1px solid #e5e7eb",
     paddingTop: 24,
     marginBottom: 40,
   },
-
   escapeTitle: {
     fontSize: 18,
     fontWeight: 600,
     marginBottom: 8,
   },
-
   list: {
     paddingLeft: 18,
     marginBottom: 12,
     lineHeight: 1.6,
   },
-
   text: {
     color: "#374151",
     lineHeight: 1.6,
   },
-
   exampleBlock: {
     marginBottom: 24,
   },
-
   exampleTitle: {
     fontSize: 16,
     fontWeight: 600,
     marginBottom: 12,
   },
-
   faqWrap: {
     display: "grid",
     gap: 20,
   },
-
   faqItem: {
     paddingBottom: 16,
     borderBottom: "1px solid #e5e7eb",
   },
-
   faqQuestion: {
     fontSize: 16,
     fontWeight: 600,

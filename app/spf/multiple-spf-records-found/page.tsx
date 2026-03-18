@@ -1,19 +1,19 @@
 import ErrorPageTemplate from "@/app/components/ErrorPageTemplate";
-import { errorPages } from "@/app/data/errorPages";
-import { BASE_URL, truncateIntro } from "@/app/lib/metadata";
+import { getErrorPage } from "@/app/lib/getErrorPage";
+import { BASE_URL, buildMetaDescription } from "@/app/lib/metadata";
 import type { Metadata } from "next";
 
 const PAGE_PATH = "/spf/multiple-spf-records-found";
 const ERROR_PAGE_KEY = "spf/multiple-spf-records-found";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  const data = getErrorPage(ERROR_PAGE_KEY);
   if (!data) {
     return { title: "Unknown" };
   }
   return {
-    title: data.title,
-    description: truncateIntro(data.intro),
+    title: `${data.title} | Email DNS Check`,
+    description: buildMetaDescription(data.title, data.intro),
     alternates: {
       canonical: `${BASE_URL}${PAGE_PATH}`,
     },
@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Page() {
-  const data = errorPages[ERROR_PAGE_KEY as keyof typeof errorPages];
+  const data = getErrorPage(ERROR_PAGE_KEY);
 
   if (!data) {
     return <div>Missing error page data</div>;

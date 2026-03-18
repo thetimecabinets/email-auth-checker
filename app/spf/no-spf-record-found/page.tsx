@@ -1,10 +1,14 @@
 import Link from "next/link";
 import CodeBlock from "../../components/CodeBlock";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "No SPF Record Found – How to Fix SPF (Step-by-Step)",
   description:
     "Your domain has no SPF record. Learn what this means, why it breaks email delivery, and how to add a correct SPF record safely.",
+  alternates: {
+    canonical: "https://emaildnscheck.com/spf/no-spf-record-found",
+  },
 };
 
 export default function NoSpfRecordFoundPage() {

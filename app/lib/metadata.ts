@@ -7,3 +7,9 @@ export function truncateIntro(intro: string, maxLen: number = 160): string {
   const lastSpace = trimmed.lastIndexOf(" ");
   return lastSpace > 120 ? trimmed.slice(0, lastSpace) : trimmed;
 }
+
+export function buildMetaDescription(title: string, intro: string) {
+  const base = intro.length > 120 ? intro.slice(0, 120) : intro;
+
+  return `${title}. ${base} Learn causes, real examples, and step-by-step fixes to restore email deliverability.`;
+}
