@@ -1,10 +1,6 @@
 import type { MetadataRoute } from "next";
-import {
-  spfCluster,
-  dkimCluster,
-  dmarcCluster,
-} from "./data/internalLinks";
-import { BASE_URL, LAST_UPDATED } from "./lib/metadata";
+import { spfCluster, dkimCluster, dmarcCluster } from "./data/internalLinks";
+import { BASE_URL } from "./lib/metadata";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
@@ -31,7 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const staticEntry = staticRoutes.find((r) => r.path === path);
     return {
       url: `${BASE_URL}${path}`,
-      lastModified: LAST_UPDATED,
+      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: staticEntry?.priority ?? 0.7,
     };
