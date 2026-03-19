@@ -3,14 +3,16 @@ import { getErrorPage, type ErrorPageKey } from "@/app/lib/getErrorPage";
 import { BASE_URL, buildMetaDescription } from "@/app/lib/metadata";
 import type { Metadata } from "next";
 
-const PAGE_PATH = "/dkim/dkim-key-length-too-short";
-const ERROR_PAGE_KEY: ErrorPageKey = "dkim/dkim-key-length-too-short";
+const PAGE_PATH = "/dmarc/dmarc-generator";
+const ERROR_PAGE_KEY: ErrorPageKey = "dmarc/dmarc-generator";
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = getErrorPage(ERROR_PAGE_KEY);
+
   if (!data) {
     return { title: "Unknown" };
   }
+
   return {
     title: `${data.title} | Email DNS Check`,
     description: buildMetaDescription(data.title, data.intro),
@@ -29,3 +31,4 @@ export default function Page() {
 
   return <ErrorPageTemplate {...data} />;
 }
+

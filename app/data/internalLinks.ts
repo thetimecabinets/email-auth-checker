@@ -36,6 +36,15 @@ export const spfCluster: InternalLink[] = [
     ],
   },
   {
+    href: "/spf/spf-lookup-checker",
+    label: "SPF lookup checker",
+    description: "Check how many DNS lookups your SPF record uses.",
+    protocol: "spf",
+    category: "tool",
+    priority: 2,
+    featured: true,
+  },
+  {
     href: "/spf/spf-record-syntax-explained",
     label: "SPF record syntax explained",
     description: "Mechanisms, qualifiers, and record structure.",
@@ -338,6 +347,15 @@ export const dkimCluster: InternalLink[] = [
 ];
 
 export const dmarcCluster: InternalLink[] = [
+  {
+    href: "/dmarc/dmarc-generator",
+    label: "DMARC generator",
+    description: "Generate a valid DMARC record in seconds.",
+    protocol: "dmarc",
+    category: "tool",
+    priority: 1,
+    featured: true,
+  },
   {
     href: "/dmarc/dmarc-record-example",
     label: "DMARC record examples",

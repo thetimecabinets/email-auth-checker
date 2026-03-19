@@ -2,11 +2,15 @@ import { spfErrors } from "@/app/data/spfErrors";
 import { dkimErrors } from "@/app/data/dkimErrors";
 import { dmarcErrors } from "@/app/data/dmarcErrors";
 
-export function getErrorPage(key: string) {
-  return (
-    spfErrors[key as keyof typeof spfErrors] ||
-    dkimErrors[key as keyof typeof dkimErrors] ||
-    dmarcErrors[key as keyof typeof dmarcErrors]
-  );
-}
+const allErrorPages = {
+  ...spfErrors,
+  ...dkimErrors,
+  ...dmarcErrors,
+};
 
+export type ErrorPageKey = keyof typeof allErrorPages;
+export type ErrorPageData = (typeof allErrorPages)[ErrorPageKey];
+
+export function getErrorPage(key: ErrorPageKey): ErrorPageData | undefined {
+  return allErrorPages[key];
+}

@@ -1,80 +1,23 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import CodeBlock from "@/app/components/CodeBlock";
 import {
   getClusterByHubHref,
   getRelatedLinks,
   getExploreLinks,
 } from "@/app/data/internalLinks";
-
-type RelatedLink = {
-  href: string;
-  label: string;
-};
-
-type FaqItem = {
-  question: string;
-  answer: string;
-};
-
-type ErrorPageData = {
-  title: string;
-  intro: string;
-
-  fixTitle: string;
-  fixText: string;
-  code?: string;
-  codeTitle?: string;
-  codeLanguage?: string;
-  afterCodeText?: string;
-
-  whyTitle?: string;
-  whyText?: string;
-
-  problemTitle?: string;
-  problemPoints?: string[];
-  problemText?: string;
-
-  deliverabilityTitle?: string;
-  deliverabilityText?: string;
-
-  causesTitle?: string;
-  causes?: string[];
-
-  checkedTitle?: string;
-  checkedText?: string;
-
-  nextSteps?: string[];
-
-  wrongExampleTitle?: string;
-  wrongExampleCode?: string;
-  wrongExampleLanguage?: string;
-  wrongExampleText?: string;
-
-  correctExampleTitle?: string;
-  correctExampleCode?: string;
-  correctExampleLanguage?: string;
-  correctExampleText?: string;
-
-  faqTitle?: string;
-  faq?: FaqItem[];
-
-  hub?: {
-    href: string;
-    label: string;
-  };
-
-  related?: RelatedLink[];
-};
+import type { ErrorPageData } from "@/app/types/errorPage";
+import SPFMergeTool from "@/app/components/tools/SPFMergeTool";
+import SPFLookupChecker from "@/app/components/tools/SPFLookupChecker";
+import DMARCGenerator from "@/app/components/tools/DMARCGenerator";
 
 const MAX_EXPLORE_LINKS = 10;
 const MAX_RELATED_LINKS = 4;
 const BASE_URL = "https://emaildnscheck.com";
 
-export default function ErrorPageTemplate(data: ErrorPageData) {
-  const pathname = usePathname();
+export default function ErrorPageTemplate(
+  data: ErrorPageData & { pathname?: string }
+) {
+  const pathname = data.pathname || "";
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -169,7 +112,10 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
       <section style={styles.card}>
         <h1 style={styles.title}>{data.title}</h1>
 
-        <p style={styles.subtitle}>{data.intro}</p>
+        <p style={styles.subtitle}>
+          {data.intro}
+          {renderIntroLinks(data.hub?.href)}
+        </p>
 
         {contextualLink}
 
@@ -208,6 +154,41 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
             Re-check
           </Link>
         </div>
+
+        {pathname === "/spf/multiple-spf-records-found" ||
+        pathname === "/spf/spf-permerror-too-many-dns-lookups" ||
+        pathname === "/spf/spf-record-generator" ||
+        pathname === "/spf/sendgrid-spf-not-working" ? (
+          <div style={{ marginTop: 24 }}>
+            <h2 style={styles.sectionTitle}>Fix it instantly</h2>
+            <p style={styles.text}>
+              Paste your SPF records and merge them into one valid SPF policy.
+            </p>
+            <SPFMergeTool />
+          </div>
+        ) : null}
+
+        {pathname === "/spf/spf-lookup-checker" && (
+          <div style={{ marginTop: 24 }}>
+            <h2 style={styles.sectionTitle}>Check DNS lookups</h2>
+            <p style={styles.text}>
+              Paste your SPF record to estimate how many DNS lookups it uses and
+              see whether you are close to the SPF limit.
+            </p>
+            <SPFLookupChecker />
+          </div>
+        )}
+
+        {pathname === "/dmarc/dmarc-generator" && (
+          <div style={{ marginTop: 24 }}>
+            <h2 style={styles.sectionTitle}>Generate a DMARC record</h2>
+            <p style={styles.text}>
+              Choose your DMARC policy, reporting mailboxes, and alignment
+              strategy, then copy the generated TXT value into DNS.
+            </p>
+            <DMARCGenerator />
+          </div>
+        )}
 
         {(data.wrongExampleCode || data.correctExampleCode) && (
           <div style={styles.infoBox}>
@@ -257,7 +238,10 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
               {data.whyTitle || "Why this happens"}
             </h2>
 
-            <p style={styles.text}>{data.whyText}</p>
+            <p style={styles.text}>
+              {data.whyText}
+              {renderWhyLinks(data.hub?.href)}
+            </p>
           </div>
         )}
 
@@ -275,7 +259,12 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
               </ul>
             )}
 
-            {data.problemText && <p style={styles.text}>{data.problemText}</p>}
+            {data.problemText && (
+              <p style={styles.text}>
+                {data.problemText}
+                {renderProblemLinks(data.hub?.href)}
+              </p>
+            )}
           </div>
         )}
 
@@ -285,7 +274,10 @@ export default function ErrorPageTemplate(data: ErrorPageData) {
               {data.deliverabilityTitle || "How this affects deliverability"}
             </h2>
 
-            <p style={styles.text}>{data.deliverabilityText}</p>
+            <p style={styles.text}>
+              {data.deliverabilityText}
+              {renderDeliverabilityLinks(data.hub?.href)}
+            </p>
           </div>
         )}
 
@@ -442,6 +434,193 @@ function getContextualLink(hubHref?: string, pathname?: string) {
         </Link>
         .
       </p>
+    );
+  }
+
+  return null;
+}
+
+function renderIntroLinks(hubHref?: string) {
+  if (hubHref === "/spf") {
+    return (
+      <>
+        {" "}
+        Start with{" "}
+        <Link href="/spf/no-spf-record-found">your SPF record status</Link> and
+        then check for{" "}
+        <Link href="/spf/multiple-spf-records-found">multiple SPF records</Link>{" "}
+        if things still look off.
+      </>
+    );
+  }
+
+  if (hubHref === "/dkim") {
+    return (
+      <>
+        {" "}
+        Many issues come down to a missing{" "}
+        <Link href="/dkim/no-dkim-record-found">DKIM record</Link> or a{" "}
+        <Link href="/dkim/dkim-selector-not-found">selector mismatch</Link> in
+        DNS.
+      </>
+    );
+  }
+
+  if (hubHref === "/dmarc") {
+    return (
+      <>
+        {" "}
+        Often the first step is confirming you even have a{" "}
+        <Link href="/dmarc/no-dmarc-record-found">DMARC record</Link> and that
+        the{" "}
+        <Link href="/dmarc/dmarc-policy-none-vs-quarantine-vs-reject">
+          policy value
+        </Link>{" "}
+        matches your enforcement goal.
+      </>
+    );
+  }
+
+  return null;
+}
+
+function renderWhyLinks(hubHref?: string) {
+  if (hubHref === "/spf") {
+    return (
+      <>
+        {" "}
+        This is especially common when{" "}
+        <Link href="/spf/multiple-spf-records-found">
+          multiple SPF records
+        </Link>{" "}
+        are published or when{" "}
+        <Link href="/spf/spf-permerror-too-many-dns-lookups">
+          DNS lookup limits
+        </Link>{" "}
+        are exceeded.
+      </>
+    );
+  }
+
+  if (hubHref === "/dkim") {
+    return (
+      <>
+        {" "}
+        In practice it usually traces back to a{" "}
+        <Link href="/dkim/dkim-selector-not-found">missing selector</Link> or an{" "}
+        <Link href="/dkim/invalid-dkim-key">invalid DKIM key</Link> in DNS.
+      </>
+    );
+  }
+
+  if (hubHref === "/dmarc") {
+    return (
+      <>
+        {" "}
+        Misaligned authentication paths often show up as{" "}
+        <Link href="/dmarc/dmarc-alignment-failed">DMARC alignment failures</Link>{" "}
+        or a{" "}
+        <Link href="/dmarc/dmarc-rua-ruf-not-working">
+          reporting address that never receives data
+        </Link>
+        .
+      </>
+    );
+  }
+
+  return null;
+}
+
+function renderProblemLinks(hubHref?: string) {
+  if (hubHref === "/spf") {
+    return (
+      <>
+        {" "}
+        For many senders the concrete symptom is a{" "}
+        <Link href="/spf/spf-record-syntax-error">syntax error</Link> or a{" "}
+        <Link href="/spf/spf-record-too-long">record that is too long</Link> for
+        DNS to handle cleanly.
+      </>
+    );
+  }
+
+  if (hubHref === "/dkim") {
+    return (
+      <>
+        {" "}
+        When this drags on, it often surfaces as{" "}
+        <Link href="/dkim/dkim-alignment-failed">DKIM alignment failures</Link>{" "}
+        or a{" "}
+        <Link href="/dkim/dkim-body-hash-mismatch">body hash mismatch</Link> in
+        detailed headers.
+      </>
+    );
+  }
+
+  if (hubHref === "/dmarc") {
+    return (
+      <>
+        {" "}
+        Over time that can mean critical mail is treated like generic bulk,
+        especially when{" "}
+        <Link href="/dmarc/multiple-dmarc-records-found">
+          multiple DMARC records
+        </Link>{" "}
+        or a misconfigured{" "}
+        <Link href="/dmarc/dmarc-fo-tag-explained">fo= tag</Link> confuse
+        evaluation.
+      </>
+    );
+  }
+
+  return null;
+}
+
+function renderDeliverabilityLinks(hubHref?: string) {
+  if (hubHref === "/spf") {
+    return (
+      <>
+        {" "}
+        You can see this clearly in{" "}
+        <Link href="/spf/spf-neutral-result-explained">
+          neutral SPF results
+        </Link>{" "}
+        or when{" "}
+        <Link href="/spf/spf-softfail-vs-fail">
+          softfail vs fail decisions
+        </Link>{" "}
+        tip borderline mail into spam.
+      </>
+    );
+  }
+
+  if (hubHref === "/dkim") {
+    return (
+      <>
+        {" "}
+        Providers tend to trust domains with a stable{" "}
+        <Link href="/dkim/dkim-record-example">DKIM record</Link> and clean{" "}
+        <Link href="/dkim/dkim-signature-explained">DKIM signatures</Link> far
+        more than those with intermittent failures.
+      </>
+    );
+  }
+
+  if (hubHref === "/dmarc") {
+    return (
+      <>
+        {" "}
+        Over time, well-tuned{" "}
+        <Link href="/dmarc/dmarc-aggregate-reports-explained">
+          DMARC aggregate reports
+        </Link>{" "}
+        and a clear{" "}
+        <Link href="/dmarc/dmarc-policy-none-vs-quarantine-vs-reject">
+          policy stance
+        </Link>{" "}
+        are what help inbox providers separate your legitimate traffic from
+        spoofing attempts.
+      </>
     );
   }
 

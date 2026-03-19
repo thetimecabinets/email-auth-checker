@@ -108,6 +108,60 @@ export const dmarcErrors = {
     ]
   },
 
+  "dmarc/dmarc-generator": {
+    title: "DMARC generator",
+
+    intro:
+      "DMARC lets you publish a domain-level policy that tells mailbox providers what to do when SPF and DKIM do not align with the visible From domain. A clear DMARC record also enables aggregate reporting so you can see which services are sending mail on your behalf.",
+
+    fixTitle: "One-Minute Fix",
+
+    fixText:
+      "Use the DMARC generator on this page to choose a policy, reporting addresses, and alignment settings. Then copy the generated TXT value into DNS at the _dmarc hostname for your domain.",
+
+    codeTitle: "Example DMARC record",
+    codeLanguage: "DNS TXT",
+    code: `v=DMARC1; p=none; rua=mailto:dmarc@example.com; pct=100; adkim=r; aspf=r`,
+
+    afterCodeText:
+      "This example starts with a monitoring policy and relaxed alignment. You can tighten enforcement and alignment over time as you gain confidence that all legitimate senders are authenticated correctly.",
+
+    whyTitle: "Why this happens",
+
+    whyText:
+      "Many teams understand they need DMARC but are unsure which tags are required and which values are safe to start with. Hand-writing DMARC records increases the risk of typos or overly aggressive policies that can block legitimate mail.",
+
+    problemTitle: "Why a missing or broken DMARC record is a problem",
+
+    problemText:
+      "Without a clean DMARC policy, mailbox providers have less guidance on how to treat spoofed or unauthenticated mail that appears to come from your domain. That can make phishing harder to detect and weaken your overall email trust profile.",
+
+    deliverabilityTitle: "How a good DMARC policy helps deliverability",
+
+    deliverabilityText:
+      "A well-implemented DMARC record, combined with aligned SPF and DKIM, shows receivers that you actively manage abuse and authentication. Over time, this can improve inbox placement for legitimate mail while making it easier for providers to discard obvious spoofing attempts.",
+
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+
+    related: [
+      {
+        href: "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject",
+        label: "DMARC policy levels explained"
+      },
+      {
+        href: "/dmarc/dmarc-aspf-adkim-explained",
+        label: "DMARC aspf and adkim alignment"
+      },
+      {
+        href: "/dmarc/dmarc-aggregate-reports-explained",
+        label: "DMARC aggregate reports explained"
+      }
+    ]
+  },
+
   "dmarc/dmarc-policy-none-vs-quarantine-vs-reject": {
     title: "DMARC Policy None vs Quarantine vs Reject – Explained (2026)",
 

@@ -213,6 +213,79 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
         }
       ]
     },
+
+    "spf/spf-lookup-checker": {
+      title: "SPF lookup checker",
+
+      intro:
+        "SPF has a hard limit of ten DNS lookups across mechanisms like include, a, mx, and redirect. Complex records that chain many providers together can silently cross that limit, returning permerror instead of a clean pass or fail and making deliverability harder to reason about.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Paste your SPF record into the lookup checker below to estimate how many DNS lookups it triggers. If you are close to or over ten, simplify your mechanisms, remove unused providers, or consolidate infrastructure so the record stays within the limit.",
+
+      codeTitle: "Example SPF record with lookups",
+      codeLanguage: "DNS TXT",
+      code: `v=spf1 include:_spf.google.com include:sendgrid.net a mx ~all`,
+
+      afterCodeText:
+        "In this example, each include, a, and mx contributes to the DNS lookup budget. The goal is to authorize your real senders while keeping the total number of lookups under the SPF limit.",
+
+      whyTitle: "Why DNS lookups matter for SPF",
+
+      whyText:
+        "Every time a receiver evaluates your SPF record, it has to follow include, a, mx, and redirect mechanisms. When the total exceeds ten lookups, SPF evaluation stops with a permerror. That means even a well-intentioned, complete record can fail in practice if it is too complex.",
+
+      problemTitle: "Why this is a problem",
+
+      problemText:
+        "If SPF regularly returns permerror, mailbox providers cannot use it as a reliable signal. That can cause DMARC to fail when SPF was supposed to provide alignment, and it can make otherwise healthy mail streams look unstable or poorly managed.",
+
+      deliverabilityTitle: "How lookup bloat affects deliverability",
+
+      deliverabilityText:
+        "From a deliverability perspective, a simpler SPF record that stays under the lookup limit is almost always safer than a sprawling one that tries to list every edge case. Mailbox providers reward consistency; when your SPF result frequently breaks, it becomes harder to build and maintain trust with large receivers.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "Chaining many third-party providers together with separate include mechanisms.",
+        "Using a and mx mechanisms broadly across domains instead of targeting specific hosts.",
+        "Legacy or unused services that were never removed from the SPF record.",
+        "Redirect chains that pull in additional records without being obvious in the top-level policy."
+      ],
+
+      checkedTitle: "What this page helps you check",
+      checkedText:
+        "This page does not perform a live DNS query. Instead, it gives you a fast, approximate count of how many DNS lookups your SPF policy is likely to trigger based on commonly costly mechanisms.",
+
+      nextSteps: [
+        "Paste your current SPF record into the lookup checker.",
+        "Review the estimated lookup count and identify which mechanisms contribute most.",
+        "Remove obsolete services and simplify where possible.",
+        "Re-test until the SPF record stays safely under the ten-lookup limit."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-permerror-too-many-dns-lookups",
+          label: "SPF permerror: too many DNS lookups"
+        },
+        {
+          href: "/spf/spf-include-flattening",
+          label: "SPF include flattening"
+        },
+        {
+          href: "/spf/spf-record-too-long",
+          label: "SPF record too long"
+        }
+      ]
+    },
   
     "spf/spf-include-flattening": {
       title: "SPF Include Flattening – Reduce DNS Lookups Safely (2026)",
