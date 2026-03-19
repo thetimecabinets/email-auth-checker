@@ -49,7 +49,6 @@ const buttonStyle: React.CSSProperties = {
 };
 
 const outputBoxStyle: React.CSSProperties = {
-  marginTop: 16,
   padding: 12,
   borderRadius: 8,
   border: "1px solid #e5e7eb",
