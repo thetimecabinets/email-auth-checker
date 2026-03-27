@@ -3,8 +3,8 @@ import { getErrorPage, type ErrorPageKey } from "@/app/lib/getErrorPage";
 import { buildMetadata } from "@/app/lib/metadata";
 import type { Metadata } from "next";
 
-const PAGE_PATH = "/dmarc/dmarc-generator";
-const ERROR_PAGE_KEY: ErrorPageKey = "dmarc/dmarc-generator";
+const PAGE_PATH = "/dmarc/sendgrid-dmarc-fail";
+const ERROR_PAGE_KEY: ErrorPageKey = "dmarc/sendgrid-dmarc-fail";
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = getErrorPage(ERROR_PAGE_KEY);
@@ -29,4 +29,3 @@ export default function Page() {
 
   return <ErrorPageTemplate {...data} />;
 }
-

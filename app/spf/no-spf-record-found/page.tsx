@@ -18,25 +18,25 @@ export default function NoSpfRecordFoundPage() {
         <h1 style={styles.title}>No SPF Record Found</h1>
 
         <p style={styles.subtitle}>
-          Your domain does not publish an SPF record. As a result, receiving
-          mail servers cannot verify which servers are allowed to send email on
-          your behalf, so even fully legitimate traffic can look
-          indistinguishably similar to spoofed messages. This page explains what
-          “no SPF record found” means in practice, how it impacts inbox
-          placement, and how to safely add a correct record without breaking
-          existing mail flows.
+          Your domain has no SPF record, so receiving mail servers cannot verify
+          which servers are allowed to send email on your behalf. Without that
+          sender policy, legitimate traffic and spoofed traffic can look too
+          similar to filters. A common real-world case is a new domain launch,
+          incomplete email setup, or a DNS migration where SPF was never added
+          back. This page explains what “no SPF record found” means in practice,
+          how it impacts inbox placement, and how to safely add a correct record
+          without breaking existing mail flows.
         </p>
 
         <div style={styles.fixBox}>
           <h2 style={styles.sectionTitle}>One-Minute Fix</h2>
 
           <p style={styles.text}>
-            Publish a single SPF record in your domain’s DNS that authorizes
-            your email sending services. Start by listing only the providers
-            that send mail for your primary domain, for example your hosted
-            mailbox provider and one marketing platform, and avoid copying
-            example SPF strings from random blogs that include IP ranges you do
-            not control.
+            Publish ONE SPF TXT record in your domain’s DNS that authorizes all
+            legitimate senders. Start by listing the providers that actually
+            send mail for your domain, such as Google Workspace, Microsoft 365,
+            and any marketing platform, then merge them into a single v=spf1
+            policy instead of adding separate SPF records.
           </p>
 
           <CodeBlock
@@ -74,6 +74,12 @@ export default function NoSpfRecordFoundPage() {
             Yahoo use SPF as one of several inputs to decide whether to accept a
             message, put it in the spam folder, or reject it outright.
           </p>
+          <p style={styles.text}>
+            Without SPF, your domain has no sender authorization policy at all.
+            Receivers can no longer confirm whether the sending server is
+            approved for your domain, so they must rely on weaker trust signals
+            and heuristics.
+          </p>
 
           <h3 style={styles.h3Spacing}>How SPF affects deliverability</h3>
 
@@ -95,28 +101,32 @@ export default function NoSpfRecordFoundPage() {
             for marketing campaigns and a clearer reputation signal for the IPs
             and services that you actually use.
           </p>
+          <p style={styles.text}>
+            If SPF is missing, DMARC may lose one of its expected alignment
+            paths, which can increase DMARC failures for legitimate traffic.
+            Combined with stricter filtering, this raises spam-folder risk and
+            can make inbox placement unstable.
+          </p>
         </div>
 
         <div style={styles.infoBox}>
           <h2 style={styles.sectionTitle}>Common causes of “No SPF record found”</h2>
           <ul style={styles.list}>
             <li>
-              The SPF TXT record was created on{" "}
-              <code>www.example.com</code> instead of the root{" "}
-              <code>example.com</code> zone.
+              The domain was never fully configured for email authentication, so
+              no SPF record was published.
             </li>
             <li>
-              Your DNS provider split a long SPF string into multiple TXT
-              records instead of one logical SPF policy.
+              A DNS migration or DNS provider change removed the SPF record and
+              it was not restored.
             </li>
             <li>
-              A previous SPF record was deleted during a DNS cleanup or
-              migration and never re-created.
+              A new domain was set up quickly, but SPF was skipped during the
+              initial setup checklist.
             </li>
             <li>
-              Multiple SPF records were attempted and the panel silently
-              rejected them, leaving you with no valid{" "}
-              <code>v=spf1</code> policy at all.
+              Provider onboarding (Google Workspace, Microsoft 365, or a sending
+              platform) was completed without publishing SPF in DNS.
             </li>
             <li>
               DNS changes are still propagating and the new record is not yet

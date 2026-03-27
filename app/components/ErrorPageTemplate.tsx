@@ -10,8 +10,8 @@ import SPFMergeTool from "@/app/components/tools/SPFMergeTool";
 import SPFLookupChecker from "@/app/components/tools/SPFLookupChecker";
 import DMARCGenerator from "@/app/components/tools/DMARCGenerator";
 
-const MAX_EXPLORE_LINKS = 10;
-const MAX_RELATED_LINKS = 4;
+const MAX_EXPLORE_LINKS = 6;
+const MAX_RELATED_LINKS = 5;
 const BASE_URL = "https://emaildnscheck.com";
 
 export default function ErrorPageTemplate(
@@ -116,6 +116,7 @@ export default function ErrorPageTemplate(
           {data.intro}
           {renderIntroLinks(data.hub?.href)}
         </p>
+        <p style={styles.updated}>Last updated: {new Date().toLocaleDateString()}</p>
 
         {contextualLink}
 
@@ -151,8 +152,9 @@ export default function ErrorPageTemplate(
           )}
 
           <Link href="/" style={styles.button}>
-            Re-check
+            Run free check
           </Link>
+          <p style={styles.trust}>Free live DNS check. No signup required.</p>
         </div>
 
         {pathname === "/spf/multiple-spf-records-found" ||

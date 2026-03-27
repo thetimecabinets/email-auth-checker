@@ -36,6 +36,81 @@ export const spfCluster: InternalLink[] = [
     ],
   },
   {
+    href: "/spf/google-workspace-spf-not-working",
+    label: "Google Workspace SPF not working",
+    description:
+      "Fix Google Workspace SPF failures when include:_spf.google.com is missing or misconfigured.",
+    protocol: "spf",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "multiple-spf-records-found",
+      "spf-record-syntax-explained",
+      "spf-permerror-too-many-dns-lookups",
+    ],
+  },
+  {
+    href: "/spf/microsoft-365-spf-not-working",
+    label: "Microsoft 365 SPF not working",
+    description:
+      "Fix Microsoft 365 SPF failures when include:spf.protection.outlook.com is missing or duplicated.",
+    protocol: "spf",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "google-workspace-spf-not-working",
+      "multiple-spf-records-found",
+      "spf-record-syntax-explained",
+    ],
+  },
+  {
+    href: "/spf/amazon-ses-spf-not-working",
+    label: "Amazon SES SPF not working",
+    description:
+      "Fix SES SPF failures by publishing the correct include on the right MAIL FROM domain.",
+    protocol: "spf",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "spf-ip-not-authorized",
+      "spf-record-syntax-explained",
+      "multiple-spf-records-found",
+    ],
+  },
+  {
+    href: "/spf/sendgrid-spf-permerror",
+    label: "SendGrid SPF permerror",
+    description:
+      "Fix SendGrid SPF permerror caused by duplicate records or excessive lookup depth.",
+    protocol: "spf",
+    category: "provider",
+    priority: 2,
+    featured: true,
+    relatedSlugs: [
+      "sendgrid-spf-not-working",
+      "spf-permerror-too-many-dns-lookups",
+      "spf-include-flattening",
+    ],
+  },
+  {
+    href: "/spf/mailchimp-spf-not-working",
+    label: "Mailchimp SPF not working",
+    description:
+      "Fix Mailchimp SPF failures when include:servers.mcsv.net is missing or not merged correctly.",
+    protocol: "spf",
+    category: "provider",
+    priority: 2,
+    featured: true,
+    relatedSlugs: [
+      "multiple-spf-records-found",
+      "spf-record-syntax-explained",
+      "spf-permerror-too-many-dns-lookups",
+    ],
+  },
+  {
     href: "/spf/spf-lookup-checker",
     label: "SPF lookup checker",
     description: "Check how many DNS lookups your SPF record uses.",
@@ -385,6 +460,66 @@ export const dmarcCluster: InternalLink[] = [
     priority: 1,
     featured: true,
     relatedSlugs: ["dmarc-policy-none-vs-quarantine-vs-reject", "dmarc-alignment-failed"],
+  },
+  {
+    href: "/dmarc/google-workspace-dmarc-not-working",
+    label: "Google Workspace DMARC not working",
+    description:
+      "Fix Google Workspace DMARC failures caused by alignment gaps and policy misconfiguration.",
+    protocol: "dmarc",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "dmarc-alignment-failed",
+      "dmarc-policy-none-vs-quarantine-vs-reject",
+      "dmarc-aggregate-reports-explained",
+    ],
+  },
+  {
+    href: "/dmarc/microsoft-365-dmarc-not-working",
+    label: "Microsoft 365 DMARC not working",
+    description:
+      "Fix Microsoft 365 DMARC failures by correcting alignment and policy rollout.",
+    protocol: "dmarc",
+    category: "provider",
+    priority: 1,
+    featured: true,
+    relatedSlugs: [
+      "dmarc-alignment-failed",
+      "dmarc-policy-none-vs-quarantine-vs-reject",
+      "dmarc-aspf-adkim-explained",
+    ],
+  },
+  {
+    href: "/dmarc/sendgrid-dmarc-fail",
+    label: "SendGrid DMARC fail",
+    description:
+      "Resolve SendGrid DMARC failures by fixing sender alignment and staged enforcement.",
+    protocol: "dmarc",
+    category: "provider",
+    priority: 2,
+    featured: true,
+    relatedSlugs: [
+      "dmarc-alignment-failed",
+      "dmarc-aggregate-reports-explained",
+      "dmarc-policy-none-vs-quarantine-vs-reject",
+    ],
+  },
+  {
+    href: "/dmarc/mailchimp-dmarc-alignment-failed",
+    label: "Mailchimp DMARC alignment failed",
+    description:
+      "Fix Mailchimp campaign alignment issues that trigger DMARC failures.",
+    protocol: "dmarc",
+    category: "alignment",
+    priority: 2,
+    featured: true,
+    relatedSlugs: [
+      "dmarc-alignment-failed",
+      "dmarc-aspf-adkim-explained",
+      "dmarc-policy-none-vs-quarantine-vs-reject",
+    ],
   },
   {
     href: "/dmarc/multiple-dmarc-records-found",

@@ -3,12 +3,12 @@ export const dkimErrors = {
     title: "No DKIM Record Found – How to Fix DKIM Setup (2026)",
 
     intro:
-      "No DKIM record found means the domain is not publishing the DKIM public key needed for receivers to verify signed messages. DKIM works by placing a cryptographic signature in the email header and publishing the matching public key in DNS under a selector hostname. If that selector record does not exist, receiving servers cannot validate the signature, even when the email came from a legitimate sender.",
+      "No DKIM record found means the domain or selector being checked has no DKIM public key record published in DNS. Receivers need that selector record to validate the DKIM signature in the message header. In practice, this often happens when provider setup was not finished, the wrong selector was checked, or the DNS record was never added.",
 
     fixTitle: "One-Minute Fix",
 
     fixText:
-      "Publish the exact DKIM selector TXT record provided by your email service under the selector hostname your sender actually uses.",
+      "Publish the exact DKIM TXT or CNAME record required by your provider on the correct selector._domainkey hostname, then confirm your sender is using that same selector.",
 
     codeTitle: "Correct DKIM selector record",
     codeLanguage: "DNS TXT",
@@ -32,7 +32,7 @@ export const dkimErrors = {
     whyTitle: "Why this happens",
 
     whyText:
-      "This usually happens when DKIM was never enabled in the sending platform, the DNS record was not added after setup, the selector hostname was copied incorrectly, or a DNS migration removed a record that active mail systems still depend on.",
+      "DKIM verification depends on a published public key record in DNS. If that selector record is missing or looked up under the wrong hostname, receivers cannot fetch the key and cannot verify the DKIM signature.",
 
     problemTitle: "Why this is a problem",
 
@@ -46,14 +46,14 @@ export const dkimErrors = {
     deliverabilityTitle: "How this affects deliverability",
 
     deliverabilityText:
-      "Without a working DKIM record, your domain loses one of the strongest trust signals used by mailbox providers. That can weaken inbox placement, especially for transactional email, security notifications, and product mail where consistent authentication matters.",
+      "When no DKIM record is published, DKIM verification fails for signed mail and authentication trust drops. That increases spam-folder risk, weakens sender reputation signals, and can trigger DMARC alignment failure when DKIM was expected to provide aligned authentication.",
 
     causesTitle: "Common causes",
     causes: [
-      "DKIM was never enabled in the sending platform.",
-      "The selector TXT record was never added to DNS.",
-      "The selector hostname was copied incorrectly.",
-      "A DNS migration removed the DKIM record."
+      "Provider setup was left incomplete and DKIM was never fully published.",
+      "The wrong selector hostname was queried during validation.",
+      "The required selector TXT/CNAME record was never published in DNS.",
+      "A DNS migration removed or failed to carry over the DKIM record."
     ],
 
     checkedTitle: "What we checked",
@@ -80,11 +80,11 @@ export const dkimErrors = {
     ],
 
     nextSteps: [
-      "Identify which platform signs your outgoing mail.",
-      "Copy the exact selector hostname and public key from that provider.",
-      "Publish the TXT record under _domainkey.",
-      "Wait for DNS propagation.",
-      "Send a fresh test email and verify DKIM now passes."
+      "Identify the platform currently signing your outbound messages.",
+      "Copy the exact selector hostname and DKIM record value from provider docs.",
+      "Publish the required TXT or CNAME record under selector._domainkey.",
+      "Query DNS externally to confirm the selector record resolves correctly.",
+      "Send a fresh test email and verify DKIM=pass and DMARC alignment in headers."
     ],
 
     hub: {
@@ -112,12 +112,12 @@ export const dkimErrors = {
     title: "Google Workspace DKIM Not Working? Fix It Fast (2026)",
 
     intro:
-      "You enabled DKIM in the Google Admin console, but Gmail still shows DKIM as failing or not present. This usually means the selector record from the Google Admin setup screen was never added to DNS, was added under the wrong hostname, or does not match the selector Gmail is actually using to sign outbound mail.",
+      "Google Workspace DKIM fails when the Google selector record is missing, wrong, or not yet activated in Admin. A common real-world case is adding the TXT record in DNS correctly but never clicking Start authentication in Google Admin. In that state, Gmail can still send mail while DKIM remains absent or failing in headers.",
 
     fixTitle: "One-Minute Fix",
 
     fixText:
-      "In Google Admin, go to Apps → Google Workspace → Gmail → Authenticate email, enable DKIM for the correct domain, copy the exact TXT record shown there, and publish it at the selector._domainkey hostname in your DNS. Wait for DNS propagation, then send a new test message and re-check DKIM.",
+      "Publish the exact Google DKIM TXT record on the correct selector._domainkey hostname, then enable DKIM signing in Google Admin for the same domain and selector.",
 
     codeTitle: "Correct Google Workspace DKIM record",
     codeLanguage: "DNS TXT",
@@ -142,7 +142,7 @@ google._domainkey.example.com TXT "v=DKIM1; k=rsa;"`,
     whyTitle: "Why this happens",
 
     whyText:
-      "With Google Workspace, DKIM is only fully active after you turn it on in the Admin console and publish the provided TXT record at your DNS provider. DKIM keeps failing when that TXT record is never added, is added under the wrong domain or zone, when the selector name is copied incorrectly, or when you test before external DNS resolvers can see the new record.",
+      "Google Workspace DKIM requires two parts to be correct: DNS publication and Google-side activation. A correct DNS TXT record alone is not enough if signing is not enabled in Admin. DKIM also fails when the selector or domain in DNS does not match what Google is configured to use.",
 
     problemTitle: "Why this is a problem",
 
@@ -152,16 +152,14 @@ google._domainkey.example.com TXT "v=DKIM1; k=rsa;"`,
     deliverabilityTitle: "How this affects deliverability",
 
     deliverabilityText:
-      "For Google Workspace domains, a working DKIM setup is one of the clearest signals that your mail is intentional and properly configured. When DKIM is not working, Gmail-signed mail looks the same as test or half-finished setups, which can make it harder to build and maintain inbox placement for high-value messages.",
+      "When Google Workspace DKIM is broken, receivers cannot rely on DKIM verification for your domain. That raises spam-folder risk, weakens sender trust, and can create DMARC alignment issues when DKIM was expected to provide an aligned pass.",
 
     causesTitle: "Common causes",
     causes: [
-      "DKIM was never fully activated for this domain in the Google Admin console.",
-      "The TXT record from Google Admin was not added at the selector._domainkey hostname in DNS.",
-      "The selector name in DNS does not match the selector Gmail is using to sign messages.",
-      "The record was added under the wrong domain or DNS zone (for example, a staging domain instead of the production sending domain).",
-      "DNS changes were made recently and external resolvers are still seeing the old state.",
-      "DKIM was configured in DNS but 'Start authentication' was never clicked in Google Admin."
+      "The selector TXT record is missing, incorrect, or incomplete in DNS.",
+      "DKIM signing was not activated in Google Admin after DNS was published.",
+      "The wrong domain or selector was configured between DNS and Google Admin.",
+      "Recent DNS changes have not fully propagated to external resolvers."
     ],
 
     checkedTitle: "What we checked",
@@ -193,11 +191,11 @@ google._domainkey.example.com TXT "v=DKIM1; k=rsa;"`,
     ],
 
     nextSteps: [
-      "Confirm that DKIM is enabled for the correct domain in Google Admin.",
-      "Copy the exact selector and TXT value from the Google DKIM setup screen.",
-      "Publish the TXT record at selector._domainkey.yourdomain.com in your DNS provider.",
-      "Wait for DNS propagation and send a new test message from a Google Workspace account.",
-      "Re-run your DKIM and DMARC checks to confirm signatures now pass and align."
+      "Open Google Admin and confirm the domain and selector used for DKIM signing.",
+      "Copy the exact selector hostname and TXT value from Authenticate email.",
+      "Publish the TXT record at selector._domainkey for the same sending domain.",
+      "Click Start authentication in Google Admin after DNS is visible externally.",
+      "Send a fresh test email and verify DKIM=pass and DMARC alignment in headers."
     ],
 
     hub: {
@@ -225,12 +223,12 @@ google._domainkey.example.com TXT "v=DKIM1; k=rsa;"`,
     title: "Microsoft 365 DKIM Not Working? Fix CNAME Setup (2026)",
 
     intro:
-      "You turned on DKIM in the Microsoft 365 admin portals, but messages from your domain still show DKIM as failing or not present. With Microsoft 365, this almost always comes down to missing or incorrect CNAME records for selector1 and selector2._domainkey, or DKIM not being fully enabled after the DNS records were created.",
+      "Microsoft 365 DKIM fails when the required selector CNAMEs are missing, wrong, or DKIM is not enabled for the domain. A common practical case is publishing selector1 and selector2 CNAME records correctly but never turning DKIM on in Microsoft 365. In that state, mail still sends, but DKIM does not reliably pass.",
 
     fixTitle: "One-Minute Fix",
 
     fixText:
-      "In the Microsoft 365 Defender or Exchange admin center, open the DKIM settings for your custom domain, make sure DKIM is turned on, and create both selector1 and selector2 CNAME records exactly as shown in the portal. Each selector._domainkey hostname must point to the corresponding selector-domain._domainkey.onmicrosoft.com target, and DKIM must be enabled after DNS propagation completes.",
+      "Publish the exact selector1 and selector2 CNAME records for the domain as shown in Microsoft 365, then enable DKIM signing for that domain in the Defender or Exchange admin center.",
 
     codeTitle: "Correct Microsoft 365 DKIM records",
     codeLanguage: "DNS",
@@ -257,7 +255,7 @@ selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.
     whyTitle: "Why this happens",
 
     whyText:
-      "Microsoft 365’s DKIM implementation is slightly different from many other providers because it uses CNAMEs, not TXT records, on your custom domain. DKIM keeps failing when only one selector is created, when the CNAME target points at the wrong onmicrosoft.com hostname, when DKIM was never actually enabled after DNS was configured, when the domain in the CNAME target does not match the sending domain, or when you test before those CNAMEs have propagated across DNS.",
+      "Microsoft 365 DKIM depends on both DNS and service-side activation. Valid CNAME records alone do not make DKIM pass until signing is enabled for the same domain in Microsoft 365. Failures happen when CNAME targets are incorrect, selectors are incomplete, or activation is skipped after DNS updates.",
 
     problemTitle: "Why this is a problem",
 
@@ -267,15 +265,14 @@ selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.
     deliverabilityTitle: "How this affects deliverability",
 
     deliverabilityText:
-      "For business domains hosted on Microsoft 365, consistent DKIM is a major part of your reputation story. When DKIM does not work, your messages look more like generic bulk mail from shared infrastructure. That makes it harder for mailbox providers to distinguish trusted line-of-business mail from unwanted traffic, and it can reduce inbox placement over time.",
+      "When Microsoft 365 DKIM is not working, receivers cannot consistently verify signed mail for your domain. That increases spam-folder risk, weakens sender trust, and can create DMARC alignment issues even when messages are otherwise legitimate.",
 
     causesTitle: "Common causes",
     causes: [
-      "The required CNAME records for selector1._domainkey and selector2._domainkey were never added in DNS.",
-      "Only one selector CNAME was created, leaving the second selector missing.",
-      "The CNAME targets point to the wrong onmicrosoft.com hostname or a different tenant.",
-      "DKIM was not actually enabled in the Microsoft 365 Defender or Exchange admin center after DNS was configured.",
-      "DNS propagation has not completed yet, so external resolvers still do not see the new CNAME records."
+      "A required selector CNAME is missing or points to the wrong target.",
+      "DKIM signing was not enabled in Microsoft 365 after DNS setup.",
+      "The records were published for the wrong domain or tenant target.",
+      "DNS propagation delay means external resolvers still see old values."
     ],
 
     checkedTitle: "What we checked",
@@ -307,11 +304,11 @@ selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.
     ],
 
     nextSteps: [
-      "Add both selector1._domainkey and selector2._domainkey CNAME records exactly as shown in the Microsoft 365 admin portals.",
-      "Wait for DNS propagation and use external DNS tools to confirm both selectors resolve to the correct onmicrosoft.com targets.",
-      "In the Microsoft 365 Defender or Exchange admin center, enable DKIM for your custom domain.",
-      "Send a test email from a mailbox hosted on Microsoft 365 to an external recipient.",
-      "Inspect the message headers and verify that DKIM=pass appears for your domain and that DMARC shows a passing or aligned result."
+      "Copy selector1 and selector2 CNAME values from the Microsoft 365 DKIM setup screen.",
+      "Publish both selector CNAMEs on the correct domain and verify targets externally.",
+      "Enable DKIM signing for that domain in Defender or Exchange admin.",
+      "Send a new test email from Microsoft 365 after propagation completes.",
+      "Check headers for DKIM=pass and confirm DMARC alignment behavior."
     ],
 
     hub: {
@@ -343,12 +340,12 @@ selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.
     title: "Amazon SES DKIM Not Working? Fix the 3 CNAME Records (2026)",
 
     intro:
-      "You enabled DKIM for your domain in Amazon SES, but tests still show DKIM as failing or not present. With Easy DKIM, SES expects three separate CNAME records in DNS, and DKIM keeps failing when one of those records is missing, pointed at the wrong hostname, or never fully verified in the SES console.",
+      "Amazon SES DKIM fails when Easy DKIM selector CNAME records are missing, wrong, or not fully propagated. A common practical failure is when all three CNAMEs are not added exactly as SES provided for the verified identity. Even one mismatch can keep DKIM in a failing or pending state.",
 
     fixTitle: "One-Minute Fix",
 
     fixText:
-      "In the AWS console, open Amazon SES, go to Verified identities, select your domain, enable Easy DKIM for that identity, and add all three DKIM CNAME records exactly as shown to your DNS provider. Wait for SES to mark the identity as verified before retesting.",
+      "Publish all SES-provided DKIM selector CNAME records exactly as shown, and verify the sending domain is the same domain configured as a verified identity in SES before retesting.",
 
     codeTitle: "Correct Amazon SES DKIM records",
     codeLanguage: "DNS",
@@ -378,7 +375,7 @@ klmno54321._domainkey.example.com CNAME klmno54321.dkim.amazonses.com`,
     whyTitle: "Why this happens",
 
     whyText:
-      "Amazon SES generates three DKIM CNAME records for each domain to support key rotation and redundancy. DKIM fails when only one or two of those records are created, when they are added under the wrong domain, when the CNAME targets are mistyped, or when you test before SES has finished verifying the identity after DNS changes.",
+      "SES expects exact selector-to-target CNAME mapping for DKIM verification on the verified identity. If one selector is missing, mistyped, or published under the wrong domain, DKIM setup can fail as a whole. SES only validates correctly when every required selector record resolves exactly as provided.",
 
     problemTitle: "Why this is a problem",
 
@@ -388,15 +385,14 @@ klmno54321._domainkey.example.com CNAME klmno54321.dkim.amazonses.com`,
     deliverabilityTitle: "How this affects deliverability",
 
     deliverabilityText:
-      "For domains that rely on Amazon SES, a working DKIM configuration is a core requirement for production sending. Without it, SES mail can look indistinguishable from test traffic or misconfigured environments, which makes it harder to earn and maintain stable inbox placement at large providers.",
+      "When SES DKIM is broken, receivers cannot consistently validate signatures for your sending domain. That raises spam-folder risk, weakens sender trust, and can create DMARC alignment issues even when messages are otherwise legitimate and successfully sent.",
 
     causesTitle: "Common causes",
     causes: [
-      "Only one or two of the three required DKIM CNAME records were added to DNS.",
-      "At least one CNAME target contains a typo or points to the wrong amazonses.com hostname.",
-      "The wrong domain or subdomain was verified in SES compared to what actually sends mail.",
-      "Recent DNS changes have not finished propagating to external resolvers.",
-      "DKIM was enabled in the console, but verification never reached a green, verified state."
+      "One or more SES DKIM selector CNAME records are missing.",
+      "A selector hostname or CNAME target value was copied incorrectly.",
+      "The wrong verified domain was configured for the mail stream in SES.",
+      "DNS propagation delay means resolvers still return old or missing records."
     ],
 
     checkedTitle: "What we checked",
@@ -428,11 +424,11 @@ klmno54321._domainkey.example.com CNAME klmno54321.dkim.amazonses.com`,
     ],
 
     nextSteps: [
-      "Open Amazon SES in the AWS console and locate the Verified identity for your sending domain.",
-      "Make sure Easy DKIM is enabled and copy all three DKIM CNAME records exactly as shown.",
-      "Add or correct those CNAME records at your DNS provider on the same domain you verified.",
-      "Wait for SES to mark DKIM as verified for the identity.",
-      "Send a fresh test email and confirm that DKIM now shows as pass in your headers and DMARC reports."
+      "Open SES and confirm the exact verified identity used for outbound mail.",
+      "Copy all DKIM selector CNAME hostnames and targets directly from SES.",
+      "Publish or correct every selector record on the same sending domain in DNS.",
+      "Check external DNS resolution for each selector and wait for full propagation.",
+      "Send a fresh test email and confirm DKIM=pass and DMARC alignment in headers."
     ],
 
     hub: {
@@ -464,12 +460,12 @@ klmno54321._domainkey.example.com CNAME klmno54321.dkim.amazonses.com`,
     title: "DKIM Selector Not Found – How to Fix DKIM Selector (2026)",
 
     intro:
-      "A DKIM selector not found error means the selector referenced in the DKIM-Signature header does not resolve to a usable DKIM TXT record in DNS. The selector is the label after s= in the DKIM header, and it tells the receiver where to find the public key. If that selector record is missing, wrong, or published under the wrong hostname, the receiver cannot verify the signature.",
+      "A DKIM selector-not-found error means the selector in the DKIM-Signature header does not match a DNS record the receiver can find. The selector is the value after s= and it points to the public key hostname under _domainkey. In real setups, this often happens when the sender signs with selector1 but DNS only has selector2, or when the required CNAME/TXT was never published.",
 
     fixTitle: "One-Minute Fix",
 
     fixText:
-      "Make sure the exact selector used in the DKIM-Signature header exists in DNS under the matching _domainkey hostname.",
+      "Publish the selector record on the exact _domainkey hostname and confirm the sender is signing with that same selector value.",
 
     codeTitle: "Correct selector mapping",
     codeLanguage: "Plain text",
@@ -496,7 +492,7 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     whyTitle: "Why this happens",
 
     whyText:
-      "This problem usually appears when a mail provider changed selectors, a DNS record was added under the wrong hostname, an old selector was removed too early, or a team copied only part of the DKIM setup instructions.",
+      "DKIM verification fails when the selector in the signature points to a DNS record that does not exist or is published under the wrong name. If the receiver cannot resolve the exact selector hostname to a valid key record, it cannot verify the DKIM signature.",
 
     problemTitle: "Why this is a problem",
 
@@ -510,14 +506,14 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     deliverabilityTitle: "How this affects deliverability",
 
     deliverabilityText:
-      "When the selector cannot be found, mailbox providers see a broken authentication path. Even if the sender itself is legitimate, the missing selector makes the domain look operationally unreliable and can contribute to spam placement.",
+      "When the selector cannot be resolved, DKIM verification is broken even for legitimate mail. That increases spam-folder risk, weakens trust in your authentication setup, and can cause DMARC alignment failure when DKIM was expected to provide the aligned pass path.",
 
     causesTitle: "Common causes",
     causes: [
-      "A DKIM key was rotated but DNS still publishes the old selector.",
-      "The selector hostname was entered incorrectly in DNS.",
-      "A migration between providers changed selector naming.",
-      "An old selector record was deleted before all senders stopped using it."
+      "The mail stream is signing with the wrong selector value.",
+      "The DKIM record was published under the wrong _domainkey hostname.",
+      "Provider setup was incomplete, so the required selector record was never fully published.",
+      "A recent DNS change was made but propagation is not complete yet."
     ],
 
     checkedTitle: "What we checked",
@@ -544,11 +540,11 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     ],
 
     nextSteps: [
-      "Inspect a real DKIM-Signature header and note the selector value.",
-      "Check whether that exact selector exists in DNS under _domainkey.",
-      "Publish the missing selector record or update the sender configuration.",
-      "Wait for DNS propagation.",
-      "Send a new test message and verify DKIM now passes."
+      "Open a real message header and copy the exact selector value after s=.",
+      "Query that exact selector._domainkey hostname in DNS and confirm the record exists.",
+      "If missing or misnamed, publish the selector record on the correct hostname.",
+      "Verify your provider is signing with the same selector you published.",
+      "After propagation, send a fresh test email and confirm DKIM=pass in headers."
     ],
 
     hub: {
@@ -576,12 +572,12 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     title: "Invalid DKIM Key – Causes & Fix (2026)",
 
     intro:
-      "An invalid DKIM key means the public key published in DNS is malformed, incomplete, or incorrectly formatted. DKIM verification depends on the receiver being able to parse the key exactly as published. If the key is truncated, split incorrectly, copied with missing characters, or contains the wrong DNS value, the receiver cannot use it to verify the signature.",
+      "An invalid DKIM key means the public key in DNS is malformed, truncated, or unreadable to receivers. DKIM verification depends on parsing that key exactly as published, so even small corruption breaks validation. A common example is a broken TXT value where the key was copied with missing characters or split incorrectly.",
 
     fixTitle: "One-Minute Fix",
 
     fixText:
-      "Re-copy the DKIM public key from your mail provider and publish it exactly as provided, without changing characters, spacing, or line breaks.",
+      "Republish the full DKIM public key exactly as provided by your sender or provider, with no manual edits to characters, quotes, spacing, or line wrapping.",
 
     codeTitle: "Correct DKIM public key",
     codeLanguage: "DNS TXT",
@@ -605,7 +601,7 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     whyTitle: "Why this happens",
 
     whyText:
-      "This usually happens when DNS editors wrap long TXT values incorrectly, a public key is copied incompletely, quote handling breaks the value, or a human edits the record by hand instead of pasting the provider-generated string exactly.",
+      "DKIM fails when the receiver cannot parse the public key correctly from DNS. If the key is truncated, malformed by formatting, or published with damaged TXT content, the signature cannot be validated even if the selector exists.",
 
     problemTitle: "Why this is a problem",
 
@@ -619,14 +615,14 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     deliverabilityTitle: "How this affects deliverability",
 
     deliverabilityText:
-      "An invalid DKIM key creates one of the most frustrating deliverability issues because the record exists, but it still fails verification. Mailbox providers do not reward the intent to configure DKIM. They reward a technically valid, stable implementation.",
+      "An invalid key breaks DKIM verification for legitimate traffic and weakens your authentication posture. That increases spam-folder risk, reduces trust signals at mailbox providers, and can cause DMARC alignment failure when DKIM was expected to provide an aligned pass.",
 
     causesTitle: "Common causes",
     causes: [
-      "The public key was truncated during copy-paste.",
-      "A DNS provider handled long TXT values incorrectly.",
-      "Quotes or spaces were added in the wrong place.",
-      "A human edited the key instead of pasting the exact provider-generated value."
+      "The DKIM TXT record was truncated during copy-paste or save.",
+      "Wrong quotes or TXT formatting corrupted the published key.",
+      "The key was copied incompletely, with missing characters.",
+      "Provider migration or manual DNS editing introduced key formatting errors."
     ],
 
     checkedTitle: "What we checked",
@@ -653,11 +649,11 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     ],
 
     nextSteps: [
-      "Copy the DKIM public key again from the actual sending provider.",
-      "Replace the existing DNS value without manual edits.",
-      "Confirm the selector hostname is correct.",
-      "Wait for DNS propagation.",
-      "Send a fresh test email and verify DKIM now passes."
+      "Copy the full DKIM key again from the active sending platform.",
+      "Replace the DNS TXT value exactly as provided, without manual reformatting.",
+      "Confirm the selector hostname and record type match provider instructions.",
+      "Wait for DNS propagation and re-query the record from an external resolver.",
+      "Send a fresh test email and verify DKIM=pass in the message headers."
     ],
 
     hub: {
@@ -685,12 +681,12 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
     title: "DKIM Alignment Failed – Fix DKIM Authentication Issues (2026)",
 
     intro:
-      "DKIM alignment failed means the domain used in the DKIM signature does not align with the visible From domain required by DMARC. A message can still have a technically valid DKIM signature, but if the signing domain after d= does not match the visible From domain closely enough, DMARC may still fail.",
+      "DKIM alignment failed means DKIM passed cryptographically, but the signing domain does not align with the visible From domain for DMARC. This often happens when a provider signs with its own vendor domain instead of your sender domain. In that case, DKIM=pass may appear in headers while DMARC still treats the identity as misaligned.",
 
     fixTitle: "One-Minute Fix",
 
     fixText:
-      "Make sure at least one valid DKIM signature uses a d= domain that aligns with the visible From domain.",
+      "Configure the sender/provider to sign with a d= domain that matches, or is properly aligned with, the visible From domain used in mail.",
 
     codeTitle: "Aligned DKIM setup",
     codeLanguage: "Email header",
@@ -717,7 +713,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
     whyTitle: "Why this happens",
 
     whyText:
-      "This problem usually appears when a third-party sender signs with its own domain by default, a white-label domain was never configured properly, or different sending systems use different DKIM identities for the same brand.",
+      "DMARC checks identity alignment, not just whether DKIM validates. A DKIM signature can pass technically, but DMARC still fails if the d= domain does not align with the From domain. In relaxed alignment, a subdomain can align with its parent domain; in strict alignment, the domains must match exactly.",
 
     problemTitle: "Why this is a problem",
 
@@ -731,14 +727,14 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
     deliverabilityTitle: "How this affects deliverability",
 
     deliverabilityText:
-      "Mailbox providers increasingly evaluate the full identity story, not just whether a signature cryptographically verifies. If the message claims to be from one domain but is signed by another, trust can drop even when the underlying DKIM signature is valid.",
+      "Even with DKIM=pass, alignment failure can trigger DMARC failure risk under stricter policies. That can increase spam placement, cause quarantine/reject enforcement issues, and reduce trust because the visible sender identity does not match the signing identity.",
 
     causesTitle: "Common causes",
     causes: [
-      "A third-party ESP signs with its own domain by default.",
-      "A custom DKIM signing domain was never configured.",
-      "Several sending platforms use different identities for the same brand.",
-      "DMARC was tightened before all senders were aligned."
+      "The provider signs with a vendor-owned domain by default.",
+      "The wrong DKIM signing domain was configured in the sender platform.",
+      "A subdomain/root domain mismatch caused alignment to fail under current policy.",
+      "A migration left an old signing setup active after domain changes."
     ],
 
     checkedTitle: "What we checked",
@@ -765,11 +761,11 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
     ],
 
     nextSteps: [
-      "Inspect the visible From domain in a real message.",
-      "Check the d= domain used in the DKIM-Signature header.",
-      "Configure the sender to use an aligned DKIM signing domain.",
-      "Send a fresh test message after the change.",
-      "Re-run the check to confirm DKIM alignment now passes."
+      "Inspect a real message and record the visible From domain.",
+      "Check the d= value in DKIM-Signature and compare alignment with From.",
+      "Update provider settings to sign with your aligned domain or subdomain.",
+      "Verify DMARC alignment mode (relaxed vs strict) matches your domain plan.",
+      "Send a new test email and confirm both DKIM=pass and DKIM alignment pass."
     ],
 
     hub: {

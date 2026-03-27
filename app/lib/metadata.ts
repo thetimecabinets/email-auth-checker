@@ -1,28 +1,63 @@
 export const BASE_URL = "https://emaildnscheck.com";
+
 export const LAST_UPDATED = new Date("2026-03-12");
 
-export function truncateIntro(intro: string, maxLen: number = 160): string {
+/**
+ * Trim intro safely for meta descriptions
+ */
+export function truncateIntro(intro: string, maxLen: number = 155): string {
   if (intro.length <= maxLen) return intro;
+
   const trimmed = intro.slice(0, maxLen);
   const lastSpace = trimmed.lastIndexOf(" ");
-  return lastSpace > 120 ? trimmed.slice(0, lastSpace) : trimmed;
+
+  return lastSpace > 100 ? trimmed.slice(0, lastSpace) : trimmed;
 }
 
+/**
+ * Build clean meta description (short, natural, non-spammy)
+ */
 export function buildMetaDescription(title: string, intro: string) {
-  const cleanIntro = truncateIntro(intro, 110);
-  const t = title.toLowerCase();
+  const cleanIntro = truncateIntro(intro, 150)
+    .replace(/\s+/g, " ")
+    .trim();
 
-  if (t.includes("spf")) {
-    return `${title}. ${cleanIntro} Learn what causes this SPF issue, how to fix it correctly, and how it can affect email delivery.`;
-  }
+  return cleanIntro.endsWith(".") ? cleanIntro : `${cleanIntro}.`;
+}
 
-  if (t.includes("dkim")) {
-    return `${title}. ${cleanIntro} Learn why this DKIM issue happens, how to fix it step by step, and how it affects authentication and deliverability.`;
-  }
+/**
+ * Build FULL metadata object (use everywhere)
+ */
+export function buildMetadata({
+  title,
+  intro,
+  path,
+}: {
+  title: string;
+  intro: string;
+  path: string;
+}) {
+  const cleanTitle = title.replace(/\s*\(2026\)/, "");
+  const description = buildMetaDescription(title, intro);
+  const url = `${BASE_URL}${path}`;
 
-  if (t.includes("dmarc")) {
-    return `${title}. ${cleanIntro} Learn what this DMARC result means, how to troubleshoot it, and how it impacts domain protection and inbox placement.`;
-  }
-
-  return `${title}. ${cleanIntro} Learn the cause, see examples, and follow the steps to fix the issue.`;
+  return {
+    title: cleanTitle,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: cleanTitle,
+      description,
+      url,
+      siteName: "Email DNS Check",
+      type: "article",
+    },
+    twitter: {
+      card: "summary",
+      title: cleanTitle,
+      description,
+    },
+  };
 }

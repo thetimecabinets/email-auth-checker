@@ -3,12 +3,12 @@ export const spfErrors = {
       title: "Multiple SPF Records Found – Fix SPF Configuration Error (2026)",
   
       intro:
-        "Your domain is publishing more than one SPF record, and that breaks SPF evaluation. SPF is designed to use exactly one TXT record that begins with v=spf1 for a given domain. When a receiving server finds two or more SPF policies, it cannot safely determine which policy should apply, so SPF returns a permanent error instead of a normal pass, fail, or softfail result. In real-world setups, this often happens after a business adds Google Workspace, Microsoft 365, SendGrid, Mailchimp, or another email platform one by one and pastes each provider's SPF instructions as a separate TXT record instead of merging them into one final policy.",
+        "Your domain is publishing more than one SPF record, which causes SPF validation to fail. SPF allows only one TXT record that starts with v=spf1 per domain, so receivers cannot choose between two competing policies. As a result, SPF returns a permanent error instead of pass, fail, or softfail. A common case is adding Google Workspace first, then Microsoft 365 or SendGrid later as separate SPF records instead of combining them.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Keep only one SPF TXT record for the domain and merge all legitimate sending services into that single SPF policy.",
+        "Keep only one SPF TXT record for the domain and merge all legitimate providers into ONE record. If you send through Google, Microsoft 365, and SendGrid, combine those mechanisms into a single v=spf1 policy and remove every extra SPF TXT entry.",
   
       codeTitle: "Correct SPF record",
       codeLanguage: "DNS TXT",
@@ -33,7 +33,7 @@ export const spfErrors = {
       whyTitle: "Why this happens",
   
       whyText:
-        "This problem usually appears when different tools each provide their own SPF instructions and those instructions are added directly in DNS without consolidation. For example, a domain may already have an SPF record for Google Workspace, then later a team adds SendGrid or Microsoft 365 and pastes a second v=spf1 record instead of merging the new include mechanism into the original one. SPF does not support multiple active policies for the same domain, even when each record looks valid on its own.",
+        "This problem usually appears when different tools each provide their own SPF instructions and those instructions are added directly in DNS without consolidation. For example, a domain may already have an SPF record for Google Workspace, then later a team adds SendGrid or Microsoft 365 and pastes a second v=spf1 record instead of merging the new include mechanism into the original one. SPF returns PERMERROR when multiple SPF records exist, even if each record looks valid on its own.",
   
       problemTitle: "Why multiple SPF records are a problem",
       problemPoints: [
@@ -45,14 +45,17 @@ export const spfErrors = {
   
       deliverabilityTitle: "How this affects deliverability",
       deliverabilityText:
-        "From a deliverability perspective, multiple SPF records create ambiguity at the exact moment mailbox providers want clarity. Your domain may have legitimate sending services and good intent, but the receiver still sees a broken SPF policy. That weakens trust, especially for newer domains, lower-volume senders, and domains that already rely heavily on SPF for DMARC alignment. Even when mail is not rejected immediately, authentication instability can make troubleshooting much harder and contribute to spam-folder placement.",
+        "From a deliverability perspective, multiple SPF records create ambiguity at the exact moment mailbox providers want clarity. Your domain may have legitimate sending services and good intent, but the receiver still sees a broken SPF policy. That can cause SPF-based DMARC checks to fail and push legitimate messages to spam, especially when enforcement is strict. Even when mail is not rejected immediately, authentication instability makes troubleshooting harder and trust weaker over time.",
   
       causesTitle: "Common causes",
       causes: [
         "Google Workspace or Microsoft 365 was added after an older SPF record already existed.",
         "A marketing platform such as SendGrid or Mailchimp pasted its SPF instructions as a second SPF record.",
         "A DNS migration copied historical TXT records and accidentally preserved duplicate SPF entries.",
-        "Different people updated DNS over time without consolidating everything into one final SPF policy."
+        "Different people or teams updated DNS over time without consolidating everything into one final SPF policy.",
+        "A new provider was onboarded using copy-paste DNS instructions instead of merging mechanisms into the existing record.",
+        "A legacy SPF record was left behind after changing email providers or migrating infrastructure.",
+        "Separate DNS tools, dashboards, or admins created overlapping TXT entries for the same domain."
       ],
   
       checkedTitle: "What we checked",
@@ -111,12 +114,12 @@ export const spfErrors = {
       title: "SendGrid SPF Not Working? Fix SPF Include Errors (2026)",
 
       intro:
-        "You added SendGrid to your SPF record, or thought you did, but tests still show SPF failing for messages sent through SendGrid. In most cases this happens because the include:sendgrid.net mechanism is missing, placed on the wrong host, or split across multiple SPF records so receivers cannot evaluate a single, clear policy.",
+        "SendGrid mail fails SPF when include:sendgrid.net is missing, added on the wrong domain, or blocked by duplicate SPF records. This is common when teams add SendGrid quickly but do not verify the exact MAIL FROM / Return-Path domain used in production. As a result, mail appears to come from your domain, but SPF does not authorize the actual sending path.",
 
       fixTitle: "One-Minute Fix",
 
       fixText:
-        "Publish a single SPF TXT record for your sending domain that includes SendGrid and remove any duplicate SPF records. Start with your existing SPF policy and add include:sendgrid.net to it, then delete extra v=spf1 records so only one SPF policy remains.",
+        "Add include:sendgrid.net to your existing SPF record for the real sending domain, and do not create a second SPF record. Keep one v=spf1 policy only, merge all legitimate providers into that single record, and remove duplicates.",
 
       codeTitle: "Correct SendGrid SPF record",
       codeLanguage: "DNS TXT",
@@ -141,7 +144,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
 
       whyText:
-        "SendGrid’s SPF instructions require adding include:sendgrid.net to your existing policy, not publishing a second SPF TXT record. SPF only supports one policy per domain. Failures appear when the include mechanism is missing, added to a different hostname than the one you send from, or split into a second v=spf1 record that causes permerror.",
+        "SendGrid’s SPF instructions require adding include:sendgrid.net to your existing policy, not publishing a second SPF TXT record. SPF supports only one policy per domain, so duplicate records trigger errors and unpredictable evaluation. Failures are especially common when the include is published on the wrong hostname or when the sending MAIL FROM / Return-Path domain differs from the domain where SPF was updated.",
 
       problemTitle: "Why this is a problem",
 
@@ -151,15 +154,15 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
 
       deliverabilityText:
-        "SPF is one of the baseline signals receivers use to decide whether infrastructure is authorized. If SendGrid is not correctly represented in SPF, your sending IPs look like unapproved sources for your domain. That weakens trust in your mail streams and can reduce inbox placement over time.",
+        "SPF is one of the baseline signals receivers use to decide whether infrastructure is authorized. If SendGrid is not correctly represented in SPF, transactional messages, password resets, and marketing campaigns can be flagged as suspicious. Over time this can drive spam-folder placement and DMARC failures when SPF was expected to provide aligned authentication.",
 
       causesTitle: "Common causes",
       causes: [
-        "include:sendgrid.net was never added to the SPF record for the sending domain.",
-        "Multiple SPF TXT records were published instead of a single merged policy.",
-        "The SPF record was created on the wrong hostname (for example, www.example.com instead of example.com).",
-        "The SPF syntax contains typos or misplaced mechanisms that break evaluation.",
-        "Recent DNS changes, including the SendGrid include, have not finished propagating yet."
+        "include:sendgrid.net was added on the wrong hostname instead of the actual MAIL FROM / Return-Path domain.",
+        "Multiple SPF TXT records were published instead of one merged SPF policy.",
+        "The wrong Return-Path / MAIL FROM domain was tested, so SPF checks the wrong record.",
+        "Recent DNS changes, including SendGrid include updates, have not fully propagated yet.",
+        "SPF syntax or mechanism ordering issues caused the active record to evaluate incorrectly."
       ],
 
       checkedTitle: "What we checked",
@@ -186,11 +189,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
 
       nextSteps: [
-        "Identify the exact domain SendGrid uses in the MAIL FROM or Return-Path for your messages.",
-        "Update the SPF TXT record for that domain to include include:sendgrid.net alongside any other legitimate senders.",
-        "Remove any duplicate SPF TXT records so only one policy remains.",
-        "Wait for DNS propagation and re-run SPF checks for messages sent through SendGrid.",
-        "Confirm that DMARC now sees SPF as passing and aligned for SendGrid traffic."
+        "Send a real SendGrid message and check headers to confirm the exact Return-Path / MAIL FROM domain.",
+        "Update SPF on that exact domain by adding include:sendgrid.net to the existing v=spf1 record.",
+        "Remove duplicate SPF TXT records so only one SPF policy remains active.",
+        "Wait for propagation, then re-test SPF using the same sending path and domain.",
+        "Verify DMARC alignment after SPF passes to confirm production traffic is fully authenticated."
       ],
 
       hub: {
@@ -214,16 +217,550 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ]
     },
 
-    "spf/spf-lookup-checker": {
-      title: "SPF lookup checker",
+    "spf/google-workspace-spf-not-working": {
+      title: "Google Workspace SPF Not Working – Fix include:_spf.google.com (2026)",
 
       intro:
-        "SPF has a hard limit of ten DNS lookups across mechanisms like include, a, mx, and redirect. Complex records that chain many providers together can silently cross that limit, returning permerror instead of a clean pass or fail and making deliverability harder to reason about.",
+        "Google Workspace SPF fails when include:_spf.google.com is missing, added on the wrong domain, or blocked by duplicate SPF records. This is common when teams migrate to Google Workspace but leave older SPF records untouched or publish changes on the wrong hostname. As a result, mail appears to come from your domain, but SPF does not authorize Google’s sending path correctly.",
 
       fixTitle: "One-Minute Fix",
 
       fixText:
-        "Paste your SPF record into the lookup checker below to estimate how many DNS lookups it triggers. If you are close to or over ten, simplify your mechanisms, remove unused providers, or consolidate infrastructure so the record stays within the limit.",
+        "Add include:_spf.google.com to your existing SPF record for the real sending domain, and do not create a new SPF record. Keep one v=spf1 policy only, merge all legitimate providers into that single record, and remove duplicates.",
+
+      codeTitle: "Correct Google Workspace SPF record",
+      codeLanguage: "DNS TXT",
+      code: `example.com TXT "v=spf1 include:_spf.google.com -all"`,
+
+      afterCodeText:
+        "This example authorizes only Google Workspace to send mail for example.com and fails all other sources. In real deployments you will often combine Google Workspace with other providers in one merged SPF policy.",
+
+      wrongExampleTitle: "Wrong setup",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `example.com TXT "v=spf1 include:spf.protection.outlook.com -all"
+example.com TXT "v=spf1 include:_spf.google.com -all"`,
+      wrongExampleText:
+        "Here Google Workspace is present, but there are two separate SPF records, so receivers can return SPF permerror instead of a reliable pass/fail result. That ambiguity breaks authentication consistency.",
+
+      correctExampleTitle: "Correct setup",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `example.com TXT "v=spf1 include:_spf.google.com include:spf.protection.outlook.com -all"`,
+      correctExampleText:
+        "This merges Google Workspace and Microsoft 365 into one SPF policy so receivers evaluate a single clear authorization record. As long as include:_spf.google.com is in the active merged record, Google Workspace traffic can pass SPF.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "Google Workspace setup instructions require adding include:_spf.google.com to the existing SPF policy, not creating another v=spf1 TXT record. SPF supports only one policy per domain, so multiple records cause evaluation errors. Failures are also common when SPF is edited on the wrong domain, syntax is malformed, or DNS propagation is incomplete after updates.",
+
+      problemTitle: "Why this is a problem",
+
+      problemText:
+        "When SPF fails for Google Workspace mail, receivers may treat messages as less trustworthy and apply stricter filtering. Business-critical traffic such as login alerts, invoices, and user notifications can drift into spam or face DMARC-related failures if SPF was expected to support alignment.",
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "SPF is one of the baseline authorization checks providers use before trusting sender infrastructure. If Google Workspace is not correctly represented, legitimate mail can lose trust signals, face higher spam-folder risk, and trigger DMARC alignment problems where SPF was expected to help provide a passing path.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "Duplicate SPF records were published instead of one merged SPF policy.",
+        "include:_spf.google.com was added on the wrong domain or hostname.",
+        "Recent DNS changes have not fully propagated across resolvers yet.",
+        "SPF syntax issues (extra spaces, bad mechanisms, or malformed qualifiers) broke evaluation.",
+        "The tested sending domain differed from the domain where SPF was updated."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We looked for one active SPF TXT record on your sending domain that starts with v=spf1 and checked whether include:_spf.google.com is present. If multiple SPF records exist or the include is missing from the effective policy, Google Workspace mail will not authenticate reliably.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Can I publish one SPF record for Google and another for other providers?",
+          answer:
+            "No. SPF allows only one v=spf1 record per domain. If you use Google Workspace plus other services, all mechanisms must be merged into one policy."
+        },
+        {
+          question: "What does include:_spf.google.com do?",
+          answer:
+            "It tells receivers to evaluate Google’s published SPF authorization and treat those sending IPs as allowed for your domain."
+        },
+        {
+          question: "Why is SPF still failing after I added Google include?",
+          answer:
+            "The most common causes are duplicate SPF records, publishing on the wrong hostname, DNS propagation delay, or syntax mistakes in the final merged policy."
+        }
+      ],
+
+      nextSteps: [
+        "Check a real Google Workspace message header to confirm the exact sending domain being evaluated.",
+        "Update SPF on that domain by adding include:_spf.google.com to the existing v=spf1 record.",
+        "Merge providers into one SPF record and remove duplicate SPF TXT entries.",
+        "Validate SPF syntax and wait for DNS propagation across external resolvers.",
+        "Re-test SPF and verify DMARC alignment after Google Workspace mail passes."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/multiple-spf-records-found",
+          label: "Multiple SPF records found"
+        },
+        {
+          href: "/spf/spf-record-syntax-explained",
+          label: "SPF record syntax explained"
+        },
+        {
+          href: "/dmarc/dmarc-alignment-failed",
+          label: "DMARC alignment failed"
+        }
+      ]
+    },
+
+    "spf/microsoft-365-spf-not-working": {
+      title: "Microsoft 365 SPF Not Working – Fix include:spf.protection.outlook.com (2026)",
+
+      intro:
+        "Microsoft 365 SPF fails when include:spf.protection.outlook.com is missing, incorrect, or blocked by duplicate SPF records. A common migration issue is moving from another provider and adding Microsoft as a second SPF record instead of merging policies. In that state, receivers cannot evaluate SPF cleanly for your domain.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Add include:spf.protection.outlook.com to your existing SPF record and do not publish a second SPF TXT record. Keep one v=spf1 policy, merge all approved senders into that single record, and remove duplicates.",
+
+      codeTitle: "Correct Microsoft 365 SPF record",
+      codeLanguage: "DNS TXT",
+      code: `example.com TXT "v=spf1 include:spf.protection.outlook.com -all"`,
+
+      afterCodeText:
+        "This authorizes Microsoft 365 to send for example.com. If you also use other platforms, add their mechanisms to this same SPF record instead of creating separate SPF entries.",
+
+      wrongExampleTitle: "Wrong setup",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `example.com TXT "v=spf1 include:_spf.google.com -all"
+example.com TXT "v=spf1 include:spf.protection.outlook.com -all"`,
+      wrongExampleText:
+        "Two SPF records make evaluation ambiguous and often produce SPF permerror. Even though Microsoft 365 is listed, receivers cannot safely choose between competing policies.",
+
+      correctExampleTitle: "Correct setup",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `example.com TXT "v=spf1 include:_spf.google.com include:spf.protection.outlook.com -all"`,
+      correctExampleText:
+        "This keeps one SPF policy with all active providers merged together. Microsoft 365 mail can pass SPF when the include is present in the single authoritative record.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "Microsoft 365 setup requires adding include:spf.protection.outlook.com to the active SPF record for the sending domain. SPF supports one policy only, so creating separate records causes failures. Problems also appear when changes are made on the wrong domain, syntax is broken, or propagation is incomplete.",
+
+      problemTitle: "Why this is a problem",
+
+      problemText:
+        "When Microsoft 365 traffic fails SPF, mailbox providers may reduce trust in your sender identity and apply stricter filtering. Business email, alerts, and customer communications can drift into spam or fail DMARC alignment expectations.",
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "SPF is a foundational sender authorization signal for Microsoft 365 traffic. If Microsoft’s include is missing or SPF is invalid, legitimate mail can lose inbox placement and trigger DMARC issues where SPF was expected to provide aligned authentication.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "include:spf.protection.outlook.com was not added to the active SPF record.",
+        "Duplicate SPF TXT records were published during provider changes.",
+        "SPF updates were made on the wrong domain or hostname.",
+        "Syntax mistakes in the merged SPF policy caused parsing problems.",
+        "DNS propagation delay left external resolvers on older SPF data."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We checked for a single v=spf1 TXT record on the sending domain and verified whether include:spf.protection.outlook.com is present in that active policy. Missing include or duplicate SPF records usually explain Microsoft 365 SPF failures.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Can I keep separate SPF records for Microsoft and another provider?",
+          answer:
+            "No. SPF allows one v=spf1 record per domain. Microsoft 365 and other providers must be merged into one SPF policy."
+        },
+        {
+          question: "What does include:spf.protection.outlook.com authorize?",
+          answer:
+            "It authorizes Microsoft 365 infrastructure defined in Microsoft’s SPF policy to send mail for your domain."
+        },
+        {
+          question: "Why is SPF still failing after adding Microsoft include?",
+          answer:
+            "Most failures come from duplicate SPF records, wrong domain targeting, syntax errors, or DNS propagation not yet complete."
+        }
+      ],
+
+      nextSteps: [
+        "Send a real Microsoft 365 message and check headers to confirm the exact domain being evaluated for SPF.",
+        "Update that domain’s SPF record to include include:spf.protection.outlook.com.",
+        "Merge all providers into one SPF record and remove duplicates.",
+        "Validate SPF syntax and wait for DNS propagation.",
+        "Re-test SPF and DMARC alignment on the same sending path."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/multiple-spf-records-found",
+          label: "Multiple SPF records found"
+        },
+        {
+          href: "/spf/spf-record-syntax-explained",
+          label: "SPF record syntax explained"
+        },
+        {
+          href: "/dmarc/dmarc-alignment-failed",
+          label: "DMARC alignment failed"
+        }
+      ]
+    },
+
+    "spf/amazon-ses-spf-not-working": {
+      title: "Amazon SES SPF Not Working – Fix amazonses Include Setup (2026)",
+
+      intro:
+        "Amazon SES SPF fails when the SES include mechanism is missing, malformed, or published on the wrong sending domain. This is common when teams verify a custom MAIL FROM domain in SES but only update SPF on the root domain. As a result, SES mail can fail SPF even though DNS changes seem complete.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Add the SES-provided SPF include to the existing SPF record for the exact MAIL FROM / Return-Path domain and keep only one SPF record. Do not create a second v=spf1 record for SES.",
+
+      codeTitle: "Correct Amazon SES SPF record",
+      codeLanguage: "DNS TXT",
+      code: `mail.example.com TXT "v=spf1 include:amazonses.com -all"`,
+
+      afterCodeText:
+        "In many SES setups SPF is evaluated on a custom MAIL FROM subdomain, not always the visible From root domain. Update SPF where SES actually sends from.",
+
+      wrongExampleTitle: "Wrong setup",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `example.com TXT "v=spf1 include:_spf.google.com -all"
+mail.example.com TXT "v=spf1 include:_spf.google.com -all"`,
+      wrongExampleText:
+        "Here SES is sending through mail.example.com but its include is missing from that domain’s SPF record. SPF evaluation fails on the active sending domain.",
+
+      correctExampleTitle: "Correct setup",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `mail.example.com TXT "v=spf1 include:_spf.google.com include:amazonses.com -all"`,
+      correctExampleText:
+        "This authorizes both Google and SES on the actual MAIL FROM domain in one SPF policy. SES traffic can pass SPF when evaluated on mail.example.com.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "SES SPF failures usually come from domain mismatch: teams edit SPF on one domain while SES authenticates another. SPF also fails when duplicate records are created or SES include values are copied incorrectly. Since SPF accepts one policy per domain, incorrect placement quickly breaks evaluation.",
+
+      problemTitle: "Why this is a problem",
+
+      problemText:
+        "When SES messages fail SPF, receivers may classify them as less trustworthy and apply stricter filtering. Transactional flows like account verification, receipts, and notifications can land in spam or suffer DMARC alignment failures.",
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "SES relies on clean authentication signals for production sending reputation. Broken SPF on the MAIL FROM domain weakens trust, raises spam risk, and can undermine DMARC outcomes where SPF should have contributed aligned authorization.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "SES include mechanism was missing from the actual MAIL FROM domain.",
+        "The include hostname or value was copied incorrectly.",
+        "Duplicate SPF records were created during setup changes.",
+        "SPF was updated on the wrong domain compared to SES sending path.",
+        "Propagation delay left receivers reading stale SPF records."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We checked whether the evaluated sending domain has one valid v=spf1 record and whether the SES include is present in that active policy. Missing include, wrong domain placement, or duplicate SPF records are common SES SPF failure sources.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Should SPF be set on my root domain or SES MAIL FROM domain?",
+          answer:
+            "Set SPF on the domain SES actually uses for MAIL FROM / Return-Path evaluation. In many cases that is a custom subdomain."
+        },
+        {
+          question: "Can I add SES as another SPF record?",
+          answer:
+            "No. Merge SES include into the existing SPF record for that domain. SPF supports only one v=spf1 record."
+        },
+        {
+          question: "Why does SES still fail after DNS updates?",
+          answer:
+            "Most issues come from domain mismatch, duplicate SPF records, copied include errors, or propagation delay."
+        }
+      ],
+
+      nextSteps: [
+        "Inspect a real SES message header and identify the MAIL FROM / Return-Path domain.",
+        "Update SPF on that exact domain to include SES authorization.",
+        "Keep one merged SPF record and remove duplicate v=spf1 entries.",
+        "Validate syntax and confirm external DNS propagation.",
+        "Re-test SPF and DMARC alignment using fresh SES traffic."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-record-syntax-explained",
+          label: "SPF record syntax explained"
+        },
+        {
+          href: "/spf/multiple-spf-records-found",
+          label: "Multiple SPF records found"
+        },
+        {
+          href: "/dmarc/dmarc-alignment-failed",
+          label: "DMARC alignment failed"
+        }
+      ]
+    },
+
+    "spf/sendgrid-spf-permerror": {
+      title: "SendGrid SPF Permerror – Fix Lookup Limit and SPF Conflicts (2026)",
+
+      intro:
+        "SendGrid SPF permerror happens when SPF evaluation breaks before a normal pass/fail result, often due to too many lookups or conflicting SPF records. A frequent case is adding SendGrid include on top of already complex provider chains until DNS lookup limits are exceeded. When permerror appears, receivers cannot trust SPF evaluation for that message.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Keep one SPF record, remove duplicate or obsolete mechanisms, and reduce lookup-heavy chains around include:sendgrid.net. Merge only active providers and trim unnecessary mx/a/redirect usage to stay under SPF limits.",
+
+      codeTitle: "Correct SendGrid SPF record",
+      codeLanguage: "DNS TXT",
+      code: `example.com TXT "v=spf1 include:_spf.google.com include:sendgrid.net -all"`,
+
+      afterCodeText:
+        "This keeps SendGrid in a compact merged policy. If your SPF already has many includes, count total lookup depth after expansion to avoid permerror.",
+
+      wrongExampleTitle: "Wrong setup",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `example.com TXT "v=spf1 include:_spf.google.com include:sendgrid.net include:mailgun.org include:amazonses.com include:spf.protection.outlook.com mx a redirect=_spf.example.com -all"`,
+      wrongExampleText:
+        "This policy can trigger SPF permerror from lookup depth even if each include looks valid on its own. Receivers stop evaluation when SPF limits are exceeded.",
+
+      correctExampleTitle: "Correct setup",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `example.com TXT "v=spf1 include:_spf.google.com include:sendgrid.net -all"`,
+      correctExampleText:
+        "This reduced policy keeps only active providers and avoids unnecessary lookup-heavy mechanisms, lowering permerror risk while preserving SendGrid authorization.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "SendGrid permerror is usually not a SendGrid outage; it is SPF policy complexity. Nested includes, duplicate SPF records, and extra mechanisms can exceed SPF limits or create conflicting policy states. Once evaluation hits those limits, SPF returns permerror instead of pass/fail.",
+
+      problemTitle: "Why this is a problem",
+
+      problemText:
+        "When SPF returns permerror, receivers lose a reliable authorization signal and may treat traffic as suspicious. SendGrid transactional and marketing messages can see inconsistent filtering, reduced inbox placement, and DMARC alignment instability.",
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "Permerror weakens both SPF trust and downstream DMARC decisions that depend on SPF reliability. Even valid SendGrid traffic can suffer spam placement or enforcement-side failures when SPF evaluation breaks at the policy level.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "Too many lookup-heavy includes were chained with SendGrid.",
+        "Duplicate SPF records created conflicting policy results.",
+        "Unnecessary mx/a/redirect mechanisms pushed lookup depth over limits.",
+        "Legacy provider includes were never removed after migrations.",
+        "Policy complexity increased without lookup testing after each change."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We checked whether SPF evaluation can complete cleanly with one active record and whether include:sendgrid.net appears in a lookup-safe policy. Duplicate records and excessive lookup depth are leading causes of SendGrid SPF permerror.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Does SendGrid SPF permerror mean SendGrid is down?",
+          answer:
+            "Usually no. It most often means your SPF policy is too complex, duplicated, or exceeds lookup limits."
+        },
+        {
+          question: "Can SendGrid include cause permerror by itself?",
+          answer:
+            "Not usually. Permerror normally appears when SendGrid is combined with many other lookup-heavy mechanisms."
+        },
+        {
+          question: "How do I reduce permerror risk quickly?",
+          answer:
+            "Keep one SPF record, remove obsolete providers, reduce lookup-heavy mechanisms, and re-test lookup depth after each change."
+        }
+      ],
+
+      nextSteps: [
+        "Check that only one v=spf1 record exists on the sending domain.",
+        "Map active providers and remove stale includes first.",
+        "Retain include:sendgrid.net in a simplified merged SPF policy.",
+        "Measure effective lookup depth and trim mx/a/redirect where possible.",
+        "Re-test SPF and DMARC after propagation to confirm permerror is resolved."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/spf-permerror-too-many-dns-lookups",
+          label: "SPF permerror: too many DNS lookups"
+        },
+        {
+          href: "/spf/spf-include-flattening",
+          label: "SPF include flattening"
+        },
+        {
+          href: "/spf/sendgrid-spf-not-working",
+          label: "SendGrid SPF not working"
+        }
+      ]
+    },
+
+    "spf/mailchimp-spf-not-working": {
+      title: "Mailchimp SPF Not Working – Fix include:servers.mcsv.net (2026)",
+
+      intro:
+        "Mailchimp SPF fails when include:servers.mcsv.net is missing, published on the wrong domain, or blocked by duplicate SPF records. This often happens when marketing DNS changes are made separately from transactional sender policies. Mailchimp then sends, but SPF does not authorize the actual path cleanly.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Add include:servers.mcsv.net to the existing SPF record on the real sending domain and keep only one SPF TXT record. Merge Mailchimp with other active providers in a single v=spf1 policy.",
+
+      codeTitle: "Correct Mailchimp SPF record",
+      codeLanguage: "DNS TXT",
+      code: `example.com TXT "v=spf1 include:servers.mcsv.net -all"`,
+
+      afterCodeText:
+        "This authorizes Mailchimp for the domain. If multiple services send mail, combine their includes in the same SPF record rather than publishing multiple SPF entries.",
+
+      wrongExampleTitle: "Wrong setup",
+      wrongExampleLanguage: "DNS TXT",
+      wrongExampleCode: `example.com TXT "v=spf1 include:_spf.google.com -all"
+example.com TXT "v=spf1 include:servers.mcsv.net -all"`,
+      wrongExampleText:
+        "Two SPF records cause policy conflict and can produce SPF permerror. Even with Mailchimp included, receivers may not evaluate SPF reliably.",
+
+      correctExampleTitle: "Correct setup",
+      correctExampleLanguage: "DNS TXT",
+      correctExampleCode: `example.com TXT "v=spf1 include:_spf.google.com include:servers.mcsv.net -all"`,
+      correctExampleText:
+        "This single merged SPF record authorizes both Google Workspace and Mailchimp. Receivers can evaluate one clear policy and Mailchimp traffic can pass SPF.",
+
+      whyTitle: "Why this happens",
+
+      whyText:
+        "Mailchimp SPF setup is straightforward, but failures happen when teams add a second SPF record instead of merging mechanisms. Problems also appear when updates are applied to the wrong sending domain or when syntax issues break the final record. SPF supports one policy per domain, so structure matters as much as the include value.",
+
+      problemTitle: "Why this is a problem",
+
+      problemText:
+        "If Mailchimp mail fails SPF, campaign traffic can look less trustworthy to receivers and engagement messages can be filtered more aggressively. DMARC alignment can also fail when SPF was expected to provide the aligned path for marketing sends.",
+
+      deliverabilityTitle: "How this affects deliverability",
+
+      deliverabilityText:
+        "Marketing mail depends heavily on consistent authentication at scale. Missing or broken Mailchimp SPF authorization can increase spam-folder placement, reduce sender trust, and create DMARC alignment issues across campaign traffic.",
+
+      causesTitle: "Common causes",
+      causes: [
+        "include:servers.mcsv.net was missing from the active SPF policy.",
+        "A duplicate SPF record was added for Mailchimp instead of merging.",
+        "SPF changes were applied to the wrong domain or hostname.",
+        "Syntax errors in the SPF record caused invalid evaluation.",
+        "DNS propagation delays left providers seeing outdated SPF values."
+      ],
+
+      checkedTitle: "What we checked",
+      checkedText:
+        "We checked for one valid v=spf1 record on the sending domain and verified whether include:servers.mcsv.net exists in that active policy. Missing include or duplicate SPF records commonly explain Mailchimp SPF failures.",
+
+      faqTitle: "FAQ",
+      faq: [
+        {
+          question: "Do I need a separate SPF record just for Mailchimp?",
+          answer:
+            "No. SPF allows one v=spf1 record. Add Mailchimp include to the existing SPF policy and merge other senders there."
+        },
+        {
+          question: "What does include:servers.mcsv.net do?",
+          answer:
+            "It authorizes Mailchimp’s sending infrastructure defined in its SPF policy to send mail for your domain."
+        },
+        {
+          question: "Why is Mailchimp SPF still failing after updates?",
+          answer:
+            "The usual causes are duplicate SPF records, wrong domain targeting, syntax issues, or propagation delay on DNS changes."
+        }
+      ],
+
+      nextSteps: [
+        "Send a real Mailchimp campaign/test and confirm the evaluated sending domain.",
+        "Add include:servers.mcsv.net to that domain’s existing SPF record.",
+        "Merge all providers into one SPF policy and remove duplicates.",
+        "Validate SPF syntax and wait for full propagation.",
+        "Re-test SPF and DMARC alignment using fresh Mailchimp traffic."
+      ],
+
+      hub: {
+        href: "/spf",
+        label: "SPF Hub"
+      },
+
+      related: [
+        {
+          href: "/spf/multiple-spf-records-found",
+          label: "Multiple SPF records found"
+        },
+        {
+          href: "/spf/spf-record-syntax-explained",
+          label: "SPF record syntax explained"
+        },
+        {
+          href: "/dmarc/dmarc-alignment-failed",
+          label: "DMARC alignment failed"
+        }
+      ]
+    },
+
+    "spf/spf-lookup-checker": {
+      title: "SPF Lookup Checker – Count DNS Lookups & Avoid Permerror (2026)",
+
+      intro:
+        "Your SPF record can fail when lookup-heavy mechanisms push evaluation past the 10-DNS-lookup limit. This tool helps you estimate that risk quickly before it turns into SPF permerror in production. A common real-world case is stacking several provider includes plus mx/a without rechecking total lookup depth.",
+
+      fixTitle: "One-Minute Fix",
+
+      fixText:
+        "Paste the live SPF record into the checker and review the estimated lookup count. If you are near or above 10, remove unused providers first, trim unnecessary include/mx/a/redirect usage, and keep only active sender paths.",
 
       codeTitle: "Example SPF record with lookups",
       codeLanguage: "DNS TXT",
@@ -235,7 +772,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why DNS lookups matter for SPF",
 
       whyText:
-        "Every time a receiver evaluates your SPF record, it has to follow include, a, mx, and redirect mechanisms. When the total exceeds ten lookups, SPF evaluation stops with a permerror. That means even a well-intentioned, complete record can fail in practice if it is too complex.",
+        "Receivers must follow each include, mx, a, and redirect during SPF evaluation, and that total work is capped at 10 DNS lookups. One visible include can hide several nested lookups underneath. That is why records that look reasonable at first glance can still fail as permerror.",
 
       problemTitle: "Why this is a problem",
 
@@ -245,14 +782,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How lookup bloat affects deliverability",
 
       deliverabilityText:
-        "From a deliverability perspective, a simpler SPF record that stays under the lookup limit is almost always safer than a sprawling one that tries to list every edge case. Mailbox providers reward consistency; when your SPF result frequently breaks, it becomes harder to build and maintain trust with large receivers.",
+        "From a deliverability perspective, repeated lookup-limit failures weaken authentication trust. SPF instability can increase spam-folder placement and make DMARC results less predictable when SPF was expected to support alignment. Keeping lookup count controlled improves consistent inbox performance.",
 
       causesTitle: "Common causes",
       causes: [
-        "Chaining many third-party providers together with separate include mechanisms.",
-        "Using a and mx mechanisms broadly across domains instead of targeting specific hosts.",
-        "Legacy or unused services that were never removed from the SPF record.",
-        "Redirect chains that pull in additional records without being obvious in the top-level policy."
+        "Stacking many ESP includes over time without cleanup.",
+        "Keeping old providers in SPF after migrations or sender changes.",
+        "Using broad mx and a mechanisms when provider includes already cover sending paths.",
+        "Redirect chains that add hidden lookup depth under the top-level record."
       ],
 
       checkedTitle: "What this page helps you check",
@@ -260,10 +797,10 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
         "This page does not perform a live DNS query. Instead, it gives you a fast, approximate count of how many DNS lookups your SPF policy is likely to trigger based on commonly costly mechanisms.",
 
       nextSteps: [
-        "Paste your current SPF record into the lookup checker.",
-        "Review the estimated lookup count and identify which mechanisms contribute most.",
-        "Remove obsolete services and simplify where possible.",
-        "Re-test until the SPF record stays safely under the ten-lookup limit."
+        "Paste the exact live SPF TXT value used in production.",
+        "Identify which mechanisms are driving lookup count upward.",
+        "Remove obsolete includes and redundant mx/a/redirect usage first.",
+        "Re-test after each edit and keep a margin below the 10-lookup cap."
       ],
 
       hub: {
@@ -291,12 +828,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Include Flattening – Reduce DNS Lookups Safely (2026)",
   
       intro:
-        "SPF include flattening is the process of replacing SPF include mechanisms with the actual IP addresses they resolve to. This technique is commonly used to reduce the number of DNS lookups performed during SPF evaluation. SPF has a strict limit of ten DNS lookups, and complex email infrastructures can easily exceed that limit when multiple providers are used.",
+        "SPF include flattening replaces lookup-heavy include mechanisms with direct IP ranges to reduce DNS evaluation load. It is most useful when your current record is at risk of exceeding the 10-lookup SPF limit. In practice, this usually appears after several providers were added and nested includes made the policy too deep.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "If your SPF record exceeds the DNS lookup limit, flatten the include mechanisms by replacing them with the IP addresses returned by those providers.",
+        "Remove unused providers first, then flatten only the include paths that still keep you over lookup limits. Keep the record focused on active senders and document ownership so flattened IP ranges are updated when providers change.",
   
       codeTitle: "Example flattened SPF record",
       codeLanguage: "DNS TXT",
@@ -322,7 +859,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
   
       whyText:
-        "Many modern email systems rely on include mechanisms to delegate SPF policies. When several services are combined, the total number of DNS lookups can exceed SPF limits.",
+        "Many senders rely on provider includes, and each include can expand into further DNS lookups. When several services are combined over time, lookup depth grows invisibly until SPF starts returning permerror. Flattening is a response to that accumulated dependency chain.",
   
       problemTitle: "Why this is a problem",
   
@@ -336,14 +873,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "When SPF exceeds lookup limits, receivers treat the record as invalid. That reduces authentication reliability and may lower sender trust.",
+        "When SPF exceeds lookup limits, receivers can treat the policy as broken and authentication becomes unreliable. That raises spam-folder risk and can weaken DMARC performance when SPF was expected to contribute aligned results. Controlled flattening can restore stable evaluation.",
   
       causesTitle: "Common causes",
       causes: [
-        "Several ESPs were added over time and each added another include chain.",
-        "Old sending providers remained in SPF even after they stopped sending mail.",
-        "Nested includes from third-party providers expanded far more than expected.",
-        "No one reviewed the total SPF lookup count after adding new services."
+        "Too many ESP includes accumulated over time.",
+        "Old providers stayed in SPF after they were no longer used.",
+        "Nested third-party includes expanded far beyond expected lookup depth.",
+        "No periodic review of lookup count after onboarding new sender tools."
       ],
   
       checkedTitle: "What we checked",
@@ -370,11 +907,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Count the effective SPF lookup depth before flattening anything.",
-        "Remove obsolete providers first so you do not flatten unnecessary entries.",
-        "Flatten only the parts of SPF that truly need it.",
-        "Document who maintains the flattened record going forward.",
-        "Re-check SPF regularly so the flattened IP ranges do not become stale."
+        "Measure current lookup depth from the live SPF record.",
+        "Prune obsolete providers before flattening active ones.",
+        "Flatten only the include chains that still exceed limits.",
+        "Set an owner and review cadence to keep flattened IPs current.",
+        "Re-test SPF and DMARC after each change to confirm stability."
       ],
   
       hub: {
@@ -511,12 +1048,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Neutral Result Explained – Causes, Fix & Examples (2026)",
   
       intro:
-        "An SPF neutral result means the sender's SPF policy does not make a strong authorization decision. This usually happens when the SPF record ends with ?all. In practice, neutral is neither a clear pass nor a clear denial, so it gives mailbox providers much less useful information than ~all or -all.",
+        "An SPF neutral result means your policy does not make a clear authorization decision for unmatched senders. This most often happens when the record ends with ?all. In production, neutral gives receivers weak guidance and reduces SPF’s value as a trust signal.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Replace the neutral ?all mechanism with ~all or -all once you have identified your legitimate senders.",
+        "Replace ?all with ~all or -all after confirming your active senders. Use ~all during transition and move to -all once Google Workspace, Microsoft 365, SendGrid, and any other real sender paths are fully covered.",
   
       codeTitle: "Neutral SPF record",
       codeLanguage: "DNS TXT",
@@ -540,7 +1077,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
   
       whyText:
-        "Neutral SPF is often left behind after an early testing phase, copied from an outdated tutorial, or kept because teams are afraid to move to a stricter policy before fully mapping their senders.",
+        "Neutral is often left behind after testing or copied from outdated setup guides. Teams postpone tightening because sender inventory is incomplete, so ?all remains in production longer than intended.",
   
       problemTitle: "Why this is a problem",
   
@@ -554,14 +1091,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "Mailbox providers generally trust domains more when their authentication records make clear, consistent statements. A neutral SPF result signals indecision and weakens the practical value of SPF.",
+        "Mailbox providers trust domains more when SPF gives clear policy decisions. Neutral outcomes can weaken sender reputation signals, increase spam-folder risk in borderline cases, and reduce DMARC confidence when SPF was expected to contribute meaningful alignment.",
   
       causesTitle: "Common causes",
       causes: [
-        "The SPF record ends with ?all.",
-        "A temporary testing setup was never tightened later.",
-        "An old tutorial or template was copied into production.",
-        "The team avoided moving to ~all or -all because the sender inventory was incomplete."
+        "The record still ends with ?all from an early testing phase.",
+        "A temporary rollout policy was never tightened after onboarding providers.",
+        "An outdated template or tutorial was copied directly into production DNS.",
+        "Sender inventory remained incomplete, so teams avoided switching to ~all or -all."
       ],
   
       checkedTitle: "What we checked",
@@ -588,11 +1125,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Inventory all legitimate senders before tightening the SPF qualifier.",
-        "Replace ?all with ~all if you still need a safer transition stage.",
-        "Move to -all only when every approved sender is covered.",
-        "Send test mail after the change and inspect live headers.",
-        "Review related SPF policy decisions in the SPF Hub."
+        "Audit all active sender services and verify each is represented in SPF.",
+        "Replace ?all with ~all first if you need a controlled transition.",
+        "Move to -all only after repeated tests confirm full sender coverage.",
+        "Validate SPF and DMARC results from real headers after changes.",
+        "Monitor deliverability for a few days to catch missed senders early."
       ],
   
       hub: {
@@ -620,12 +1157,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Permerror Explained – Too Many DNS Lookups Fix (2026)",
   
       intro:
-        "SPF allows a maximum of ten DNS lookups during policy evaluation. If your record exceeds that limit, receivers return a permerror instead of a normal pass, fail, or softfail result. This is one of the most common SPF problems on growing domains, because each new email provider often adds another include, redirect, mx, or a-based lookup path.",
+        "SPF evaluation breaks when your record triggers more than 10 DNS lookups. Once that limit is exceeded, receivers return permerror instead of a normal pass, fail, or softfail result. The hidden cause is often nested includes, where one visible provider include expands into several additional DNS queries underneath. This is common on growing domains that add providers over time without SPF cleanup.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Reduce the number of include, redirect, a, and mx mechanisms so the full SPF evaluation stays under the 10-DNS-lookup limit.",
+        "Start by removing unused providers first, then simplify the SPF policy so total DNS lookups stay under 10. Focus on lookup-heavy mechanisms like include, mx, a, and redirect, and keep only what active senders actually require before considering flattening.",
   
       codeTitle: "Example optimized SPF record",
       codeLanguage: "DNS TXT",
@@ -649,7 +1186,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
   
       whyText:
-        "SPF lookup limits are easy to exceed because one visible include can hide several more lookups underneath it. Over time, domains often accumulate several providers, legacy services, and redirect chains until SPF breaks under its own complexity.",
+        "SPF lookup limits are easy to exceed because one visible include can expand into multiple DNS lookups underneath it. A record that looks short can still exceed the limit after nested vendor includes, mx/a checks, and redirects are fully evaluated. Over time, providers and legacy senders accumulate until SPF crosses the threshold and fails.",
   
       problemTitle: "Why this is a problem",
   
@@ -663,14 +1200,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "When SPF returns permerror, mailbox providers see a broken authentication layer rather than a deliberate sender policy. That weakens trust and can contribute to spam placement or erratic filtering decisions.",
+        "When SPF returns permerror, mailbox providers see a broken authentication layer rather than a deliberate sender policy. In real traffic, that can break DMARC alignment when SPF was expected to provide the aligned pass path. The result is weaker trust, higher spam-folder risk, and more inconsistent filtering decisions across providers.",
   
       causesTitle: "Common causes",
       causes: [
-        "Too many email providers were added over time.",
-        "Nested vendor include chains expanded beyond the SPF lookup limit.",
-        "Legacy senders remained in SPF long after they stopped sending.",
-        "A redirect combined with mx, a, and include mechanisms created too much DNS work."
+        "Too many old ESPs and sending tools were left in SPF after provider changes.",
+        "Nested vendor includes expanded one visible include into several hidden DNS lookups.",
+        "mx and a mechanisms were used broadly even when provider includes were sufficient.",
+        "Redirect chains introduced extra policy hops and pushed total lookups over the limit."
       ],
   
       checkedTitle: "What we checked",
@@ -697,11 +1234,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "List every active sender before making changes to SPF.",
-        "Remove providers that no longer send mail for your domain.",
-        "Avoid unnecessary mx and a mechanisms when simpler options exist.",
-        "Flatten specific includes only if cleanup alone is not enough.",
-        "Re-test the final SPF policy to confirm it stays under 10 lookups."
+        "Map each SPF mechanism to an active sender and remove anything no longer in use.",
+        "Count estimated lookups after expansion, not just top-level includes.",
+        "Trim unnecessary mx, a, and redirect usage where simpler authorization works.",
+        "Keep only required providers, then flatten specific includes only if still over limit.",
+        "Re-test SPF and DMARC alignment after DNS propagation to confirm permerror is gone."
       ],
   
       hub: {
@@ -729,12 +1266,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Redirect Explained – How SPF Redirect Works (2026)",
   
       intro:
-        "The SPF redirect mechanism tells receivers to ignore the current domain's local SPF logic and instead evaluate another domain's SPF record as the authoritative policy. Redirect is useful in some controlled environments, but it is often misunderstood. It is not the same as include. Include adds another sender policy into your evaluation. Redirect replaces the local policy path entirely.",
+        "SPF redirect replaces your domain’s local SPF logic with another domain’s policy, and misuse can break authorization unexpectedly. Unlike include, redirect does not merge rules; it hands full control to the target policy. This often causes confusion during migrations where teams expect local and redirected rules to work together.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Use redirect only when another domain should fully define SPF for the current domain. If you still need local authorization rules, use include instead.",
+        "Use redirect only when a central domain should fully own SPF for this domain. If you still need local sender rules (for example local relay IPs plus provider includes), use include instead of redirect.",
   
       codeTitle: "SPF redirect example",
       codeLanguage: "DNS TXT",
@@ -758,7 +1295,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
   
       whyText:
-        "Teams often inherit SPF setups they did not design, and redirect is one of the easiest mechanisms to misunderstand. It is sometimes used when include was actually intended, especially during migrations or shared-domain setups.",
+        "Redirect errors usually happen when inherited DNS records are edited without understanding how redirect differs from include. During shared-policy setups or migrations, teams may publish redirect where include was intended, accidentally removing local authorization logic.",
   
       problemTitle: "Why this is a problem",
   
@@ -772,14 +1309,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "Redirect itself is not bad, but it centralizes SPF dependency. If the target policy is wrong, stale, or overloaded, all dependent domains can inherit the problem immediately.",
+        "Redirect centralizes SPF dependency, so mistakes in the target policy propagate to every dependent domain. If that target policy is stale or malformed, SPF can fail broadly, increasing spam placement risk and weakening DMARC outcomes where SPF alignment was expected.",
   
       causesTitle: "Common causes",
       causes: [
-        "Redirect was used instead of include.",
-        "A legacy shared-policy setup was copied without understanding it.",
-        "Subdomains were configured to inherit SPF from a central domain.",
-        "The redirected target changed and unexpectedly broke several domains."
+        "Redirect was published where include should have been used.",
+        "A legacy shared-policy record was copied without understanding behavior changes.",
+        "Subdomains were pointed at a central redirect target with incompatible policy.",
+        "The target policy changed and silently broke dependent domains."
       ],
   
       checkedTitle: "What we checked",
@@ -806,11 +1343,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Decide whether you want inheritance or simple sender authorization.",
-        "Use include if the current domain still needs local SPF logic.",
-        "Verify the target redirected domain has a valid SPF record.",
-        "Document every domain that depends on the redirected policy.",
-        "Re-test SPF after any redirect target change."
+        "Confirm whether this domain truly needs full policy inheritance.",
+        "Switch to include if local sender logic must remain active.",
+        "Validate the target SPF record and its lookup depth before redirecting.",
+        "Document all domains that depend on the redirect target.",
+        "Re-test SPF and DMARC whenever the target policy changes."
       ],
   
       hub: {
@@ -838,12 +1375,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Softfail vs Fail – Key Differences Explained (2026)",
   
       intro:
-        "SPF softfail and SPF fail are both negative outcomes, but they signal different levels of confidence. Softfail usually comes from the ~all qualifier and means the sender is probably unauthorized. Fail usually comes from -all and means the sender is definitely unauthorized according to the policy. The difference matters because mailbox providers often treat hard fail more aggressively than softfail.",
+        "SPF softfail and fail both signal unauthorized sending, but they are enforced at different strength levels. Softfail (`~all`) means probably unauthorized, while fail (`-all`) means definitively unauthorized by policy. Choosing the wrong qualifier can either block real mail or leave spoofing controls too weak.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Use ~all while you are still verifying all legitimate senders, then move to -all when your SPF record is complete and stable.",
+        "Use ~all while you validate sender coverage, then move to -all only after confirming every legitimate sender path is included. Test real traffic from each provider before tightening enforcement.",
   
       codeTitle: "Softfail example",
       codeLanguage: "DNS TXT",
@@ -867,7 +1404,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this matters",
   
       whyText:
-        "The choice between ~all and -all is not just technical. It reflects how confident you are in your sender inventory. Moving to -all too early can break legitimate mail, while staying at ~all too long can weaken anti-spoofing protection.",
+        "This issue appears when qualifier choice does not match sender maturity. Moving to -all too early can fail legitimate traffic, while staying on ~all too long can reduce anti-spoofing strength and policy clarity.",
   
       problemTitle: "Impact on deliverability",
   
@@ -881,14 +1418,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How mailbox providers interpret this",
   
       deliverabilityText:
-        "Providers do not reward strictness for its own sake. They reward accurate authentication. A correct -all policy can be strong and clean, but an inaccurate one can hurt real mail. That is why many domains transition from ~all to -all gradually.",
+        "Providers reward accurate authentication, not strictness alone. A correct -all policy improves trust, but an inaccurate one can trigger delivery failures and DMARC issues for real traffic. A staged transition from ~all to -all usually gives safer deliverability outcomes.",
   
       causesTitle: "Common causes",
       causes: [
-        "The domain is still in SPF rollout mode and uses ~all.",
-        "Administrators moved to -all before fully mapping all senders.",
-        "A forgotten third-party system still sends mail unexpectedly.",
-        "Teams misunderstand the operational difference between softfail and fail."
+        "The domain remained in long-term rollout mode with ~all.",
+        "Teams moved to -all before mapping every sender path.",
+        "A forgotten provider or relay still sends mail outside SPF coverage.",
+        "Qualifier intent (~all vs -all) was misunderstood during DNS edits."
       ],
   
       checkedTitle: "What we checked",
@@ -915,11 +1452,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Inventory every legitimate sender before moving to -all.",
-        "Check live headers to verify that approved mail is already passing SPF.",
-        "Use ~all during transition if the sender map is still incomplete.",
-        "Move to -all only when the record is stable and trusted.",
-        "Review related SPF policy topics in the SPF Hub."
+        "Inventory active sender services and confirm each is in SPF.",
+        "Check live headers from each sender to validate SPF pass behavior.",
+        "Use ~all until test traffic is stable across all providers.",
+        "Move to -all only after repeated validation with no misses.",
+        "Monitor DMARC/SPF results after switching qualifiers."
       ],
   
       hub: {
@@ -947,12 +1484,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Syntax Error – How to Fix SPF Record Format (2026)",
   
       intro:
-        "An SPF record syntax error means the TXT record published for your domain cannot be parsed as valid SPF. SPF records follow strict formatting rules: mechanisms like include or ip4 require specific syntax, and a missing colon, extra space, typo in a mechanism name, or malformed qualifier can cause receivers to treat the entire record as invalid. When that happens, SPF evaluation fails before it can reach a normal pass, fail, or softfail result.",
+        "Your SPF record cannot be parsed because the published format is invalid. SPF syntax is strict, so a missing colon, typo in a mechanism name, or extra space can break evaluation. Common examples include writing include _spf.google.com instead of include:_spf.google.com, misspelling include, or malformed qualifier endings. When parsing fails, receivers cannot produce a normal pass, fail, or softfail SPF result.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Correct the syntax by fixing typos in mechanism names, removing stray spaces, and ensuring every include or other mechanism uses the exact format documented in the SPF specification.",
+        "Fix the live SPF TXT record directly by correcting typos, colons, qualifiers, and spacing mistakes. If needed, compare the published record character by character against a known-good SPF example to catch subtle formatting issues quickly.",
   
       codeTitle: "Valid SPF record",
       codeLanguage: "DNS TXT",
@@ -976,7 +1513,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
   
       whyText:
-        "Syntax errors often creep in when records are hand-edited, copied from incomplete documentation, or migrated between DNS providers. A trailing space, missing hyphen in -all, or typo such as inclide instead of include is enough to invalidate the whole record.",
+        "Syntax errors often creep in when records are hand-edited, copied from incomplete documentation, or migrated between DNS providers. SPF parsers are unforgiving: one tiny formatting mistake can invalidate the entire record. A trailing space, missing colon, wrong qualifier, or typo such as inclide instead of include is enough to make SPF unusable.",
   
       problemTitle: "Why this is a problem",
   
@@ -990,14 +1527,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "When SPF cannot be parsed, mailbox providers see a broken authentication layer. That weakens sender trust and can contribute to spam placement, especially for domains that rely on SPF for DMARC alignment.",
+        "When SPF cannot be parsed, mailbox providers see broken authentication rather than a valid sender policy. That increases spam-folder risk for legitimate traffic and can weaken domain trust over time. It can also impact DMARC outcomes when SPF was expected to help provide an aligned pass path.",
   
       causesTitle: "Common causes",
       causes: [
-        "A typo in a mechanism name such as include, ip4, or -all.",
-        "Missing colon after include or redirect.",
-        "Extra spaces inside the record where none are allowed.",
-        "The record was copy-pasted from a source that introduced invisible or wrong characters."
+        "The SPF record was hand-edited in DNS and small format mistakes were introduced.",
+        "The value was copy-pasted from incomplete or incorrect documentation.",
+        "Invisible characters or smart punctuation were inserted during copy/paste.",
+        "A DNS provider migration changed record formatting or split strings unexpectedly."
       ],
   
       checkedTitle: "What we checked",
@@ -1024,11 +1561,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Copy the current SPF record from live DNS and inspect it character by character.",
-        "Verify every mechanism follows the SPF specification format.",
-        "Fix typos, missing colons, and stray spaces.",
-        "Publish the corrected record and allow time for propagation.",
-        "Re-run the check to confirm the syntax error is resolved."
+        "Copy the exact SPF TXT value from live DNS before editing anything.",
+        "Compare it character by character against a valid SPF format and provider docs.",
+        "Fix one issue at a time (colons, typos, qualifiers, and spacing), then save.",
+        "Wait for DNS propagation and query the record from an external resolver.",
+        "Re-run SPF and DMARC checks to confirm parsing now succeeds end-to-end."
       ],
   
       hub: {
@@ -1056,12 +1593,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Softfail Explained – Meaning, Risks & Fix (2026)",
   
       intro:
-        "SPF softfail is the result produced when your SPF record ends with ~all and the connecting IP does not match any authorized mechanism. It means the sender is probably not authorized, but the policy does not make a hard denial. Mailbox providers typically treat softfail less aggressively than hard fail (-all), which is why many domains use ~all during rollout or when they are not yet confident that every legitimate sender is covered.",
+        "SPF softfail means the sending IP did not match authorized SPF mechanisms and your policy ended with ~all. It is a warning-level failure, not a hard block, so unauthorized traffic may still be accepted but treated with less trust. This is common during staged rollouts before sender inventory is fully verified.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "If you intend to use softfail, ensure your SPF record ends with ~all. If you want stricter enforcement once your sender inventory is complete, replace ~all with -all.",
+        "Confirm whether softfail is intentional for your current rollout stage. If yes, keep `~all` and complete sender validation; if coverage is stable, move to `-all` for stronger enforcement.",
   
       codeTitle: "Softfail SPF example",
       codeLanguage: "DNS TXT",
@@ -1085,7 +1622,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this matters",
   
       whyText:
-        "Softfail exists because moving to hard fail too early can break legitimate mail if any sender was forgotten. Domains often start with ~all, validate that all real senders pass SPF, and then switch to -all when they are confident.",
+        "Softfail is used to reduce accidental blocking while teams map all legitimate senders. Problems appear when ~all is left in place indefinitely or when sender coverage is incomplete and results stay noisy.",
   
       problemTitle: "Why this is a problem",
   
@@ -1099,14 +1636,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "Mailbox providers generally accept softfail as a valid policy signal. The main deliverability risk is staying at ~all when your record is incomplete, because that can allow spoofed mail to be treated less strictly. Once your sender map is complete, moving to -all can strengthen anti-spoofing without hurting legitimate traffic.",
+        "Softfail can work during transition, but persistent softfail outcomes weaken trust signals. That can increase spam-folder risk for borderline traffic and reduce DMARC reliability when SPF is expected to support alignment consistently.",
   
       causesTitle: "Common causes",
       causes: [
-        "The domain is in transition and uses ~all as a safer rollout stage.",
-        "Administrators have not yet verified every legitimate sending source.",
-        "A third-party system sends mail and was never added to SPF.",
-        "The team prefers softfail over hard fail for operational reasons."
+        "The domain stayed in rollout mode with ~all longer than intended.",
+        "Not all legitimate senders were validated before enforcing policy.",
+        "Third-party systems were added without SPF updates.",
+        "Operational caution delayed transition from softfail to fail."
       ],
   
       checkedTitle: "What we checked",
@@ -1133,11 +1670,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Verify every legitimate sender is in your SPF record.",
-        "Check live headers to confirm approved mail passes SPF.",
-        "Keep ~all if you still need flexibility during rollout.",
-        "Switch to -all when your sender map is complete and stable.",
-        "Review related SPF policy topics in the SPF Hub."
+        "Audit all legitimate senders and verify SPF coverage.",
+        "Inspect live headers to identify recurring softfail sources.",
+        "Add missing providers or IP paths causing false softfails.",
+        "Move to -all when legitimate traffic is consistently passing.",
+        "Track DMARC/SPF trends after policy changes."
       ],
   
       hub: {
@@ -1165,12 +1702,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Missing All Mechanism – Fix ~all / -all Issue (2026)",
   
       intro:
-        "An SPF record must end with an all mechanism that tells receivers what to do with IPs that do not match any other mechanism. The all mechanism is usually ~all (softfail) or -all (hard fail). If your record has no all mechanism, receivers do not get a clear policy for unmatched senders. Many parsers treat such records as neutral or invalid, which weakens SPF as an authentication and anti-spoofing signal.",
+        "An SPF record without a final all mechanism is incomplete and leaves unmatched senders without a clear policy outcome. Receivers may treat this as neutral or weakly defined behavior, which reduces SPF usefulness. This commonly happens when teams copy only provider includes and forget to add ~all or -all at the end.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Add ~all or -all to the end of your SPF record. Use ~all while you are still validating senders; use -all when your record is complete.",
+        "Add a final all qualifier to the end of the live SPF record: use ~all during rollout and move to -all when sender coverage is verified. Keep it as the last mechanism in the record.",
   
       codeTitle: "SPF with all mechanism",
       codeLanguage: "DNS TXT",
@@ -1194,7 +1731,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
   
       whyText:
-        "Incomplete SPF records often come from copy-pasting partial examples, adding only the include lines from provider documentation, or editing DNS without understanding that every SPF record must end with an all qualifier.",
+        "This usually happens when SPF is built incrementally and the final qualifier is accidentally omitted. Provider snippets often show include lines only, and manual edits can leave records published without a terminating all policy.",
   
       problemTitle: "Why this is a problem",
   
@@ -1208,14 +1745,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "When SPF lacks an all mechanism, receivers treat the policy as incomplete. That can weaken anti-spoofing and make authentication less predictable. Adding ~all or -all gives a clear signal and improves the usefulness of SPF for deliverability.",
+        "Incomplete SPF policy signals can lead to inconsistent authentication handling across receivers. That weakens anti-spoofing, increases spam-folder risk, and can reduce DMARC reliability when SPF is expected to produce clear aligned outcomes.",
   
       causesTitle: "Common causes",
       causes: [
-        "Provider documentation showed only the include line without the all qualifier.",
-        "The record was truncated during manual editing or migration.",
-        "Multiple people edited DNS and the final all was accidentally removed.",
-        "An old template or tutorial omitted the all mechanism."
+        "Provider documentation snippets were copied without a final all qualifier.",
+        "Manual DNS edits removed the ending mechanism accidentally.",
+        "Migration or cleanup truncated the record before the final qualifier.",
+        "An outdated template omitted the required all mechanism."
       ],
   
       checkedTitle: "What we checked",
@@ -1242,11 +1779,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Open your current SPF record in DNS and check the end.",
-        "Add ~all if you are still validating senders.",
-        "Add -all if your record is complete and you want stricter enforcement.",
-        "Publish the updated record and allow propagation.",
-        "Re-run the check to confirm the all mechanism is present."
+        "Inspect the live SPF record and confirm whether it ends with all.",
+        "Add ~all or -all based on rollout readiness.",
+        "Revalidate sender coverage before switching to strict fail mode.",
+        "Publish and verify external DNS propagation.",
+        "Retest SPF and DMARC results to confirm policy clarity."
       ],
   
       hub: {
@@ -1317,7 +1854,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "When SPF fails because the IP is not authorized, mailbox providers see authentication failure. That can lead to spam placement, rejection, or inconsistent filtering. Fixing the SPF record to include the real sending IPs restores authentication and improves deliverability.",
+        "When SPF fails because the sending IP is unauthorized, receivers treat mail as unauthenticated or suspicious. That can cause spam placement, throttling, and DMARC failures when SPF should have provided aligned authentication. Correct IP authorization restores trust and stabilizes filtering.",
   
       causesTitle: "Common causes",
       causes: [
@@ -1383,12 +1920,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Record Too Long – Fix DNS Length Limit Error (2026)",
   
       intro:
-        "DNS TXT records have practical length limits. While the theoretical maximum is around 255 characters per string, many DNS providers and protocols use 255-character chunks. SPF records that exceed these limits can be truncated, split incorrectly, or rejected. When that happens, receivers may not see your full policy, and SPF evaluation can fail or return unexpected results.",
+        "Your SPF record is too long or too bloated for reliable DNS handling. Records this size are more likely to be split, truncated, or parsed inconsistently across resolvers, which can break SPF evaluation. Long SPF policies also often hide nested lookup problems that surface later as permerror. This usually happens after providers are added over time without cleanup.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Shorten your SPF record by removing obsolete providers, flattening includes to IP ranges where appropriate, and consolidating redundant mechanisms.",
+        "Start by removing obsolete providers and stale mechanisms, then shorten the SPF policy to only active senders. Keep includes lean, trim unnecessary IP entries, and only consider flattening if cleanup still leaves the record too long.",
   
       codeTitle: "Shorter SPF record",
       codeLanguage: "DNS TXT",
@@ -1412,7 +1949,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why this happens",
   
       whyText:
-        "Domains accumulate include mechanisms over time as they add ESPs, marketing tools, and relays. Each new provider adds more characters. Eventually the record grows past DNS chunk limits or becomes hard to manage.",
+        "Long SPF records usually appear after domains add many ESPs, marketing tools, relays, and manual exceptions over months or years. Each new provider adds more text, and old providers are often left behind. Once you approach TXT string limits, records become harder to maintain, easier to break, and more likely to behave inconsistently across DNS systems.",
   
       problemTitle: "Why this is a problem",
   
@@ -1426,14 +1963,14 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How this affects deliverability",
   
       deliverabilityText:
-        "When an SPF record is truncated or malformed due to length, receivers may see an incomplete or invalid policy. That can break authentication and hurt deliverability. Shortening the record and keeping it within DNS limits restores reliable SPF evaluation.",
+        "When an SPF record is truncated or parsed incorrectly due to length, receivers may evaluate an incomplete policy or fail parsing entirely. That breaks authentication, increases spam-folder risk, and can negatively impact DMARC when SPF was expected to support alignment. Keeping SPF compact improves reliability across providers and reduces unpredictable filtering.",
   
       causesTitle: "Common causes",
       causes: [
-        "Several ESPs and marketing platforms were added over time.",
-        "Legacy providers remained in SPF after they stopped sending.",
-        "IP ranges were added manually instead of using shorter includes.",
-        "No one reviewed total record length after adding new services."
+        "Too many ESPs and sending platforms were added over time without consolidation.",
+        "Old providers were never removed after migrations or provider changes.",
+        "Too many manual IP ranges were added for temporary exceptions and never cleaned up.",
+        "Bloated include chains were added without checking total record size or lookup impact."
       ],
   
       checkedTitle: "What we checked",
@@ -1460,11 +1997,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "List every provider that actually sends mail for your domain.",
-        "Remove obsolete includes and IP mechanisms.",
-        "Consider flattening only if cleanup is not enough.",
-        "Keep the record under 255 characters per string where possible.",
-        "Re-check SPF after changes to confirm the record is valid and complete."
+        "Export the live SPF TXT value and map each mechanism to a real active sender.",
+        "Remove obsolete includes, old ESPs, and temporary manual IP entries first.",
+        "Re-check total length and lookup impact after each cleanup pass.",
+        "Use flattening only for specific remaining includes if the record is still too large.",
+        "Re-test SPF parsing and DMARC alignment after DNS propagation to confirm stability."
       ],
   
       hub: {
@@ -1492,12 +2029,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Record Example – Valid SPF Records (2026)",
   
       intro:
-        "This page provides copy-paste SPF record examples for the most common sender setups. Each example is ready to adapt: replace the domain in include mechanisms with your provider's exact hostname, and ensure you publish only one SPF record for your domain. These examples cover single-provider and hybrid configurations for Google Workspace, Microsoft 365, SendGrid, and similar services.",
+        "SPF examples help you avoid syntax and policy mistakes that break authentication in production. Each example here is practical, but you must adapt it to your real senders and publish only one SPF record for the domain. Common setups include Google Workspace, Microsoft 365, SendGrid, and hybrid combinations.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Choose the example that matches your sending setup, adapt the include mechanisms if needed, and publish it as a single TXT record at the root of your domain.",
+        "Pick the example closest to your mail flow, replace placeholders with the exact provider mechanisms, and publish one final v=spf1 TXT record at the root domain. Merge all active providers into that single policy.",
   
       codeTitle: "Google Workspace only",
       codeLanguage: "DNS TXT",
@@ -1521,7 +2058,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why examples matter",
   
       whyText:
-        "New teams often copy the wrong include hostname, publish multiple SPF records, or omit the final qualifier. Working examples reduce mistakes and show the correct structure for single-provider and hybrid setups.",
+        "Teams often copy partial snippets or outdated include hostnames, which leads to invalid or incomplete SPF. Reliable examples reduce guesswork and show the correct structure for both single-provider and hybrid sender setups.",
   
       problemTitle: "Why getting the example wrong is a problem",
   
@@ -1571,11 +2108,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "List every service that sends email for your domain.",
-        "Choose the matching example or combine includes from several.",
-        "Publish one SPF TXT record at the root of your domain.",
-        "Run a live check to confirm the record is valid.",
-        "Re-check after adding or removing providers."
+        "Inventory all sender services currently used in production.",
+        "Select or combine examples into one merged SPF policy.",
+        "Publish exactly one SPF TXT record at the root domain.",
+        "Validate syntax and lookup depth after publishing.",
+        "Re-check whenever providers are added, removed, or migrated."
       ],
   
       hub: {
@@ -1594,12 +2131,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Record Syntax Explained – Complete SPF Guide (2026)",
   
       intro:
-        "SPF records follow a strict syntax: a version prefix, a sequence of mechanisms, and a final all qualifier. Each mechanism (include, ip4, ip6, mx, a, redirect) has a specific format and meaning. Understanding the structure helps you read existing records, debug failures, and build correct policies from scratch.",
+        "SPF syntax is strict, and even small formatting mistakes can break the entire record. A missing colon, misplaced space, or typo can turn a valid-looking SPF policy into an unusable one. In practice, this means receivers may fail SPF before they can even evaluate your intended sender rules. Getting the exact syntax right is as important as choosing the right mechanisms.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Ensure your SPF record starts with v=spf1, uses mechanisms in the correct format (e.g. include:domain.com with a colon and no extra spaces), and ends with an all qualifier such as ~all or -all.",
+        "Check the record in this exact order: version (`v=spf1`), mechanisms, colons, spacing, and final qualifier. Make sure every mechanism uses the correct format (for example `include:domain.com`), remove stray spaces, and end with a valid qualifier such as `~all` or `-all`.",
   
       codeTitle: "Syntax breakdown",
       codeLanguage: "Plain text",
@@ -1609,7 +2146,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
   ~all            → qualifier + all (softfail)`,
   
       afterCodeText:
-        "Mechanisms are evaluated left to right. The first match determines the result. The all mechanism is always last and defines the default for unmatched IPs.",
+        "Receivers evaluate SPF left to right, and the first matching mechanism sets the result. Keep the all mechanism at the end because it defines the fallback action for any sender that did not match earlier rules.",
   
       wrongExampleTitle: "Malformed syntax",
       wrongExampleLanguage: "DNS TXT",
@@ -1626,7 +2163,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why syntax matters",
   
       whyText:
-        "SPF parsers are strict. A missing colon, extra space, or typo in a mechanism name invalidates the entire record. Receivers may treat it as a permanent error rather than attempting a fallback.",
+        "Syntax errors are common when records are hand-edited in DNS panels or copied directly from provider documentation without validation. SPF parsers are strict, so one missing colon, typo, or malformed token can invalidate the whole record and trigger errors at delivery time.",
   
       problemTitle: "Why syntax errors are a problem",
   
@@ -1640,15 +2177,16 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How syntax affects deliverability",
   
       deliverabilityText:
-        "Invalid syntax prevents SPF from working at all. Mailbox providers see a broken record and may downgrade trust. Fixing syntax restores authentication and supports better deliverability.",
+        "Syntax mistakes can cause SPF to fail even when your sender list is correct. Once SPF fails, legitimate mail is more likely to be filtered into spam, and DMARC outcomes can degrade when SPF was expected to support alignment. Clean syntax restores reliable authentication and steadier inbox placement.",
   
       causesTitle: "Common syntax mistakes",
   
       causes: [
-        "Missing colon after include, redirect, or other mechanisms.",
-        "Extra spaces inside the record where none are allowed.",
-        "Typo in mechanism names (e.g. inclide instead of include).",
-        "Malformed qualifier (e.g. - all with a space)."
+        "Missing colon after include, redirect, or similar mechanisms.",
+        "Extra spaces inserted in mechanism/value pairs.",
+        "Typo in a mechanism name (for example, inclide instead of include).",
+        "Malformed qualifier formatting (for example, `- all` with a space).",
+        "Bad copy/paste from docs that introduced invalid characters or layout."
       ],
   
       checkedTitle: "What we checked",
@@ -1676,11 +2214,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "Read your current SPF record character by character.",
-        "Verify each mechanism has the correct format (mechanism:value).",
-        "Ensure the record ends with ~all, -all, or ?all.",
-        "Fix any typos or malformed syntax.",
-        "Re-run the check to confirm the record parses correctly."
+        "Copy the live SPF TXT value from DNS and review it character by character.",
+        "Validate each mechanism format (`mechanism:value`) and confirm every required colon is present.",
+        "Remove stray spaces and correct typos in mechanism names or qualifiers.",
+        "Confirm the record starts with `v=spf1` and ends with the intended `all` qualifier.",
+        "Re-test SPF and DMARC after propagation to confirm parsing and alignment now pass."
       ],
   
       hub: {
@@ -1699,12 +2237,12 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       title: "SPF Record Generator – Create SPF Record (Free Tool) (2026)",
   
       intro:
-        "Building an SPF record from scratch involves identifying every sender, adding the right mechanisms in the correct order, and staying under the DNS lookup limit. This guide walks through the steps: start with v=spf1, add one include or ip4 per sending service, avoid unnecessary mx or a mechanisms, and end with a clear qualifier. Rushing or copying without understanding leads to permerrors, duplicates, or missing senders.",
+        "Building SPF from scratch fails most often when sender inventory is incomplete or mechanisms are added without validation. A practical build process helps you authorize real senders, avoid lookup bloat, and keep one maintainable policy. If done ad hoc, records often drift into permerrors, missing senders, or duplicate-policy mistakes.",
   
       fixTitle: "One-Minute Fix",
   
       fixText:
-        "Start with v=spf1, add include: or ip4: for each sending provider, keep the total lookup count under ten, and end with ~all or -all.",
+        "Build SPF in order: start with v=spf1, add only active provider includes or IP ranges, keep lookup depth under 10, and finish with ~all or -all. Validate each addition before publishing.",
   
       codeTitle: "Step-by-step build",
       codeLanguage: "DNS TXT",
@@ -1737,7 +2275,7 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       whyTitle: "Why a structured build matters",
   
       whyText:
-        "Teams often add mechanisms one by one without checking the total lookup count or removing obsolete senders. A deliberate build process reduces permerrors and keeps the record maintainable.",
+        "Most SPF generator issues come from incremental edits without cleanup. Providers get added, old includes remain, and lookup depth is never re-measured. A structured build process prevents policy drift and keeps the record supportable.",
   
       problemTitle: "Why ad hoc building causes problems",
   
@@ -1751,15 +2289,15 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       deliverabilityTitle: "How a clean build helps deliverability",
   
       deliverabilityText:
-        "A lean, correct SPF record passes evaluation reliably. Overbuilt records risk permerror; underbuilt records fail for legitimate senders. A structured build balances both.",
+        "A lean, accurate SPF record improves authentication consistency and inbox stability. Overbuilt policies risk permerror and spam placement, while underbuilt policies fail legitimate senders and hurt DMARC alignment. Structured generation reduces both failure modes.",
   
       causesTitle: "Common build mistakes",
   
       causes: [
-        "Adding mechanisms without tracking lookup count.",
-        "Keeping old provider includes after switching services.",
-        "Using mx or a when include would suffice.",
-        "Forgetting to add a new sender when onboarding a tool."
+        "Adding mechanisms without tracking total lookup depth.",
+        "Keeping legacy provider includes after migration.",
+        "Using broad mx or a when provider includes are enough.",
+        "Onboarding new tools without updating the existing SPF policy."
       ],
   
       checkedTitle: "What we checked",
@@ -1787,11 +2325,11 @@ example.com TXT "v=spf1 include:sendgrid.net -all"`,
       ],
   
       nextSteps: [
-        "List every service that sends mail for your domain.",
-        "Get the exact include hostname from each provider.",
-        "Build the record: v=spf1 plus includes plus ~all or -all.",
-        "Verify the lookup count stays under ten.",
-        "Publish and re-check after propagation."
+        "List active sender services and remove historical ones first.",
+        "Collect exact include hostnames from official provider docs.",
+        "Build one merged SPF record and validate syntax before publish.",
+        "Measure lookup count and trim unnecessary mechanisms.",
+        "Publish, wait for propagation, and verify SPF/DMARC from live headers."
       ],
   
       hub: {
