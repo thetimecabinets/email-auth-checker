@@ -6,10 +6,19 @@ export type InternalLink = {
   intent: "fix" | "learn" | "tool" | "compare";
   crossLinks?: string[];
   category?: string;
+  /** SEO weight for sitemap and related-link scoring: 1 = tools, 0.9 = authority guides, 0.7 = problem pages, 0.6 = edge cases. Higher = more important. */
   priority?: number;
   featured?: boolean;
   relatedSlugs?: string[];
 };
+
+export function seoPriority(link: InternalLink): number {
+  const p = link.priority;
+  if (typeof p === "number" && p >= 0 && p <= 1) {
+    return p;
+  }
+  return 0.7;
+}
 
 export const spfCluster: InternalLink[] = [
   {
@@ -19,7 +28,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "learn",
     category: "examples",
-    priority: 0,
+    priority: 0.9,
     featured: true,
     relatedSlugs: ["spf-record-syntax-explained", "spf-record-generator"],
   },
@@ -31,8 +40,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "spf-record-syntax-explained",
       "multiple-spf-records-found",
@@ -48,8 +57,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "multiple-spf-records-found",
       "spf-record-syntax-explained",
@@ -67,8 +76,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "spf-ip-not-authorized",
       "multiple-spf-records-found",
@@ -82,8 +91,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "spf-ip-not-authorized",
       "multiple-spf-records-found",
@@ -97,8 +106,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "spf-ip-not-authorized",
       "multiple-spf-records-found",
@@ -112,8 +121,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "deliverability",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "spf-softfail-vs-fail",
       "dmarc-alignment-failed",
@@ -128,8 +137,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "google-workspace-spf-not-working",
       "multiple-spf-records-found",
@@ -148,8 +157,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "spf-ip-not-authorized",
       "spf-record-syntax-explained",
@@ -165,8 +174,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 2,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "sendgrid-spf-not-working",
       "spf-permerror-too-many-dns-lookups",
@@ -182,8 +191,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "provider",
-    priority: 2,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "multiple-spf-records-found",
       "spf-record-syntax-explained",
@@ -201,7 +210,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "tool",
     category: "tool",
-    priority: 2,
+    priority: 1,
     featured: true,
   },
   {
@@ -211,7 +220,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "learn",
     category: "syntax",
-    priority: 0,
+    priority: 0.9,
     featured: true,
     relatedSlugs: ["spf-record-syntax-error", "spf-record-example"],
   },
@@ -222,7 +231,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "tool",
     category: "examples",
-    priority: 0,
+    priority: 1,
     featured: true,
     relatedSlugs: ["spf-record-example", "spf-permerror-too-many-dns-lookups"],
   },
@@ -233,8 +242,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "missing-record",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["multiple-spf-records-found", "spf-record-syntax-error"],
   },
   {
@@ -244,8 +253,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "duplicate-records",
-    priority: 2,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["spf-permerror-too-many-dns-lookups", "spf-include-flattening"],
   },
   {
@@ -255,8 +264,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "lookups",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["spf-include-flattening", "multiple-spf-records-found"],
   },
   {
@@ -266,7 +275,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "lookups",
-    priority: 4,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-permerror-too-many-dns-lookups", "spf-record-too-long"],
   },
@@ -277,8 +286,8 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "learn",
     category: "mechanisms",
-    priority: 5,
-    featured: false,
+    priority: 0.9,
+    featured: true,
     relatedSlugs: ["spf-softfail-vs-fail", "spf-neutral-result-explained"],
   },
   {
@@ -288,7 +297,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "learn",
     category: "mechanisms",
-    priority: 6,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-softfail-explained", "spf-softfail-vs-fail"],
   },
@@ -299,7 +308,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "syntax",
-    priority: 7,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-missing-all-mechanism", "no-spf-record-found"],
   },
@@ -310,7 +319,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "mechanisms",
-    priority: 8,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-softfail-vs-fail", "spf-record-syntax-error"],
   },
@@ -321,7 +330,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "authorization",
-    priority: 9,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-ipv6-misconfiguration", "spf-include-flattening"],
   },
@@ -332,7 +341,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "limits",
-    priority: 10,
+    priority: 0.6,
     featured: false,
     relatedSlugs: ["spf-permerror-too-many-dns-lookups", "spf-include-flattening"],
   },
@@ -343,7 +352,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "compare",
     category: "mechanisms",
-    priority: 11,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-softfail-explained", "spf-missing-all-mechanism"],
   },
@@ -354,7 +363,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "learn",
     category: "mechanisms",
-    priority: 12,
+    priority: 0.6,
     featured: false,
     relatedSlugs: ["spf-include-flattening", "multiple-spf-records-found"],
   },
@@ -365,7 +374,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "authorization",
-    priority: 13,
+    priority: 0.6,
     featured: false,
     relatedSlugs: ["spf-ip-not-authorized", "spf-include-flattening"],
   },
@@ -377,7 +386,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["multiple-spf-records-found", "no-spf-record-found", "spf-record-syntax-error"],
   },
@@ -388,7 +397,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-include-flattening", "spf-permerror-too-many-dns-lookups", "spf-redirect-explained"],
   },
@@ -400,7 +409,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.6,
     featured: false,
     relatedSlugs: [
       "spf-record-syntax-explained",
@@ -416,7 +425,7 @@ export const spfCluster: InternalLink[] = [
     protocol: "spf",
     intent: "fix",
     category: "deliverability",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["spf-neutral-result-explained", "spf-ip-not-authorized", "spf-softfail-vs-fail"],
   },
@@ -430,7 +439,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "learn",
     category: "examples",
-    priority: 0,
+    priority: 0.9,
     featured: true,
     relatedSlugs: ["dkim-signature-explained", "dkim-selector-explained"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
@@ -443,8 +452,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dkim-selector-not-found",
       "invalid-dkim-key",
@@ -463,8 +472,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dkim-selector-not-found",
       "invalid-dkim-key",
@@ -483,8 +492,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "provider",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dkim-selector-not-found",
       "invalid-dkim-key",
@@ -498,8 +507,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "provider",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dkim-selector-mismatch",
       "dkim-selector-not-found",
@@ -514,8 +523,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dkim-selector-not-found",
       "invalid-dkim-key",
@@ -531,7 +540,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "learn",
     category: "signature",
-    priority: 0,
+    priority: 0.9,
     featured: true,
     relatedSlugs: ["dkim-record-example", "dkim-body-hash-mismatch"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
@@ -543,8 +552,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "missing-record",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["dkim-selector-not-found", "invalid-dkim-key"],
     crossLinks: ["/dmarc/no-dmarc-record-found", "/dmarc/dmarc-alignment-failed"],
   },
@@ -555,8 +564,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "key-issues",
-    priority: 2,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["no-dkim-record-found", "dkim-key-length-too-short"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
   },
@@ -567,8 +576,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "selector",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["dkim-selector-mismatch", "dkim-selector-explained"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
   },
@@ -579,7 +588,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "selector",
-    priority: 4,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["dkim-selector-not-found", "dkim-alignment-failed"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
@@ -591,7 +600,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "key-issues",
-    priority: 5,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["invalid-dkim-key", "dkim-selector-explained"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
@@ -603,7 +612,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "signature",
-    priority: 6,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["dkim-alignment-failed", "invalid-dkim-key"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
@@ -615,7 +624,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "alignment",
-    priority: 7,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["dkim-selector-mismatch", "dkim-body-hash-mismatch"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
@@ -627,8 +636,8 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "learn",
     category: "selector",
-    priority: 8,
-    featured: false,
+    priority: 0.9,
+    featured: true,
     relatedSlugs: ["dkim-selector-not-found", "dkim-selector-mismatch"],
     crossLinks: ["/dmarc/dmarc-alignment-failed"],
   },
@@ -640,7 +649,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["invalid-dkim-key", "dkim-selector-not-found", "dkim-record-example"],
   },
@@ -652,7 +661,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["dkim-key-length-too-short", "invalid-dkim-key", "dkim-record-example"],
   },
@@ -664,7 +673,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.6,
     featured: false,
     relatedSlugs: [
       "dkim-signature-explained",
@@ -679,7 +688,7 @@ export const dkimCluster: InternalLink[] = [
     protocol: "dkim",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.6,
     featured: false,
     relatedSlugs: ["dkim-signature-explained", "dkim-body-hash-mismatch", "dkim-fail-gmail"],
   },
@@ -703,7 +712,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "learn",
     category: "examples",
-    priority: 0,
+    priority: 0.9,
     featured: true,
     relatedSlugs: ["dmarc-aggregate-reports-explained", "no-dmarc-record-found"],
   },
@@ -714,7 +723,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "learn",
     category: "reporting",
-    priority: 0,
+    priority: 0.9,
     featured: true,
     relatedSlugs: ["dmarc-record-example", "dmarc-rua-ruf-not-working"],
   },
@@ -725,8 +734,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "missing-record",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["dmarc-policy-none-vs-quarantine-vs-reject", "dmarc-alignment-failed"],
     crossLinks: ["/spf/no-spf-record-found", "/dkim/no-dkim-record-found"],
   },
@@ -738,8 +747,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-alignment-failed",
       "dmarc-policy-none-vs-quarantine-vs-reject",
@@ -758,8 +767,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "provider",
-    priority: 1,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-alignment-failed",
       "dmarc-policy-none-vs-quarantine-vs-reject",
@@ -777,8 +786,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "provider",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-alignment-failed",
       "dmarc-policy-none-vs-quarantine-vs-reject",
@@ -792,8 +801,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "provider",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-alignment-failed",
       "microsoft-365-dmarc-not-working",
@@ -807,8 +816,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "technical",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-policy-none-vs-quarantine-vs-reject",
       "dmarc-alignment-failed",
@@ -822,8 +831,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "deliverability",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-policy-none-vs-quarantine-vs-reject",
       "dmarc-alignment-failed",
@@ -838,8 +847,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "provider",
-    priority: 2,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-alignment-failed",
       "dmarc-aggregate-reports-explained",
@@ -855,8 +864,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "alignment",
-    priority: 2,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: [
       "dmarc-alignment-failed",
       "dmarc-aspf-adkim-explained",
@@ -871,8 +880,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "duplicate-records",
-    priority: 2,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["no-dmarc-record-found", "dmarc-policy-none-vs-quarantine-vs-reject"],
   },
   {
@@ -882,8 +891,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "alignment",
-    priority: 3,
-    featured: true,
+    priority: 0.7,
+    featured: false,
     relatedSlugs: ["dmarc-aspf-adkim-explained", "dmarc-policy-none-vs-quarantine-vs-reject"],
     crossLinks: ["/dkim/dkim-alignment-failed", "/spf/spf-neutral-result-explained"],
   },
@@ -894,7 +903,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "compare",
     category: "policy",
-    priority: 4,
+    priority: 0.9,
     featured: true,
     relatedSlugs: ["dmarc-pct-tag-explained", "dmarc-alignment-failed"],
   },
@@ -905,7 +914,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "learn",
     category: "tags",
-    priority: 5,
+    priority: 0.6,
     featured: false,
     relatedSlugs: ["dmarc-policy-none-vs-quarantine-vs-reject", "dmarc-fo-tag-explained"],
   },
@@ -916,7 +925,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "learn",
     category: "tags",
-    priority: 6,
+    priority: 0.6,
     featured: false,
     relatedSlugs: ["dmarc-rua-ruf-not-working", "dmarc-pct-tag-explained"],
   },
@@ -927,7 +936,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "learn",
     category: "policy",
-    priority: 7,
+    priority: 0.6,
     featured: false,
     relatedSlugs: ["dmarc-policy-none-vs-quarantine-vs-reject", "dmarc-aspf-adkim-explained"],
   },
@@ -938,7 +947,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "reporting",
-    priority: 8,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["dmarc-fo-tag-explained", "dmarc-pct-tag-explained"],
   },
@@ -949,8 +958,8 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "learn",
     category: "alignment",
-    priority: 9,
-    featured: false,
+    priority: 0.9,
+    featured: true,
     relatedSlugs: ["dmarc-alignment-failed", "dmarc-sp-subdomain-policy-explained"],
   },
   {
@@ -961,7 +970,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: ["multiple-dmarc-records-found", "dmarc-record-example", "no-dmarc-record-found"],
   },
@@ -973,7 +982,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: [
       "dmarc-rua-ruf-not-working",
@@ -989,7 +998,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "technical",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: [
       "dmarc-sp-subdomain-policy-explained",
@@ -1005,7 +1014,7 @@ export const dmarcCluster: InternalLink[] = [
     protocol: "dmarc",
     intent: "fix",
     category: "deliverability",
-    priority: 2,
+    priority: 0.7,
     featured: false,
     relatedSlugs: [
       "dmarc-alignment-failed",
@@ -1052,6 +1061,12 @@ export function enforceBidirectionalLinks(cluster: InternalLink[]): void {
 enforceBidirectionalLinks(spfCluster);
 enforceBidirectionalLinks(dkimCluster);
 enforceBidirectionalLinks(dmarcCluster);
+
+export const internalLinks: InternalLink[] = [
+  ...spfCluster,
+  ...dkimCluster,
+  ...dmarcCluster,
+];
 
 // ─── SEO Linking Engine ─────────────────────────────────────────────────────
 
@@ -1142,9 +1157,8 @@ export function scoreLink(link: InternalLink, current: InternalLink): number {
   if (crossMatch) score += 4;
   if (link.featured === true) score += 3;
 
-  // Lower numeric priority should rank higher.
-  const priorityValue = link.priority ?? 10;
-  score += Math.max(0, 10 - priorityValue);
+  // SEO priority: higher = more important (tools at 1.0, edge cases at 0.6).
+  score += seoPriority(link) * 10;
 
   return score;
 }
@@ -1185,7 +1199,7 @@ export function getRelatedLinks(
 }
 
 /**
- * Gets explore links sorted by featured (true first) then priority (asc).
+ * Gets explore links sorted by featured (true first) then SEO priority (higher first).
  * Excludes the current pathname. Deduplicates by href.
  */
 export function getExploreLinks(
@@ -1213,7 +1227,7 @@ export function getExploreLinks(
     .map((link) => {
       const score = current
         ? scoreLink(link, current) - (link.intent === current.intent ? 2 : 0)
-        : (link.featured ? 3 : 0) + Math.max(0, 10 - (link.priority ?? 10));
+        : (link.featured ? 3 : 0) + seoPriority(link) * 10;
       return { link, score };
     })
     .sort((a, b) => b.score - a.score);
