@@ -1,6 +1,8 @@
 export const dkimErrors = {
   "dkim/no-dkim-record-found": {
-    title: "No DKIM Record Found – How to Fix DKIM Setup (2026)",
+    title: "No DKIM Record Found (Fix Email Authentication)",
+    description:
+      "Fix missing DKIM record fast. Learn how to set up DKIM correctly, avoid authentication failures, and improve email deliverability.",
 
     intro:
       "No DKIM record found means the domain or selector being checked has no DKIM public key record published in DNS. Receivers need that selector record to validate the DKIM signature in the message header. In practice, this often happens when provider setup was not finished, the wrong selector was checked, or the DNS record was never added.",
@@ -86,6 +88,12 @@ export const dkimErrors = {
       "Query DNS externally to confirm the selector record resolves correctly.",
       "Send a fresh test email and verify DKIM=pass and DMARC alignment in headers."
     ],
+    verifySteps: [
+      "Send a test email.",
+      "Check DKIM signature in headers.",
+      "Confirm DKIM shows pass.",
+      "Verify selector exists in DNS."
+    ],
 
     hub: {
       href: "/dkim",
@@ -109,7 +117,7 @@ export const dkimErrors = {
   },
 
   "dkim/google-workspace-dkim-not-working": {
-    title: "Google Workspace DKIM Not Working? Fix It Fast (2026)",
+    title: "Google Workspace DKIM Not Working (Fix DKIM Setup Fast)",
 
     intro:
       "Google Workspace DKIM fails when the Google selector record is missing, wrong, or not yet activated in Admin. A common real-world case is adding the TXT record in DNS correctly but never clicking Start authentication in Google Admin. In that state, Gmail can still send mail while DKIM remains absent or failing in headers.",
@@ -220,7 +228,7 @@ google._domainkey.example.com TXT "v=DKIM1; k=rsa;"`,
   },
 
   "dkim/microsoft-365-dkim-not-working": {
-    title: "Microsoft 365 DKIM Not Working? Fix CNAME Setup (2026)",
+    title: "Microsoft 365 DKIM Not Working (Fix CNAME Setup Fast)",
 
     intro:
       "Microsoft 365 DKIM fails when the required selector CNAMEs are missing, wrong, or DKIM is not enabled for the domain. A common practical case is publishing selector1 and selector2 CNAME records correctly but never turning DKIM on in Microsoft 365. In that state, mail still sends, but DKIM does not reliably pass.",
@@ -337,7 +345,7 @@ selector2._domainkey.example.com CNAME selector2-example._domainkey.onmicrosoft.
   },
 
   "dkim/amazon-ses-dkim-not-working": {
-    title: "Amazon SES DKIM Not Working? Fix the 3 CNAME Records (2026)",
+    title: "Amazon SES DKIM Not Working (Fix CNAME Setup Fast)",
 
     intro:
       "Amazon SES DKIM fails when Easy DKIM selector CNAME records are missing, wrong, or not fully propagated. A common practical failure is when all three CNAMEs are not added exactly as SES provided for the verified identity. Even one mismatch can keep DKIM in a failing or pending state.",
@@ -456,8 +464,229 @@ klmno54321._domainkey.example.com CNAME klmno54321.dkim.amazonses.com`,
     ]
   },
 
+  "dkim/dkim-fail-gmail": {
+    title: "DKIM Fail in Gmail (Why Gmail DKIM Validation Fails)",
+    description:
+      "Gmail showing DKIM fail? Diagnose selector, key, and signing mismatches that break Gmail validation and damage inbox placement.",
+
+    intro:
+      "DKIM fail in Gmail usually means Gmail cannot validate the signature against the published key and signing domain. Even when a selector exists, failures happen if the key is malformed, the sender signs with a different selector, or message content changes after signing.",
+
+    quickPoints: [
+      "Gmail DKIM fail often points to selector/key mismatch",
+      "A visible selector record can still be invalid or truncated",
+      "Content rewrites after signing can break DKIM verification",
+      "Header d= domain and published key domain must align operationally"
+    ],
+
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Inspect Gmail headers for d= and s= values, confirm the exact selector record exists and is valid, then ensure mail is signed after all content modifications.",
+
+    codeTitle: "Gmail DKIM fail diagnostic snapshot",
+    codeLanguage: "Email Header + DNS TXT",
+    code: `Authentication-Results: mx.google.com; dkim=fail header.i=@example.com
+DKIM-Signature: d=example.com; s=selector2; bh=...
+
+selector2._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkq..."`,
+
+    afterCodeText:
+      "Use the exact selector from s= and verify the corresponding DNS record is complete, parseable, and tied to the active signing domain.",
+
+    wrongExampleTitle: "Wrong DKIM state",
+    wrongExampleLanguage: "Header + DNS",
+    wrongExampleCode: `DKIM-Signature uses s=selector2
+DNS only publishes selector1._domainkey.example.com`,
+    wrongExampleText:
+      "Gmail queries selector2 but cannot fetch a valid key, so DKIM verification fails even though another selector exists.",
+
+    correctExampleTitle: "Correct DKIM state",
+    correctExampleLanguage: "Header + DNS",
+    correctExampleCode: `DKIM-Signature uses s=selector2
+DNS publishes selector2._domainkey.example.com with full valid key`,
+    correctExampleText:
+      "Gmail can resolve the exact selector/key pair used in signing, allowing consistent DKIM validation.",
+
+    whyTitle: "Why this happens",
+    whyText:
+      "Gmail DKIM failures typically result from operational drift: selector rotation not completed, partial DNS updates, key formatting damage, or downstream systems modifying messages post-signing.",
+
+    problemTitle: "Why this is a problem",
+    problemPoints: [
+      "Gmail treats mail as less trustworthy when DKIM consistently fails.",
+      "DMARC alignment can fail if DKIM was the expected aligned pass path.",
+      "Inbox placement weakens for critical transactional and lifecycle traffic.",
+      "Troubleshooting becomes noisy if headers and DNS states are out of sync."
+    ],
+
+    deliverabilityTitle: "How this affects deliverability",
+    deliverabilityText:
+      "Sustained DKIM fail signals reduce Gmail trust and can push legitimate mail toward spam, particularly when combined with weak engagement or policy misalignment.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "Selector in DKIM-Signature is not published in DNS.",
+      "Published DKIM key is truncated, malformed, or copied incorrectly.",
+      "Signing happens before gateways modify body content.",
+      "d= signing domain does not align with expected authentication setup."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We check d= and s= header values, selector DNS availability, key integrity, and whether message transformation likely occurred after signing.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Can Gmail fail DKIM while other providers pass?",
+        answer:
+          "Yes. Cache timing, message path differences, or stricter verification behavior can produce provider-specific DKIM outcomes."
+      },
+      {
+        question: "Does selector rotation cause temporary DKIM fail?",
+        answer:
+          "Yes, if the new selector is used before the matching DNS key is fully propagated and validated."
+      },
+      {
+        question: "Should I re-sign after content rewriting?",
+        answer:
+          "Yes. DKIM must be applied after any body-altering transformation to avoid body hash mismatch."
+      }
+    ],
+
+    nextSteps: [
+      "Capture a failing Gmail header and record d= and s= values.",
+      "Validate exact selector DNS record integrity and key formatting.",
+      "Ensure signing order occurs after template/footer/link transformations.",
+      "Test with fresh messages from the same sending path.",
+      "Confirm DKIM pass and DMARC alignment in Gmail headers."
+    ],
+
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+
+    related: [
+      { href: "/dkim/dkim-selector-not-found", label: "DKIM selector not found" },
+      { href: "/dkim/invalid-dkim-key", label: "Invalid DKIM key" },
+      { href: "/dkim/dkim-body-hash-mismatch", label: "DKIM body hash mismatch" }
+    ]
+  },
+
+  "dkim/dkim-fail-outlook": {
+    title: "DKIM Fail in Outlook (Why Outlook DKIM Checks Fail)",
+    description:
+      "Outlook showing DKIM fail? Fix selector, key, and signing path issues that cause Outlook validation failures and reduce deliverability.",
+
+    intro:
+      "Outlook DKIM fail often appears when the signing selector/key pair is inconsistent across sending paths or when intermediate systems alter messages after signing. In mixed Microsoft 365 + third-party environments, one stream may be correctly signed while another fails.",
+
+    quickPoints: [
+      "Outlook DKIM fail can be path-specific in mixed sender environments",
+      "Selector mismatch between headers and DNS remains a top failure cause",
+      "Post-signing body/header mutation can invalidate DKIM",
+      "Domain alignment issues can amplify DKIM failures under DMARC policy"
+    ],
+
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Check failing Outlook headers, confirm selector DNS integrity, and verify each outbound stream signs consistently with the intended domain and key.",
+
+    codeTitle: "Outlook DKIM failure pattern",
+    codeLanguage: "Header + DNS",
+    code: `Authentication-Results: spf=pass; dkim=fail header.d=example.com
+DKIM-Signature: d=example.com; s=selector1;
+
+selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=...full-key..."`,
+
+    afterCodeText:
+      "Outlook failures often resolve when each sending stream uses a valid selector and signing happens after any message mutation.",
+
+    wrongExampleTitle: "Inconsistent sender signing",
+    wrongExampleLanguage: "Operational state",
+    wrongExampleCode: `App mail signs with selector1
+Marketing mail signs with selector-old (missing in DNS)`,
+    wrongExampleText:
+      "One stream passes while another fails, creating intermittent DKIM outcomes and unstable deliverability.",
+
+    correctExampleTitle: "Consistent sender signing",
+    correctExampleLanguage: "Operational state",
+    correctExampleCode: `All streams sign with active selectors published in DNS with valid keys`,
+    correctExampleText:
+      "Consistent selector hygiene across all streams gives Outlook a stable DKIM pass signal.",
+
+    whyTitle: "Why this happens",
+    whyText:
+      "Outlook DKIM fail is frequently operational, not theoretical: outdated selectors remain in senders, DNS and platform states drift, or message-processing layers alter signed content unexpectedly.",
+
+    problemTitle: "Why this is a problem",
+    problemPoints: [
+      "Outlook trust signals degrade when DKIM outcomes are inconsistent.",
+      "Policy enforcement can become unpredictable across recipient domains.",
+      "Important emails may route to junk despite otherwise valid setup.",
+      "Incident isolation is harder when failures only affect specific streams."
+    ],
+
+    deliverabilityTitle: "How this affects deliverability",
+    deliverabilityText:
+      "Persistent DKIM failures in Outlook reduce sender trust and can increase junk-folder placement, especially when alignment policies are strict or reputation is marginal.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "Outdated selector still used by one sender path.",
+      "Key truncation or malformed TXT records in DNS.",
+      "Gateway tools rewriting messages after DKIM signing.",
+      "Uneven signing standards across transactional and marketing infrastructure."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We review header selector/domain values, DNS key validity, and whether each sender path signs consistently without post-signing mutations.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Can Outlook fail DKIM while Gmail passes?",
+        answer:
+          "Yes. Different routing, cache, or transformation layers can produce provider-specific DKIM outcomes."
+      },
+      {
+        question: "Do all sending systems need the same selector?",
+        answer:
+          "Not necessarily, but every selector in use must exist in DNS with a valid matching key."
+      },
+      {
+        question: "What should I validate first?",
+        answer:
+          "Start with a failing Outlook header, then confirm selector DNS presence, key integrity, and signing sequence."
+      }
+    ],
+
+    nextSteps: [
+      "Capture Outlook-failing headers from each sender stream.",
+      "Map selectors in use and verify each exists with a valid DNS key.",
+      "Standardize DKIM signing order after all content transformations.",
+      "Retest each stream independently in Outlook recipients.",
+      "Confirm stable DKIM + DMARC outcomes after rollout."
+    ],
+
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+
+    related: [
+      { href: "/dkim/dkim-selector-mismatch", label: "DKIM selector mismatch" },
+      { href: "/dkim/dkim-body-hash-mismatch", label: "DKIM body hash mismatch" },
+      { href: "/dkim/dkim-selector-not-found", label: "DKIM selector not found" }
+    ]
+  },
+
   "dkim/dkim-selector-not-found": {
-    title: "DKIM Selector Not Found – How to Fix DKIM Selector (2026)",
+    title: "DKIM Selector Not Found (Fix DKIM Setup Fast)",
+    description:
+      "Fix DKIM selector not found errors. Learn how to configure selectors correctly and ensure proper email authentication.",
 
     intro:
       "A DKIM selector-not-found error means the selector in the DKIM-Signature header does not match a DNS record the receiver can find. The selector is the value after s= and it points to the public key hostname under _domainkey. In real setups, this often happens when the sender signs with selector1 but DNS only has selector2, or when the required CNAME/TXT was never published.",
@@ -569,7 +798,9 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
   },
 
   "dkim/invalid-dkim-key": {
-    title: "Invalid DKIM Key – Causes & Fix (2026)",
+    title: "Invalid DKIM Key (How to Fix DKIM Errors)",
+    description:
+      "Fix invalid DKIM key errors. Step-by-step guide to correct DNS records, avoid signing issues, and improve email authentication.",
 
     intro:
       "An invalid DKIM key means the public key in DNS is malformed, truncated, or unreadable to receivers. DKIM verification depends on parsing that key exactly as published, so even small corruption breaks validation. A common example is a broken TXT value where the key was copied with missing characters or split incorrectly.",
@@ -678,7 +909,7 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
   },
 
   "dkim/dkim-alignment-failed": {
-    title: "DKIM Alignment Failed – Fix DKIM Authentication Issues (2026)",
+    title: "DKIM Alignment Failed (Fix Email Authentication)",
 
     intro:
       "DKIM alignment failed means DKIM passed cryptographically, but the signing domain does not align with the visible From domain for DMARC. This often happens when a provider signs with its own vendor domain instead of your sender domain. In that case, DKIM=pass may appear in headers while DMARC still treats the identity as misaligned.",
@@ -790,7 +1021,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dkim/dkim-key-length-too-short": {
-    title: "DKIM Key Too Small – Fix 1024 vs 2048-bit Issue (2026)",
+    title: "DKIM Key Too Small (Fix 1024 vs 2048-bit DKIM)",
 
     intro:
       "DKIM key length matters because the public key is part of the cryptographic trust behind message verification. Keys shorter than modern standards are considered weak and may be distrusted by some mailbox providers. Older DKIM deployments often used 512-bit or 1024-bit RSA keys, while current best practice is generally 2048-bit RSA.",
@@ -899,7 +1130,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dkim/dkim-selector-explained": {
-    title: "DKIM Selector Explained – Complete Guide (2026)",
+    title: "DKIM Selector Explained (Guide to DKIM Selectors)",
 
     intro:
       "A DKIM selector is the label used to tell receivers which DNS record contains the public key needed to verify a DKIM signature. It appears in the DKIM-Signature header after s= and maps to a hostname under _domainkey. Selectors matter because they let domains rotate keys, separate different sending systems, and update DKIM safely without interrupting live mail flow.",
@@ -1011,7 +1242,7 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
   },
 
   "dkim/dkim-selector-mismatch": {
-    title: "DKIM Selector Mismatch – Fix DKIM Conflict (2026)",
+    title: "DKIM Selector Mismatch (Fix DKIM Selector Conflict)",
 
     intro:
       "A DKIM selector mismatch happens when the selector used in the DKIM-Signature header does not match the selector that actually exists in DNS. In simple terms, the sender signs with one selector name, but DNS only publishes a DKIM key for another selector. When that happens, the receiver looks up the wrong hostname and cannot verify the signature.",
@@ -1123,7 +1354,7 @@ DNS publishes: selector1._domainkey.example.com TXT "v=DKIM1; k=rsa; p=MIIBIjANB
   },
 
   "dkim/dkim-body-hash-mismatch": {
-    title: "DKIM Body Hash Mismatch – Fix DKIM Fail (2026)",
+    title: "DKIM Body Hash Mismatch (Fix DKIM Validation Fail)",
 
     intro:
       "A DKIM body hash mismatch occurs when the body of the email changes after the DKIM signature was created. DKIM signs the message body and stores a body hash in the DKIM-Signature header using the bh= parameter. When the receiving server recalculates the body hash, it must match the original value. If the content changes during delivery, the recalculated hash becomes different and DKIM verification fails.",
@@ -1274,7 +1505,7 @@ Your invoice is attached.`,
   },
 
   "dkim/dkim-record-example": {
-    title: "DKIM Record Example – Valid DKIM Setup (2026)",
+    title: "DKIM Record Example (Guide to Valid DKIM Setup)",
 
     intro:
       "DKIM records are TXT records published under a selector subdomain, for example selector1._domainkey.example.com. The value contains the version, key type, and public key. This page shows realistic examples for Google Workspace, Microsoft 365, and custom selectors, and explains how to read each field. Use these as reference when validating or troubleshooting DKIM.",
@@ -1376,7 +1607,7 @@ Your invoice is attached.`,
   },
 
   "dkim/dkim-signature-explained": {
-    title: "DKIM Signature Invalid – Causes & Fix (2026)",
+    title: "DKIM Signature Invalid (Fix DKIM Signature Errors)",
 
     intro:
       "The DKIM-Signature header is added by the sending server and contains the signature, the selector, the domain, and hashes of the signed headers and body. Receivers use this to fetch the public key from DNS and verify that the message was not modified. Understanding the header fields helps you debug verification failures and alignment issues.",
@@ -1477,6 +1708,366 @@ DNS: selector1._domainkey.example.com`,
       { href: "/dkim/dkim-body-hash-mismatch", label: "DKIM body hash mismatch" },
       { href: "/dkim/dkim-record-example", label: "DKIM record examples" },
       { href: "/dkim/dkim-alignment-failed", label: "DKIM alignment failed" }
+    ]
+  },
+
+  "dkim/dkim-invalid-key-format": {
+    title: "Invalid DKIM Key Format (Malformed TXT Record)",
+    description:
+      "Repair DKIM TXT mistakes: broken p= blobs, stray quotes, unsupported k= values, and tags that stop parsers before verification.",
+    intro:
+      "A DKIM public key must live in a single well-formed TXT record: `v=DKIM1`, optional `k=`, required `p=` base64, and no stray punctuation that splits the base64 across lines incorrectly in DNS. When mail systems export keys, admins sometimes paste PEM bodies, include headers, or stuff URL-encoded characters into DNS. The record then fails canonical parsing even though part of the string still looks like a key. Receivers refuse verification immediately; you will see DKIM=fail in Authentication-Results without ever reaching body hashing. This failure mode is distinct from weak key length—the cryptography never starts.",
+    quickPoints: [
+      "Only base64 characters belong inside p=; PEM BEGIN lines are invalid there.",
+      "Some panels double-encode; the resulting TXT is not a DKIM record at all.",
+      "Whitespace inside quoted TXT must follow DNS concatenation rules.",
+      "Ed25519 keys use different k= labels—mixing tags between algorithms breaks resolution."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Regenerate the selector from your sending platform, paste the exact single-line `v=DKIM1; … p=…` value the vendor outputs, remove PEM armor lines, and keep the record under your DNS host’s TXT length handling (split strings only if the host merges them correctly).",
+    codeTitle: "Well-formed DKIM TXT skeleton",
+    codeLanguage: "DNS TXT",
+    code: `s1._domainkey.example.com TXT \"v=DKIM1; h=sha256; k=rsa; p=MIGfMA0GCS...\"`,
+    afterCodeText:
+      "Compare to the vendor clipboard output line by line; any extra newline artifact inside the quoted block is suspect.",
+    wrongExampleTitle: "Wrong setup",
+    wrongExampleLanguage: "DNS TXT",
+    wrongExampleCode: `s1._domainkey.example.com TXT \"-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqG...\"
+`,
+    wrongExampleText:
+      "PEM headers are not part of DKIM TXT. Parsers halt when unexpected tokens appear before or inside p=.",
+    correctExampleTitle: "Correct setup",
+    correctExampleLanguage: "DNS TXT",
+    correctExampleCode: `s1._domainkey.example.com TXT \"v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEB...\"`,
+    correctExampleText:
+      "Only RFC 6376 tag soup inside one TXT RR set; base64 stays contiguous per string segment rules.",
+    whyTitle: "Why malformed keys slip through",
+    whyText:
+      "Humans recognise a PEM block and assume DNS should carry the same artefact. DKIM intentionally carries a flattened representation. Another pitfall is copying from HTML docs that insert soft hyphens or line breaks mid-base64.",
+    problemTitle: "What breaks downstream",
+    problemPoints: [
+      "No valid signature match, so aligned DMARC cannot use DKIM.",
+      "Incident teams chase content or footer edits when DNS was the broken root.",
+      "Regeneration churn without fixing DNS hygiene repeats failures.",
+      "Support escalations balloon when multiple selectors exist but none parse."
+    ],
+    deliverabilityTitle: "Deliverability impact",
+    deliverabilityText:
+      "Malformed keys erase DKIM entirely. Providers leaning on DKIM-first strategies will see sudden alignment cliffs until the TXT is repaired.",
+    causesTitle: "Common causes",
+    causes: [
+      "Copy/paste from certificate viewers instead of signing software exports.",
+      "Manual stitching of split TXT strings in wrong order.",
+      "Accidental deletion of semicolons between tags.",
+      "Using sandbox keys in production selectors without updating p=."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "We locate the selector TXT at `selector._domainkey.domain` and evaluate whether the payload matches expected DKIM grammar. Structural problems surface before cryptographic strength is assessed.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Can I use CNAME instead of TXT for the selector?",
+        answer:
+          "You may delegate the selector name via CNAME to a provider-managed target that still terminates in TXT. A bare CNAME without valid DKIM TXT at the end fails."
+      },
+      {
+        question: "Does OpenSSL output match DKIM DNS?",
+        answer:
+          "Only after converting to the flattened tag form your ESP prints. Never upload PEM directly."
+      },
+      {
+        question: "What about quotes inside Windows DNS?",
+        answer:
+          "Enter the inner text once; the UI adds quoting. Double-quoting or escaping can corrupt the record."
+      }
+    ],
+    nextSteps: [
+      "Export the vendor’s canonical TXT line into a scratch buffer without rich text.",
+      "Publish exactly that value to the documented selector name.",
+      "Remove legacy PEM-style records from earlier experiments.",
+      "Send a probe and confirm d= and s= match the updated record.",
+      "If rotation is imminent, stage a second selector rather than hot-editing live traffic."
+    ],
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+    related: [
+      { href: "/dkim/invalid-dkim-key", label: "Invalid DKIM key" },
+      { href: "/dkim/no-dkim-record-found", label: "No DKIM record found" },
+      { href: "/dkim/dkim-selector-not-found", label: "DKIM selector not found" }
+    ]
+  },
+
+  "dkim/dkim-key-too-short": {
+    title: "DKIM Key Too Short (Published Material Truncated or Incomplete)",
+    description:
+      "Fix DKIM ‘key too short’ errors from TXT truncation, partial rotation uploads, and UI limits—not just bit-length choice.",
+    intro:
+      "Validators raise “key too short” when the decoded RSA modulus is smaller than expected—or when they cannot read enough bits because the published TXT was clipped. Registrar panels occasionally cap per-string length; hurried admins publish only the first fragment of a multi-part base64 blob. Another scenario: migrating keys, uploading the new p= text, but the UI silently truncated trailing characters. The outcome matches a weak key even if you intended 2048-bit material. This page covers publication integrity; pair it with broader cryptographic rotation guidance when you are intentionally upgrading bit strength.",
+    quickPoints: [
+      "Full RSA 2048 public keys often exceed 256 characters and need multiple TXT chunks.",
+      "Order of concatenation matters for oversized records.",
+      "Some APIs report ‘short’ when base64 padding was dropped.",
+      "Truncation after rotation looks like a passive attack fingerprint—filters react harshly."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Re-export the key, verify the complete base64 length against the vendor checksum if provided, republish using your DNS provider’s recommended chunked TXT workflow, and query with `dig TXT` to ensure the recombined string equals the source string character for character.",
+    codeTitle: "Compare published vs source length",
+    codeLanguage: "Plain text",
+    code: `Source file line length: N characters
+dig TXT selector._domainkey.domain | wc -c   → should match N + DNS framing`,
+    afterCodeText:
+      "If counts diverge, you are still truncating or splitting incorrectly.",
+    wrongExampleTitle: "Wrong setup",
+    wrongExampleLanguage: "DNS TXT",
+    wrongExampleCode: `"v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC..."`,
+    wrongExampleText:
+      "Ellipsis placeholders or human-trimmed samples in live DNS are invalid and yield effectively short keys.",
+    correctExampleTitle: "Correct setup",
+    correctExampleLanguage: "DNS TXT",
+    correctExampleCode: `Two TXT strings on the same name that concatenate to the full p= without omissions.`,
+    correctExampleText:
+      "Every base64 character from the signer’s export appears in DNS, rebuilt in order by resolvers.",
+    whyTitle: "Why truncation mimics weak crypto",
+    whyText:
+      "Cryptographic routines attempt to parse whatever bits arrive. Incomplete moduli decode into smaller integers—indistinguishable in logs from deliberately tiny keys—so receivers refuse or downgrade accordingly.",
+    problemTitle: "Operational symptoms",
+    problemPoints: [
+      "Intermittent DKIM pass if older full record still cached in one region.",
+      "Security scanners flag mismatched key lengths between rotations.",
+      "Alignment gaps when only some mail paths hit stale full records.",
+      "Helpdesk confusion between ‘too short’ crypto policy vs literal truncation."
+    ],
+    deliverabilityTitle: "Deliverability angle",
+    deliverabilityText:
+      "Even a perfect sending reputation cannot compensate if DKIM material never fully propagates—chunks of mail fail outright until DNS integrity restores.",
+    causesTitle: "Common causes",
+    causes: [
+      "DNS UI pasting limits without multi-string support.",
+      "Accidental use of ellipsis or Markdown from internal wikis.",
+      "Automated sync jobs that strip trailing `=` padding bytes.",
+      "Parallel edits where two admins publish halves of different rotations."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "We fetch DKIM TXT and measure whether the published key material matches plausible key sizes after decoding. Structural truncation surfaces here in addition to RSA bit-count heuristics.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "How is this different from upgrading 1024 → 2048?",
+        answer:
+          "Upgrading is a deliberate cryptographic choice. Truncation is a delivery defect—you must fix DNS fidelity first, then evaluate bit strength."
+      },
+      {
+        question: "Does Route53 / Cloudflare chunk automatically?",
+        answer:
+          "They split strings but you must verify merged output via dig, not only the UI preview."
+      },
+      {
+        question: "Will doubling selectors help?",
+        answer:
+          "Staged selectors help rotation, but truncated TXT breaks every selector until length is corrected."
+      }
+    ],
+    nextSteps: [
+      "Capture a canonical export file from the signer and treat it as the single source of truth.",
+      "Republish with verified chunking; flush local caches.",
+      "Compare decoded modulus bit length using openssl or your ESP tooling.",
+      "Send traffic only after two independent DNS vantage points agree.",
+      "Document chunk layout for future rotations."
+    ],
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+    related: [
+      { href: "/dkim/dkim-key-length-too-short", label: "DKIM key length too short" },
+      { href: "/dkim/invalid-dkim-key", label: "Invalid DKIM key" },
+      { href: "/dkim/dkim-record-example", label: "DKIM record examples" }
+    ]
+  },
+
+  "dkim/dkim-multiple-signatures-conflict": {
+    title: "Multiple DKIM Signatures Conflict (Double Signing and Priority Rules)",
+    description:
+      "Resolve overlapping DKIM-Signature headers: relays that re-sign, selector clashes, and validators picking the wrong pass/fail pair.",
+    intro:
+      "Messages may carry several DKIM-Signature headers when an internal gateway signs, then a mailing list wraps, then the ESP signs again for the customer domain. Receivers evaluate signatures independently, but DMARC alignment picks among them—and humans read headers expecting a single story. Conflicts appear when one signature verifies while another fails because a hop rewrote content, or when two selectors publish different keys for the same stream and rotation overlaps. The failure you care about might be the second signature, not the first. Untangling which layer owns remediation prevents bogus DKIM record edits.",
+    quickPoints: [
+      "Each signature names its own d= and s=; alignment considers the set that verifies.",
+      "Breaking the inner signature does not always invalidate the outer if both still verify.",
+      "Mailing lists often invalidate earlier body hashes; outer signers must sign after transformation.",
+      "Testing tools sometimes display only the first header block."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Enumerate every DKIM-Signature in order, verify which domain aligns to your DMARC From, disable redundant signing hops you control, and ensure the signature intended for alignment is calculated after the last content mutation.",
+    codeTitle: "Example multi-header outline",
+    codeLanguage: "Email headers",
+    code: `DKIM-Signature: ...; d=listhost.example; s=listsel;
+DKIM-Signature: ...; d=brand.com; s=prod1;`,
+    afterCodeText:
+      "Decide which d= must satisfy alignment; only that signer’s validity matters for DMARC.",
+    wrongExampleTitle: "Chaotic pipeline",
+    wrongExampleLanguage: "Plain text",
+    wrongExampleCode: `Legacy appliance signs → ESP re-signs body still containing appliance footers → inner bh mismatch.`,
+    wrongExampleText:
+      "Two signers without coordinated canonicalization order guarantees repeated failures on inner tags.",
+    correctExampleTitle: "Controlled pipeline",
+    correctExampleLanguage: "Plain text",
+    correctExampleCode: `Transform content first, then sign once for customer domain, then optionally add transport signatures that do not touch aligned fields.`,
+    correctExampleText:
+      "Minimise layers or order them so the aligned signature covers the message consumers actually receive.",
+    whyTitle: "Why stacks accumulate signatures",
+    whyText:
+      "Compliance appliances add branding, forwarding services inject tracking, and ESPs brand outbound—all well-intentioned, yet each hop is a signing opportunity.",
+    problemTitle: "Downstream confusion",
+    problemPoints: [
+      "Support teams rotate DNS for the wrong selector mentioned first in headers.",
+      "Analytics dashboards count DKIM pass if any signature passes—DMARC may disagree.",
+      "Forensic noise obscures which hop broke bh=.",
+      "Regression tests pass in staging without mailing-list equivalents."
+    ],
+    deliverabilityTitle: "Deliverability nuance",
+    deliverabilityText:
+      "Receivers generally tolerate multiple valid signatures, but conflicting canonical bodies raise suspicion scores when inner failures pile up beside DMARC forensic volume.",
+    causesTitle: "Typical causes",
+    causes: [
+      "Appliance signing after marketing injects tracking pixels.",
+      "Vendor A and Vendor B both enabled ‘DKIM enhance’ accidentally.",
+      "Selector overlap during rotation windows.",
+      "List servers wrapping messages without compatible canonicalization."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "We inspect the primary organisational selector you configured in DNS. Multi-signature troubleshooting requires full headers from affected mail—bring those alongside single-selector checks.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Can I delete older signatures?",
+        answer:
+          "If you control the mail pipeline, yes—strip redundant signers to simplify. If a third party adds one, negotiate their order or disable yours."
+      },
+      {
+        question: "Which signature does Gmail align to?",
+        answer:
+          "Gmail evaluates eligible signatures and applies DMARC rules; you cannot rely on ordering alone—verify in Authentication-Results."
+      },
+      {
+        question: "Does ARC help?",
+        answer:
+          "ARC chains document intermediates but do not replace DKIM correctness at each hop. Still fix canonicalization."
+      }
+    ],
+    nextSteps: [
+      "Capture full raw messages representing each sending path.",
+      "Map signatures to organisational vs infrastructure domains.",
+      "Turn off unnecessary signing tiers and retest bh=.",
+      "Coordinate rotation so only the aligned selector changes at once.",
+      "Update DMARC monitoring filters to watch the intended d=."
+    ],
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+    related: [
+      { href: "/dkim/dkim-signature-explained", label: "DKIM signature explained" },
+      { href: "/dkim/dkim-body-hash-mismatch", label: "DKIM body hash mismatch" },
+      { href: "/dkim/dkim-alignment-failed", label: "DKIM alignment failed" }
+    ]
+  },
+
+  "dkim/dkim-signature-expired": {
+    title: "DKIM Signature Expired (Clock Skew and x= / z= Bounds)",
+    description:
+      "Fix DKIM failures tied to signature lifetimes: expired x= tags, mangled Date headers, and receiver clock drift.",
+    intro:
+      "DKIM signatures can include timestamp hints: signers set issuance time (`t=`) and may cap validity with `x=` relative to signing time. When clocks disagree, transport delays stretch, or intermediaries strip Date headers, receivers may treat signatures as stale. Mailing lists that hold messages for moderation exacerbate the window. Unlike body-hash failures, expiry issues spike suddenly when NTP drift crosses a threshold or when a mailbag release bursts old messages. The DNS key can be perfect while DKIM still fails purely on temporal policy.",
+    quickPoints: [
+      "t= is seconds since epoch in the signature header.",
+      "x= sets an explicit expiry; omitting it avoids artificial windows.",
+      "Greylisting plus retry can push mail past tight custom expiries.",
+      "Some appliances rewrite Date, invalidating verification assumptions."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Synchronise NTP on every signing MTA, widen or remove overly aggressive x= windows unless you have a security reason, and confirm Date headers survive your pipeline so receivers can reconcile signing time sensibly.",
+    codeTitle: "Illustrative lifetime tags",
+    codeLanguage: "DKIM-Signature excerpt",
+    code: `t=1735689600; x=1735776000;`,
+    afterCodeText:
+      "If moderation can exceed x−t seconds, signatures expire before delivery finishes.",
+    wrongExampleTitle: "Aggressive expiry",
+    wrongExampleLanguage: "DKIM-Signature excerpt",
+    wrongExampleCode: `x=t+300  # five-minute lifetime on slow lists`,
+    wrongExampleText:
+      "Short expiries break legitimate delayed delivery paths even without malice.",
+    correctExampleTitle: "Balanced policy",
+    correctExampleLanguage: "Plain text",
+    correctExampleCode: `Default platform lifetimes + stable clocks + accurate Date headers.`,
+    correctExampleText:
+      "Let the signer’s defaults apply unless you have threat-driven reasons to tighten.",
+    whyTitle: "Why expiry checks fire",
+    whyText:
+      "Receivers defend against replay. They compare signing timestamps to receipt time, DNS TTL, and internal heuristics. Skewed infra clocks break the contract immediately.",
+    problemTitle: "Operational symptoms",
+    problemPoints: [
+      "Random subset failures correlated with delayed queues.",
+      "Passes inside LAN tests, failures on real internet paths.",
+      "Forensic spikes after daylight-saving changeovers on poorly patched boxes.",
+      "Archive re-injection workflows failing signature replay rules."
+    ],
+    deliverabilityTitle: "Deliverability insight",
+    deliverabilityText:
+      "Short-lived failures often coincide with bulk sends because volume exacerbates queueing variance—watch for expiry alongside reputation noise.",
+    causesTitle: "Common causes",
+    causes: [
+      "Hypervisors without NTP discipline.",
+      "Custom signer plugins injecting minute-scale x= windows.",
+      "Moderation queues in highly regulated inboxes.",
+      "Manual clock rollbacks during incident response."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "Static DKIM DNS validation cannot see header timestamps. Provide full message headers when expiry is suspected so we can correlate t= with real arrival times.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Should I always remove x=?",
+        answer:
+          "Only if business requirements allow. Security-sensitive streams sometimes keep tight expiries; then fix moderation latency instead of weakening crypto policy."
+      },
+      {
+        question: "Does Gmail show the reason as expired?",
+        answer:
+          "Diagnostics vary; Authentication-Results may note key related failures. Compare t=/x= with received timestamps."
+      },
+      {
+        question: "Are replay attacks realistic for marketing mail?",
+        answer:
+          "Low, but providers still enforce sane windows. Align operational latency with signature policy."
+      }
+    ],
+    nextSteps: [
+      "Audit NTP across signing infrastructure.",
+      "Measure worst-case hop delay for each mail flow.",
+      "Relax x= or redesign queues breaching the window.",
+      "Preserve Date integrity through transformations.",
+      "Re-test after DST or infra migrations."
+    ],
+    hub: {
+      href: "/dkim",
+      label: "DKIM Hub"
+    },
+    related: [
+      { href: "/dkim/dkim-signature-explained", label: "DKIM signature explained" },
+      { href: "/dkim/dkim-body-hash-mismatch", label: "DKIM body hash mismatch" },
+      { href: "/dkim/dkim-fail-gmail", label: "DKIM fail in Gmail" }
     ]
   }
 };

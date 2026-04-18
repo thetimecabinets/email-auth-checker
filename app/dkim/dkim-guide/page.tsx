@@ -2,10 +2,9 @@ import Link from "next/link";
 import CodeBlock from "../../components/CodeBlock";
 
 export const metadata = {
-  title:
-    "Complete DKIM Guide – Signatures, Selectors and Alignment Explained (2026)",
+  title: "DKIM Guide: Fix DKIM Errors, Selectors and Alignment",
   description:
-    "Learn how DKIM signatures work, how selectors and keys are published in DNS, how verification happens, and how to troubleshoot DKIM failures in real email systems.",
+    "Step-by-step guide to fix DKIM issues. Includes DNS examples, common mistakes, and how to improve email deliverability fast.",
 };
 
 const relatedLinks = [

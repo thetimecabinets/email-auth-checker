@@ -7,6 +7,9 @@ type Result = {
   spf: string | null;
   dkimDetected: boolean;
   dmarc: string | null;
+  spfStatus?: "ok" | "missing" | "permerror" | "softfail";
+  dkimStatus?: "ok" | "missing";
+  dmarcStatus?: "ok" | "missing" | "weak";
 };
 
 export default function Home() {
@@ -14,6 +17,15 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  function computeScore(result: Result) {
+    let score = 0;
+    if (result.spf) score += 30;
+    if (result.dkimDetected) score += 30;
+    if (result.dmarc) score += 20;
+    if (result.dmarc?.includes("p=reject")) score += 20;
+    return Math.min(score, 100);
+  }
 
   async function runCheck(e: React.FormEvent) {
     e.preventDefault();
@@ -34,10 +46,39 @@ export default function Home() {
         fetch(`/api/dmarc?domain=${q}`).then((r) => r.json()),
       ]);
 
+      // SPF detection
+      let spfStatus: Result["spfStatus"] = "ok";
+
+      if (!spfRes.spf) {
+        spfStatus = "missing";
+      } else if (spfRes.spf.includes("~all")) {
+        spfStatus = "softfail";
+      } else if (spfRes.spf.length > 200) {
+        spfStatus = "permerror";
+      }
+
+      // DKIM detection
+      let dkimStatus: Result["dkimStatus"] =
+        Array.isArray(dkimRes.dkim) && dkimRes.dkim.length > 0
+          ? "ok"
+          : "missing";
+
+      // DMARC detection
+      let dmarcStatus: Result["dmarcStatus"] = "ok";
+
+      if (!dmarcRes.dmarc) {
+        dmarcStatus = "missing";
+      } else if (dmarcRes.dmarc.includes("p=none")) {
+        dmarcStatus = "weak";
+      }
+
       setResult({
         spf: spfRes.spf ?? null,
         dkimDetected: Array.isArray(dkimRes.dkim) && dkimRes.dkim.length > 0,
         dmarc: dmarcRes.dmarc ?? null,
+        spfStatus,
+        dkimStatus,
+        dmarcStatus,
       });
     } catch {
       setError("Unable to run checks. Please try again.");
@@ -48,6 +89,19 @@ export default function Home() {
 
   return (
     <>
+      <style>{`
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #111827;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+`}</style>
       {/* HERO */}
       <section className="checker-hero" id="checker">
         <div className="checker-card">
@@ -89,7 +143,14 @@ export default function Home() {
             />
 
             <button type="submit" disabled={loading} className="domain-button">
-              {loading ? "Checking…" : "Check SPF, DKIM & DMARC"}
+              {loading ? (
+                <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span className="spinner" />
+                  Analyzing DNS…
+                </span>
+              ) : (
+                "Check SPF, DKIM & DMARC"
+              )}
             </button>
           </form>
 
@@ -114,6 +175,46 @@ export default function Home() {
             </div>
           )}
 
+          {result && (
+            <div
+              style={{
+                marginTop: 20,
+                padding: 16,
+                borderRadius: 12,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+              }}
+            >
+              <div style={{ fontSize: 13, color: "#6b7280" }}>
+                Authentication score
+              </div>
+
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 800,
+                  marginTop: 4,
+                  color:
+                    computeScore(result) > 80
+                      ? "#16a34a"
+                      : computeScore(result) > 50
+                      ? "#ca8a04"
+                      : "#dc2626",
+                }}
+              >
+                {computeScore(result)}/100
+              </div>
+
+              <div style={{ marginTop: 6, fontSize: 13, color: "#6b7280" }}>
+                {computeScore(result) > 80
+                  ? "Strong authentication setup"
+                  : computeScore(result) > 50
+                  ? "Some issues detected"
+                  : "Critical issues affecting deliverability"}
+              </div>
+            </div>
+          )}
+
           {/* RESULTS */}
           {result && (
             <div
@@ -123,9 +224,26 @@ export default function Home() {
             >
               <ResultCard
                 title="SPF"
-                status={result.spf ? "pass" : "fail"}
-                value={result.spf || "No SPF record found"}
+                status={result.spfStatus === "missing" ? "fail" : "pass"}
+                value={
+                  result.spfStatus === "missing"
+                    ? "No SPF record found"
+                    : result.spfStatus === "softfail"
+                    ? "SPF softfail (~all)"
+                    : result.spfStatus === "permerror"
+                    ? "SPF permerror detected"
+                    : result.spf || "SPF valid"
+                }
                 hint="Verifies which servers may send email for your domain."
+                link={
+                  result.spfStatus === "missing"
+                    ? "/spf/no-spf-record-found"
+                    : result.spfStatus === "permerror"
+                    ? "/spf/spf-permerror-too-many-dns-lookups"
+                    : result.spfStatus === "softfail"
+                    ? "/spf/spf-softfail-explained"
+                    : undefined
+                }
               />
 
               <ResultCard
@@ -135,6 +253,11 @@ export default function Home() {
                   result.dkimDetected ? "DKIM detected" : "No DKIM detected"
                 }
                 hint="Checks whether messages are cryptographically signed."
+                link={
+                  result.dkimStatus === "missing"
+                    ? "/dkim/no-dkim-record-found"
+                    : undefined
+                }
               />
 
               <ResultCard
@@ -146,8 +269,21 @@ export default function Home() {
                     ? "warn"
                     : "fail"
                 }
-                value={result.dmarc || "No DMARC record found"}
+                value={
+                  result.dmarcStatus === "missing"
+                    ? "No DMARC record found"
+                    : result.dmarcStatus === "weak"
+                    ? "DMARC policy p=none (weak)"
+                    : result.dmarc || "DMARC valid"
+                }
                 hint="Defines how receivers handle SPF or DKIM failures."
+                link={
+                  result.dmarcStatus === "missing"
+                    ? "/dmarc/no-dmarc-record-found"
+                    : result.dmarcStatus === "weak"
+                    ? "/dmarc/dmarc-alignment-failed"
+                    : undefined
+                }
               />
             </div>
           )}
@@ -389,11 +525,13 @@ function ResultCard({
   status,
   value,
   hint,
+  link,
 }: {
   title: string;
   status: "pass" | "warn" | "fail";
   value: string;
   hint: string;
+  link?: string;
 }) {
   const pillLabel =
     status === "pass" ? "Pass" : status === "warn" ? "Warning" : "Issue";
@@ -404,6 +542,20 @@ function ResultCard({
         <div className="result-title">{title}</div>
         <div className="result-value">{value}</div>
         <div className="result-desc">{hint}</div>
+        {link && (
+          <a
+            href={link}
+            style={{
+              marginTop: 8,
+              display: "inline-block",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#2563eb",
+            }}
+          >
+            Fix this →
+          </a>
+        )}
       </div>
 
       <div className={`status-pill status-${status}`}>{pillLabel}</div>

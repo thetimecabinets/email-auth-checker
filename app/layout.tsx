@@ -1,11 +1,12 @@
 import "./globals.css";
 import Link from "next/link";
+import type { Metadata } from "next";
 import Logo from "./components/Logo";
 
-export const metadata = {
-  title: "Email DNS Check",
+export const metadata: Metadata = {
+  title: "SPF, DKIM & DMARC Checker Tool (Free DNS Lookup)",
   description:
-    "Check SPF, DKIM, and DMARC records for any domain. Free email authentication checker.",
+    "Check SPF, DKIM and DMARC records instantly. Detect email authentication issues and improve email deliverability with live DNS lookup.",
 };
 
 export default function RootLayout({

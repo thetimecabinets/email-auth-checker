@@ -2,10 +2,9 @@ import Link from "next/link";
 import CodeBlock from "../../components/CodeBlock";
 
 export const metadata = {
-  title:
-    "Complete SPF Record Guide: Syntax, Examples, DNS Limits, and Troubleshooting",
+  title: "SPF Record Guide: Fix SPF Errors with DNS Examples",
   description:
-    "Learn how SPF records work, how to write them correctly, avoid DNS lookup limits, and fix common SPF errors.",
+    "Step-by-step guide to fix SPF record issues. Includes DNS examples, common mistakes, and how to improve email deliverability fast.",
 };
 
 export default function SPFRecordGuidePage() {

@@ -5,10 +5,9 @@ import { spfCluster } from "@/app/data/internalLinks";
 const MAX_HUB_CARDS = 12;
 
 export const metadata: Metadata = {
-  title:
-    "SPF Hub – Fix SPF Errors, Alignment and DNS for Modern Email Delivery (2026)",
+  title: "SPF Hub: Fix SPF Errors Fast with DNS Guide & Tools",
   description:
-    "Deep-dive SPF hub for founders and IT admins. Understand SPF alignment, DNS limits, Microsoft 365 and Google Workspace patterns, and grab one-minute SPF fixes for common errors.",
+    "Step-by-step guide to fix SPF Hub errors. Includes DNS examples, common mistakes, and how to improve email deliverability fast.",
 };
 
 export default function SPFHubPage() {
@@ -164,6 +163,60 @@ export default function SPFHubPage() {
               </p>
             </div>
           </aside>
+        </section>
+
+        {/* PROTOCOL TOOLS */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 18, color: "#111827" }}>
+                Tools for this protocol
+              </h2>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                Interactive utilities
+              </span>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Link
+                href="/spf/spf-lookup-checker"
+                className="group block rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm outline-none transition hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 no-underline"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  SPF lookup checker
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Count DNS lookups and catch permerror risk early.
+                </p>
+                <span className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition group-hover:bg-gray-800">
+                  Run check →
+                </span>
+              </Link>
+
+              <Link
+                href="/spf/multiple-spf-records-found"
+                className="group block rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm outline-none transition hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 no-underline"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  SPF merge tool
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Combine multiple SPF records into one valid TXT policy.
+                </p>
+                <span className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition group-hover:bg-gray-800">
+                  Merge records →
+                </span>
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* START HERE */}

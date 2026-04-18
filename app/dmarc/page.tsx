@@ -5,10 +5,9 @@ import { dmarcCluster } from "@/app/data/internalLinks";
 const MAX_HUB_CARDS = 12;
 
 export const metadata: Metadata = {
-  title:
-    "DMARC Hub – Monitoring, Alignment and Policy Enforcement (2026 Guide)",
+  title: "DMARC Hub: Fix DMARC Errors Fast with Guide & Tools",
   description:
-    "Understand DMARC monitoring, alignment, and enforcement policies. Learn how to analyze DMARC reports and fix authentication failures.",
+    "Step-by-step guide to fix DMARC Hub errors. Includes DNS examples, common mistakes, and how to improve email deliverability fast.",
 };
 
 export default function DMARCHubPage() {
@@ -145,6 +144,44 @@ export default function DMARCHubPage() {
               </p>
             </div>
           </aside>
+        </section>
+
+        {/* PROTOCOL TOOLS */}
+        <section style={{ marginTop: 18 }}>
+          <div style={card}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 18, color: "#111827" }}>
+                Tools for this protocol
+              </h2>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                Interactive utilities
+              </span>
+            </div>
+            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Link
+                href="/dmarc/dmarc-generator"
+                className="group block rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm outline-none transition hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 no-underline"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  DMARC generator
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Build a DMARC TXT line with policy and reporting tags.
+                </p>
+                <span className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition group-hover:bg-gray-800">
+                  Generate →
+                </span>
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* START HERE */}

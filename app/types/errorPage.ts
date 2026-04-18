@@ -36,6 +36,8 @@ export type RelatedLink = {
     checkedText?: string;
   
     nextSteps?: string[];
+    verifySteps?: string[];
+    quickPoints?: string[];
   
     wrongExampleTitle?: string;
     wrongExampleCode?: string;

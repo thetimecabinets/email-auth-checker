@@ -1,9 +1,11 @@
 export const dmarcErrors = {
   "dmarc/no-dmarc-record-found": {
-    title: "No DMARC Record Found – How to Add DMARC (2026)",
+    title: "No DMARC Record Found (Fix DMARC Setup Fast)",
+    description:
+      "Fix missing DMARC record fast. Learn how to create a DMARC policy, protect your domain, and improve email deliverability.",
 
     intro:
-      "Your domain has no DMARC record published in DNS. A common real-world case is having SPF and DKIM configured, but no DMARC policy to tell receivers what to do when authentication or alignment fails. Without that policy layer, spoofed messages can be handled inconsistently across providers.",
+      "No DMARC record found means your domain does not publish a DMARC policy in DNS. Even if SPF and DKIM exist, Gmail, Outlook, and Yahoo have no domain-level instruction for handling failed or spoofed mail. That weakens anti-spoofing control and leaves enforcement inconsistent across receivers.",
 
     fixTitle: "One-Minute Fix",
 
@@ -86,6 +88,18 @@ export const dmarcErrors = {
       "Review report data to confirm legitimate senders are aligned.",
       "Increase enforcement gradually to quarantine/reject when ready."
     ],
+    verifySteps: [
+      "Send a test email from your domain.",
+      "Check SPF and DKIM alignment in message headers.",
+      "Confirm DMARC shows pass in results.",
+      "Re-run the DNS check tool to verify the record."
+    ],
+    quickPoints: [
+      "No DMARC record published in DNS",
+      "No policy for handling spoofed email",
+      "Providers cannot enforce your domain policy",
+      "No DMARC reports are generated"
+    ],
 
     hub: {
       href: "/dmarc",
@@ -109,10 +123,10 @@ export const dmarcErrors = {
   },
 
   "dmarc/google-workspace-dmarc-not-working": {
-    title: "Google Workspace DMARC Not Working – Fix DMARC for Gmail Sending (2026)",
+    title: "Google Workspace DMARC Not Working (Fix Alignment Fast)",
 
     intro:
-      "Google Workspace DMARC fails when messages from your domain do not align SPF or DKIM with the visible From domain. A common scenario is Gmail sending with DKIM disabled in Admin or a misaligned sender setup, so DMARC still fails even though mail delivers.",
+      "Google Workspace DMARC not working usually means SPF or DKIM does not align with your visible From domain. Gmail can still deliver messages, but Outlook and Yahoo may treat them as unauthenticated or suspicious when DMARC fails. This often happens when Google Admin DKIM or sender alignment settings are incomplete.",
 
     fixTitle: "One-Minute Fix",
 
@@ -218,10 +232,10 @@ _dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com; adkim=r;
   },
 
   "dmarc/microsoft-365-dmarc-not-working": {
-    title: "Microsoft 365 DMARC Not Working – Fix Domain Alignment and Policy (2026)",
+    title: "Microsoft 365 DMARC Not Working (Fix Alignment Fast)",
 
     intro:
-      "Microsoft 365 DMARC fails when SPF or DKIM authentication does not align with the visible From domain, even if mail sends normally. This commonly appears when Microsoft tenant defaults are active but custom-domain alignment was never fully completed.",
+      "Microsoft 365 DMARC not working means SPF or DKIM is passing on a non-aligned domain instead of your visible From domain. Mail can still send, but Gmail, Outlook, and Yahoo may apply stricter filtering when alignment fails. This is common when tenant defaults are active and custom-domain alignment was not fully completed.",
 
     fixTitle: "One-Minute Fix",
 
@@ -326,11 +340,443 @@ _dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com; adkim=r;
     ]
   },
 
-  "dmarc/sendgrid-dmarc-fail": {
-    title: "SendGrid DMARC Fail – Fix Alignment for Transactional Mail (2026)",
+  "dmarc/dmarc-fail-gmail": {
+    title: "DMARC Fail in Gmail (Why Gmail DMARC Checks Fail)",
+    description:
+      "Gmail showing DMARC fail? Diagnose SPF/DKIM alignment gaps, sender-path mismatches, and policy issues that break DMARC enforcement.",
 
     intro:
-      "SendGrid DMARC fails when SPF/DKIM for SendGrid traffic does not align with your visible From domain. This often happens when domain authentication is partial, so SendGrid sends mail but DMARC still fails for alignment-sensitive receivers.",
+      "DMARC fail in Gmail usually means SPF or DKIM passed technically but did not align with the visible From domain. Teams often see pass signals in raw headers and still fail DMARC because alignment, not just authentication, is the deciding rule.",
+
+    quickPoints: [
+      "DMARC in Gmail depends on alignment, not raw SPF/DKIM pass alone",
+      "From domain must align with SPF or DKIM-authenticated domain",
+      "Third-party sender paths commonly break Gmail DMARC alignment",
+      "Strict policy with unresolved alignment creates immediate delivery risk"
+    ],
+
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Check a failing Gmail header, confirm aligned SPF or DKIM for the visible From domain, and correct sender routing before enforcing stricter DMARC policy.",
+
+    codeTitle: "Gmail DMARC fail pattern",
+    codeLanguage: "Email Header + DNS",
+    code: `Authentication-Results: mx.google.com;
+spf=pass smtp.mailfrom=mailer.vendor.net
+dkim=pass header.d=vendor.net
+dmarc=fail header.from=example.com
+
+_dmarc.example.com TXT "v=DMARC1; p=quarantine; adkim=s; aspf=s"`,
+
+    afterCodeText:
+      "SPF and DKIM pass for vendor.net, but neither aligns to example.com in header.from, so Gmail returns DMARC fail.",
+
+    wrongExampleTitle: "Unaligned sender setup",
+    wrongExampleLanguage: "Header state",
+    wrongExampleCode: `header.from=example.com
+spf domain=mailer.vendor.net
+dkim d=vendor.net`,
+    wrongExampleText:
+      "Authentication exists, but alignment to the From domain is missing, so DMARC fails in Gmail.",
+
+    correctExampleTitle: "Aligned sender setup",
+    correctExampleLanguage: "Header state",
+    correctExampleCode: `header.from=example.com
+spf domain=bounce.example.com
+dkim d=example.com`,
+    correctExampleText:
+      "At least one aligned path supports DMARC success in Gmail for the visible From domain.",
+
+    whyTitle: "Why this happens",
+    whyText:
+      "Gmail DMARC fails most often when operational sender domains drift from brand-visible domains. Providers may authenticate on infrastructure domains unless custom alignment is completed.",
+
+    problemTitle: "Why this is a problem",
+    problemPoints: [
+      "Legitimate Gmail traffic can be quarantined or rejected under policy.",
+      "Authentication dashboards look healthy while alignment stays broken.",
+      "Brand trust suffers when mailbox placement is inconsistent.",
+      "Policy hardening is blocked until alignment is fixed across streams."
+    ],
+
+    deliverabilityTitle: "How this affects deliverability",
+    deliverabilityText:
+      "Persistent DMARC fail in Gmail weakens trust and can push important messages to spam or rejection, especially under quarantine/reject policies.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "SPF passes on a non-aligned envelope sender domain.",
+      "DKIM signs with provider domain instead of your visible From domain.",
+      "Strict adkim/aspf settings applied before sender alignment is complete.",
+      "Mixed sender stack where one stream is aligned and another is not."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We validate DMARC record health and whether SPF/DKIM outcomes align with the exact From domain used in failing Gmail messages.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Can Gmail show DMARC fail even when SPF passes?",
+        answer:
+          "Yes. If SPF passes on a different domain than the From domain, DMARC can still fail due to alignment."
+      },
+      {
+        question: "Do I need both SPF and DKIM aligned?",
+        answer:
+          "No. One aligned pass is enough for DMARC, but having both aligned improves resilience."
+      },
+      {
+        question: "Should I lower policy while fixing alignment?",
+        answer:
+          "Usually yes. Use monitoring or softer enforcement while correcting sender alignment across all streams."
+      }
+    ],
+
+    nextSteps: [
+      "Capture a failing Gmail header and map SPF/DKIM domains vs header.from.",
+      "Align at least one authentication path to the From domain.",
+      "Retest Gmail outcomes after sender config updates.",
+      "Review all sending tools to ensure consistent alignment.",
+      "Increase DMARC enforcement only after stable aligned pass rates."
+    ],
+
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+
+    related: [
+      { href: "/dmarc/dmarc-alignment-failed", label: "DMARC alignment failed" },
+      { href: "/dkim/dkim-alignment-failed", label: "DKIM alignment failed" },
+      { href: "/dmarc/no-dmarc-record-found", label: "No DMARC record found" }
+    ]
+  },
+
+  "dmarc/dmarc-fail-outlook": {
+    title: "DMARC Fail in Outlook (Why Outlook DMARC Fails)",
+    description:
+      "Outlook DMARC fail usually means SPF/DKIM alignment is broken for the From domain. Diagnose policy and sender-path mismatches fast.",
+
+    intro:
+      "DMARC fail in Outlook appears when authenticated domains do not align with the visible From domain used in the message. In Microsoft-heavy environments, mixed relay paths and partial DKIM rollout frequently produce intermittent Outlook DMARC failures.",
+
+    quickPoints: [
+      "Outlook DMARC fail is usually an alignment issue, not missing DNS alone",
+      "Hybrid sender stacks often pass SPF/DKIM on non-aligned domains",
+      "Strict policy can expose hidden stream-level misconfigurations",
+      "Consistent alignment across all sender paths is required"
+    ],
+
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Use a failing Outlook header to identify non-aligned sender domains, then align SPF or DKIM to the From domain before tightening policy.",
+
+    codeTitle: "Outlook DMARC fail pattern",
+    codeLanguage: "Header + DNS",
+    code: `Authentication-Results:
+spf=pass smtp.mailfrom=mailer.example-mail.net
+dkim=pass header.d=example-mail.net
+dmarc=fail header.from=example.com`,
+
+    afterCodeText:
+      "Both auth paths pass on another domain, but DMARC fails because header.from is different and unaligned.",
+
+    wrongExampleTitle: "Policy-first without alignment",
+    wrongExampleLanguage: "DMARC TXT",
+    wrongExampleCode: `_dmarc.example.com TXT "v=DMARC1; p=reject; adkim=s; aspf=s"`,
+    wrongExampleText:
+      "Strict enforcement before sender alignment is complete can increase Outlook delivery failures for legitimate mail.",
+
+    correctExampleTitle: "Alignment-first rollout",
+    correctExampleLanguage: "Operational pattern",
+    correctExampleCode: `Align SPF/DKIM to example.com across all streams, then move policy from none → quarantine → reject`,
+    correctExampleText:
+      "Alignment-first rollout reduces accidental enforcement failures and stabilizes Outlook deliverability.",
+
+    whyTitle: "Why this happens",
+    whyText:
+      "Outlook DMARC failures often reflect fragmented sender architecture where each tool authenticates on its own domain rather than your visible From domain.",
+
+    problemTitle: "Why this is a problem",
+    problemPoints: [
+      "Legitimate business mail can fail policy checks and route to junk.",
+      "Operational teams misread pass signals as DMARC health.",
+      "Enforcement hardening stalls due to unpredictable stream behavior.",
+      "Incident triage takes longer without stream-level alignment mapping."
+    ],
+
+    deliverabilityTitle: "How this affects deliverability",
+    deliverabilityText:
+      "Unresolved Outlook DMARC fails can reduce inbox placement and increase rejection risk under stricter policy levels, especially for transactional traffic.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "Provider/authenticated domains do not align with visible From domain.",
+      "One sender stream still uses old relay or signing configuration.",
+      "Policy tightened before all tools were aligned and validated.",
+      "DKIM enabled only for part of the outbound mail stack."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We verify Outlook DMARC outcomes against From-domain alignment for SPF/DKIM, plus policy strictness and stream-by-stream sender consistency.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Can Outlook fail DMARC while Gmail passes?",
+        answer:
+          "Yes. Different routing paths, sender pools, and enforcement behavior can expose misalignment differently by provider."
+      },
+      {
+        question: "Is one aligned pass enough for DMARC?",
+        answer:
+          "Yes, one aligned SPF or DKIM pass is sufficient, but both aligned is better for resilience."
+      },
+      {
+        question: "When should I move to p=reject?",
+        answer:
+          "Only after all legitimate streams show stable alignment and DMARC pass in real mailbox tests."
+      }
+    ],
+
+    nextSteps: [
+      "Collect failing Outlook headers across all sender streams.",
+      "Align SPF or DKIM for each stream to the visible From domain.",
+      "Retest Outlook and monitor DMARC outcomes by stream.",
+      "Fix outlier tools still authenticating on non-aligned domains.",
+      "Advance policy strength after alignment is stable."
+    ],
+
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+
+    related: [
+      { href: "/dmarc/dmarc-alignment-failed", label: "DMARC alignment failed" },
+      { href: "/dmarc/microsoft-365-dmarc-not-working", label: "Microsoft 365 DMARC not working" },
+      { href: "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject", label: "DMARC policy levels explained" }
+    ]
+  },
+
+  "dmarc/dmarc-policy-reject-causing-fail": {
+    title: "DMARC Reject Policy Causing Fail (How to Fix Safely)",
+    description:
+      "DMARC reject causing delivery failures? Learn how to roll back safely, fix alignment gaps, and re-enable strong policy without blocking valid mail.",
+
+    intro:
+      "When DMARC policy is set to reject before sender alignment is fully validated, legitimate mail can fail authentication and be blocked. This page focuses on recovery and staged hardening when strict enforcement is causing production failures.",
+
+    quickPoints: [
+      "p=reject enforces immediately when alignment fails",
+      "Reject policy should follow verified sender alignment, not precede it",
+      "Rollback to monitoring can prevent widespread business-mail loss",
+      "Stream-by-stream alignment validation is required before re-hardening"
+    ],
+
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Temporarily reduce policy to p=none or p=quarantine, identify failing streams from headers/reports, fix alignment, then progressively restore reject enforcement.",
+
+    codeTitle: "Safe rollback + staged enforcement",
+    codeLanguage: "DMARC TXT",
+    code: `_dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com; adkim=r; aspf=r"`,
+
+    afterCodeText:
+      "Use monitoring to map failures first, then move gradually back to quarantine/reject once legitimate streams are aligned.",
+
+    wrongExampleTitle: "Premature strict policy",
+    wrongExampleLanguage: "DMARC TXT",
+    wrongExampleCode: `_dmarc.example.com TXT "v=DMARC1; p=reject; adkim=s; aspf=s"`,
+    wrongExampleText:
+      "Strict policy with unresolved alignment can block legitimate mail and trigger avoidable production incidents.",
+
+    correctExampleTitle: "Staged hardening policy",
+    correctExampleLanguage: "DMARC TXT",
+    correctExampleCode: `_dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com"`,
+    correctExampleText:
+      "Start with controlled monitoring, fix failures, then harden policy when real-world pass rates are stable.",
+
+    whyTitle: "Why this happens",
+    whyText:
+      "Reject-policy incidents happen when policy decisions are made before sender alignment and routing complexity are fully mapped across all mail sources.",
+
+    problemTitle: "Why this is a problem",
+    problemPoints: [
+      "Critical transactional mail may be rejected by receivers.",
+      "Business teams lose trust in enforcement rollout strategy.",
+      "Emergency rollback is required under production pressure.",
+      "Security posture and deliverability goals fall out of sync."
+    ],
+
+    deliverabilityTitle: "How this affects deliverability",
+    deliverabilityText:
+      "A mis-timed reject policy can significantly reduce successful delivery for valid mail until alignment issues are corrected and policy is reintroduced safely.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "Reject policy activated before all sender streams were aligned.",
+      "Legacy tools still send from non-aligned domains.",
+      "DKIM/SPF config differs by stream and was not validated in real headers.",
+      "No phased rollout using report-driven corrections."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We assess policy level, observed fail patterns, and whether legitimate sender streams had aligned SPF/DKIM before reject enforcement was enabled.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Should I immediately disable DMARC after rejects?",
+        answer:
+          "Not entirely. Move to monitoring or softer policy while fixing alignment rather than removing DMARC completely."
+      },
+      {
+        question: "How long should p=none remain?",
+        answer:
+          "Long enough to confirm stable aligned pass rates across all legitimate senders in real traffic."
+      },
+      {
+        question: "Can I use pct for safer rollout?",
+        answer:
+          "Yes. pct helps phased enforcement, but alignment must still be corrected before full reject."
+      }
+    ],
+
+    nextSteps: [
+      "Roll policy back to a safer level to stop immediate false rejects.",
+      "Identify failing legitimate streams from headers and reports.",
+      "Fix SPF/DKIM alignment for each stream.",
+      "Re-test and monitor pass rates in real recipient providers.",
+      "Reintroduce reject policy in controlled phases."
+    ],
+
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+
+    related: [
+      { href: "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject", label: "DMARC policy levels explained" },
+      { href: "/dmarc/dmarc-alignment-failed", label: "DMARC alignment failed" },
+      { href: "/dmarc/dmarc-pct-tag-explained", label: "DMARC pct tag explained" }
+    ]
+  },
+
+  "dmarc/dmarc-quarantine-sending-to-spam": {
+    title: "DMARC Quarantine Sending to Spam (Why It Happens)",
+    description:
+      "DMARC quarantine sending mail to spam? Understand policy behavior, reduce false positives, and improve alignment before stricter enforcement.",
+
+    intro:
+      "DMARC quarantine is designed to route failing mail to spam-like folders. If legitimate messages are being quarantined, it usually means alignment is still incomplete for one or more sender streams or policy was tightened before sender cleanup.",
+
+    quickPoints: [
+      "p=quarantine intentionally increases spam-folder routing for DMARC fails",
+      "Legitimate mail in spam indicates unresolved alignment for that stream",
+      "Quarantine is a transition stage, not a final fix by itself",
+      "Report-guided sender cleanup is required to reduce false positives"
+    ],
+
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Identify which legitimate streams are failing DMARC, fix SPF/DKIM alignment for those paths, and adjust policy only after pass rates are consistently healthy.",
+
+    codeTitle: "Quarantine policy example",
+    codeLanguage: "DMARC TXT",
+    code: `_dmarc.example.com TXT "v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com; adkim=r; aspf=r"`,
+
+    afterCodeText:
+      "Quarantine works as intended for failing mail. The fix is alignment correction for legitimate streams, not ignoring the policy result.",
+
+    wrongExampleTitle: "Quarantine without sender cleanup",
+    wrongExampleLanguage: "Operational state",
+    wrongExampleCode: `p=quarantine enabled while multiple senders still fail alignment`,
+    wrongExampleText:
+      "Legitimate traffic continues to land in spam because enforcement outpaced alignment remediation.",
+
+    correctExampleTitle: "Quarantine with remediation",
+    correctExampleLanguage: "Operational state",
+    correctExampleCode: `p=quarantine + stream-by-stream alignment fixes + report monitoring`,
+    correctExampleText:
+      "Spam-side false positives reduce as legitimate senders are aligned and policy is tuned with real evidence.",
+
+    whyTitle: "Why this happens",
+    whyText:
+      "Quarantine-related spam issues occur when policy is functioning correctly but sender alignment is incomplete. The policy is exposing real authentication gaps.",
+
+    problemTitle: "Why this is a problem",
+    problemPoints: [
+      "Valid mail can route to spam, affecting engagement and business outcomes.",
+      "Teams may misinterpret quarantine behavior as provider error.",
+      "Policy confidence drops when remediation workflow is missing.",
+      "Escalating to reject becomes risky without first stabilizing alignment."
+    ],
+
+    deliverabilityTitle: "How this affects deliverability",
+    deliverabilityText:
+      "Legitimate quarantine outcomes can suppress inbox placement until aligned authentication is restored across all sender streams.",
+
+    causesTitle: "Common causes",
+    causes: [
+      "One or more legitimate senders still fail SPF/DKIM alignment.",
+      "Quarantine policy enabled before comprehensive sender inventory cleanup.",
+      "Mixed sender tools with inconsistent authentication domains.",
+      "Insufficient DMARC report analysis to identify failing streams quickly."
+    ],
+
+    checkedTitle: "What we checked",
+    checkedText:
+      "We review DMARC policy state, identify which streams are failing under quarantine, and validate alignment readiness before stricter policy actions.",
+
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Is quarantine supposed to send mail to spam?",
+        answer:
+          "Yes. Quarantine asks receivers to treat DMARC-failing mail as suspicious, commonly routing it to spam."
+      },
+      {
+        question: "Should I disable quarantine immediately?",
+        answer:
+          "Only if business impact is severe. Prefer fixing failing streams quickly while monitoring outcomes."
+      },
+      {
+        question: "Can aligned DKIM reduce quarantine false positives?",
+        answer:
+          "Yes. Stable aligned DKIM and/or SPF significantly reduces legitimate mail being quarantined."
+      }
+    ],
+
+    nextSteps: [
+      "Use reports and headers to identify legitimate streams failing DMARC.",
+      "Fix SPF/DKIM alignment per stream and retest outcomes.",
+      "Monitor spam-folder rates as remediation progresses.",
+      "Adjust policy strictness only after false-positive risk is low.",
+      "Document sender onboarding rules to prevent regressions."
+    ],
+
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+
+    related: [
+      { href: "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject", label: "DMARC policy levels explained" },
+      { href: "/dmarc/dmarc-alignment-failed", label: "DMARC alignment failed" },
+      { href: "/dmarc/dmarc-aggregate-reports-explained", label: "DMARC aggregate reports explained" }
+    ]
+  },
+
+  "dmarc/sendgrid-dmarc-fail": {
+    title: "SendGrid DMARC Fail (Fix DMARC Alignment Fast)",
+
+    intro:
+      "SendGrid DMARC fail means SendGrid traffic is not aligned to your visible From domain, even if SPF or DKIM passes technically. Gmail, Outlook, and Yahoo can still flag or down-rank those messages when DMARC does not align. This usually happens when SendGrid domain authentication is partial or misconfigured.",
 
     fixTitle: "One-Minute Fix",
 
@@ -436,10 +882,10 @@ _dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com"`,
   },
 
   "dmarc/mailchimp-dmarc-alignment-failed": {
-    title: "Mailchimp DMARC Alignment Failed – Fix Marketing Sender Alignment (2026)",
+    title: "Mailchimp DMARC Alignment Failed (Fix Sender Alignment)",
 
     intro:
-      "Mailchimp DMARC alignment fails when campaign mail authenticates but does not align with your visible From domain. This is common when marketing sends use partially configured domain authentication, so SPF or DKIM pass technically but DMARC still fails.",
+      "Mailchimp DMARC alignment failed means campaign mail authenticates on a domain that does not match your visible From domain. Gmail, Outlook, and Yahoo may still classify those campaigns as risky when DMARC alignment fails. This typically occurs when Mailchimp domain authentication is only partially configured.",
 
     fixTitle: "One-Minute Fix",
 
@@ -545,7 +991,7 @@ _dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com"`,
   },
 
   "dmarc/dmarc-generator": {
-    title: "DMARC generator",
+    title: "DMARC Generator (Tool to Create DMARC Record)",
 
     intro:
       "DMARC lets you publish a domain-level policy that tells mailbox providers what to do when SPF and DKIM do not align with the visible From domain. A clear DMARC record also enables aggregate reporting so you can see which services are sending mail on your behalf.",
@@ -599,10 +1045,10 @@ _dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com"`,
   },
 
   "dmarc/dmarc-policy-none-vs-quarantine-vs-reject": {
-    title: "DMARC Policy None vs Quarantine vs Reject – Explained (2026)",
+    title: "DMARC Policy None vs Quarantine vs Reject (Guide)",
 
     intro:
-      "The DMARC policy controls what receivers do with messages that fail DMARC checks. In practical terms, p=none monitors only, p=quarantine usually routes failing mail to spam, and p=reject asks receivers to refuse failing mail entirely. Choosing the wrong level for your rollout stage can either weaken protection or block legitimate traffic.",
+      "DMARC policy controls what receivers do with messages that fail DMARC checks. In practice, p=none monitors, p=quarantine usually sends failures to spam, and p=reject asks receivers to block them. Choosing the wrong stage too early can hurt legitimate delivery at Gmail, Outlook, and Yahoo.",
 
     fixTitle: "One-Minute Fix",
 
@@ -708,10 +1154,18 @@ _dmarc.example.com TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.com"`,
   },
 
   "dmarc/dmarc-alignment-failed": {
-    title: "DMARC Alignment Failed – Causes & Fix (2026)",
+    title: "DMARC Alignment Failed (Fix Email Authentication)",
+    description:
+      "Fix DMARC alignment failures. Step-by-step guide to align SPF and DKIM and prevent emails from failing authentication.",
 
     intro:
-      "DMARC alignment failed because the authenticated SPF or DKIM domain does not align with the visible From domain. A common real-world pattern is SPF passing on a vendor MAIL FROM domain or DKIM passing on a different signing domain while DMARC still fails. In that case, raw authentication checks can look healthy even though domain identity alignment is broken.",
+      "DMARC alignment failed means the authenticated SPF or DKIM domain does not match your visible From domain. A common case is SPF passing on a vendor MAIL FROM domain or DKIM passing on a different signing domain while DMARC still fails. That breaks identity trust for Gmail, Outlook, and Yahoo even when a raw SPF or DKIM pass appears in headers.",
+    quickPoints: [
+      "SPF or DKIM passes but does not align",
+      "From domain differs from auth domain",
+      "DMARC fails despite valid signatures",
+      "Common with third-party senders"
+    ],
 
     fixTitle: "One-Minute Fix",
 
@@ -821,7 +1275,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dmarc/dmarc-rua-ruf-not-working": {
-    title: "DMARC RUA/RUF Not Working – Fix DMARC Reports (2026)",
+    title: "DMARC RUA/RUF Not Working (Fix DMARC Reports Fast)",
 
     intro:
       "DMARC reports are not arriving because the RUA or RUF reporting setup is missing, invalid, or not authorized. A common real-world case is adding a report address on another domain but never publishing external reporting authorization for that destination. In that situation, the DMARC record can look fine while reports still never show up.",
@@ -930,7 +1384,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dmarc/dmarc-pct-tag-explained": {
-    title: "DMARC pct Tag Explained – Gradual Rollout Guide (2026)",
+    title: "DMARC pct Tag Explained (Guide to DMARC Rollout)",
 
     intro:
       "The DMARC pct tag controls the percentage of messages to which the published DMARC policy applies. It allows a domain to roll out quarantine or reject gradually instead of enforcing the policy across all traffic immediately.",
@@ -1039,7 +1493,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dmarc/dmarc-sp-subdomain-policy-explained": {
-    title: "DMARC Subdomain Policy (sp) Explained – Full Guide (2026)",
+    title: "DMARC Subdomain Policy sp Explained (DMARC Guide)",
 
     intro:
       "The DMARC sp tag defines how the DMARC policy applies to subdomains. Without this tag, subdomains inherit the main DMARC policy. With sp, a domain can apply one enforcement level to the parent domain and a different level to subdomains.",
@@ -1148,7 +1602,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dmarc/dmarc-fo-tag-explained": {
-    title: "DMARC fo Tag Explained – Failure Reporting Options (2026)",
+    title: "DMARC fo Tag Explained (Guide to Failure Reports)",
 
     intro:
       "The DMARC fo tag controls forensic reporting behavior where providers support it. It tells receivers under which failure conditions they may generate failure or forensic reports. Different fo values adjust how strict or broad that reporting trigger is.",
@@ -1257,7 +1711,7 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dmarc/dmarc-aspf-adkim-explained": {
-    title: "DMARC aspf & adkim Explained – Alignment Modes (2026)",
+    title: "DMARC aspf and adkim Explained (Alignment Guide)",
 
     intro:
       "The DMARC aspf and adkim tags control how strictly DMARC evaluates alignment between authentication domains and the visible From domain. The aspf tag applies to SPF alignment, while the adkim tag applies to DKIM alignment. In relaxed mode, subdomains can still align. In strict mode, the authenticated domain must match the From domain exactly.",
@@ -1366,7 +1820,9 @@ DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;`,
   },
 
   "dmarc/multiple-dmarc-records-found": {
-    title: "Multiple DMARC Records Found – Fix DMARC Conflict (2026)",
+    title: "Multiple DMARC Records Found (Fix This Issue Fast)",
+    description:
+      "Fix multiple DMARC records fast. Learn how to keep a single valid policy and avoid email authentication errors.",
 
     intro:
       "Your domain has more than one DMARC record published, which breaks DMARC evaluation. A common real-world case is leaving an old monitoring record in place after adding a newer quarantine or reject policy. When multiple policies exist at _dmarc, receivers cannot reliably apply one authoritative rule.",
@@ -1476,7 +1932,7 @@ v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com`,
   },
 
   "dmarc/dmarc-record-example": {
-    title: "DMARC Record Example – Valid DMARC Setup (2026)",
+    title: "DMARC Record Example (Guide to Valid DMARC Setup)",
 
     intro:
       "DMARC records are TXT records published at _dmarc.yourdomain.com. They define the policy (p=none, quarantine, or reject), reporting addresses (rua, ruf), and optional tags such as pct and fo. This page shows correct examples for monitoring, gradual enforcement, and full reject, with realistic rua and ruf values.",
@@ -1578,7 +2034,7 @@ v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com`,
   },
 
   "dmarc/dmarc-aggregate-reports-explained": {
-    title: "DMARC Aggregate Reports Explained – How to Read RUA (2026)",
+    title: "DMARC Aggregate Reports Explained (Guide to Read RUA)",
 
     intro:
       "DMARC aggregate reports are XML summaries sent by receivers to show how your domain is being authenticated. They help you spot spoofing sources and identify legitimate senders that are failing SPF, DKIM, or alignment. This visibility is critical before raising DMARC enforcement.",
@@ -1682,6 +2138,362 @@ record (source_ip, count, disposition, dkim/spf results)`,
       { href: "/dmarc/dmarc-rua-ruf-not-working", label: "DMARC reports not working" },
       { href: "/dmarc/dmarc-record-example", label: "DMARC record examples" },
       { href: "/dmarc/dmarc-fo-tag-explained", label: "DMARC fo tag explained" }
+    ]
+  },
+
+  "dmarc/dmarc-record-invalid": {
+    title: "DMARC Record Invalid (Syntax and Tag Structure Errors)",
+    description:
+      "Repair malformed DMARC TXT: stray spaces, missing semicolons, duplicate tags, and illegal p= values that make the policy unusable.",
+    intro:
+      "DMARC lives in `_dmarc.domain` as a TXT record beginning with `v=DMARC1`. Everything after that is a `tag=value` grammar separated by semicolons. A single illegal character—like a Unicode semicolon, duplicated `p=` keys, or `sp=quarantine` misspelled—forces parsers to reject the entire record. Unlike SPF, there is no partial credit: receivers either consume a coherent policy or behave as if DMARC were missing or malformed depending on their implementation. Mixed-case tag names, line-wrapped TXT outside proper quoted spans, and accidental SPF records pasted into `_dmarc` are common sources of silent failure during migrations.",
+    quickPoints: [
+      "Only one DMARC TXT should answer for the organisational domain.",
+      "Tags are `alpha=value` pairs; whitespace around `=` breaks strict parsers.",
+      "Aggregate tags like `rua=` accept comma-separated mailto URIs—not spaces between addresses.",
+      "Unknown experimental tags must still follow `token=value` format or be omitted."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Rebuild the record from a known-good template: `v=DMARC1; p=…; rua=mailto:…`, ensure every tag ends with `;` except optionally the last, remove duplicate tag names, and publish a single TXT at `_dmarc.example.com` without mixing unrelated SPF content.",
+    codeTitle: "Minimal valid skeleton",
+    codeLanguage: "DNS TXT",
+    code: `_dmarc.example.com TXT \"v=DMARC1; p=none; rua=mailto:dmarc@example.com\"`,
+    afterCodeText:
+      "Validate with an RFC-aware checker; eyeballing in the registrar preview misses invisible Unicode.",
+    wrongExampleTitle: "Wrong setup",
+    wrongExampleLanguage: "DNS TXT",
+    wrongExampleCode: `_dmarc.example.com TXT v=DMARC1 p=none rua=mailto:reports@example.com`,
+    wrongExampleText:
+      "Missing semicolons between tags breaks tokenisation completely—even though humans read it fine.",
+    correctExampleTitle: "Correct setup",
+    correctExampleLanguage: "DNS TXT",
+    correctExampleCode: `_dmarc.example.com TXT \"v=DMARC1; p=none; rua=mailto:reports@example.com;\"`,
+    correctExampleText:
+      "Semicolons separate tags; trailing semicolon optional but including it avoids editor mistakes.",
+    whyTitle: "Why invalid DMARC slips in",
+    whyText:
+      "Teams copy examples from blogs with soft spaces, or merge two policies during a hurried merger Friday. Some DNS UIs also auto-insert line breaks that must be recombined into valid TXT strings.",
+    problemTitle: "Impact of an invalid record",
+    problemPoints: [
+      "Receivers cannot apply requested disposition, undermining spoofing strategy.",
+      "Monitoring endpoints never receive `rua` because policy never parsed.",
+      "Forensic tooling shows conflicting ‘present’ vs ‘usable’ states.",
+      "Compliance audits flag missing effective DMARC even though DNS ‘has something’."
+    ],
+    deliverabilityTitle: "Deliverability angle",
+    deliverabilityText:
+      "Invalid DMARC erodes enforcement signals—messages fall back to provider heuristics, making outcomes less predictable than a deliberate `p=none` baseline.",
+    causesTitle: "Common causes",
+    causes: [
+      "Accidental SPF record placed at `_dmarc`.",
+      "Duplicate `v=DMARC1;` blocks concatenated into one TXT set incorrectly.",
+      "Mixing Google/Microsoft template fragments without merging tags.",
+      "Using commas inside `p=` where only `none|quarantine|reject` are legal."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "We fetch `_dmarc` TXT and evaluate structural validity before semantic policy analysis. Syntax errors preempt interpretation of enforcement or reporting directives.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Does BOM at the start matter?",
+        answer:
+          "Invisible byte-order marks count as bad leading characters. Strip them if copy/paste introduced them."
+      },
+      {
+        question: "Can comments exist inside DMARC TXT?",
+        answer:
+          "No—unlike SPF, DMARC has no comment syntax. Remove parenthetical notes."
+      },
+      {
+        question: "What if I need many RUA endpoints?",
+        answer:
+          "Use comma-separated mailto URIs without spaces; verify each mailbox accepts reports."
+      }
+    ],
+    nextSteps: [
+      "Back up existing TXT then delete conflicting duplicates.",
+      "Paste policy into a plain-text validator before publish.",
+      "Republish a single coherent record.",
+      "Query DNS globally to confirm one authoritative answer.",
+      "Run aggregate report arrival checks after syntax passes."
+    ],
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+    related: [
+      { href: "/dmarc/multiple-dmarc-records-found", label: "Multiple DMARC records found" },
+      { href: "/dmarc/dmarc-record-example", label: "DMARC record examples" },
+      { href: "/dmarc/no-dmarc-record-found", label: "No DMARC record found" }
+    ]
+  },
+
+  "dmarc/dmarc-missing-rua": {
+    title: "DMARC Missing rua (No Aggregate Reporting Endpoint)",
+    description:
+      "Add `rua=` so DMARC delivers data even under relaxed policy—without reports you cannot prove enforcement readiness.",
+    intro:
+      "A `p=none` policy without `rua` still allows mail to flow, but you lose the telemetry that justifies ever moving to `quarantine` or `reject`. Many organisations publish stripped-down records copied from marketing blog snippets that mention only `p=`. Others fear mailbox overflow and omit reporting entirely—only to discover later that ISP dashboards lack DMARC insight. Regulated environments also struggle to demonstrate due diligence without stored aggregate files. The mailbox does not need to choke: use a dedicated inbox or third-party parser address, scope sampling with `pct` later, but never run blind.",
+    quickPoints: [
+      "Aggregate reports (`rua`) are XML digests—not message contents.",
+      "You can specify multiple `mailto:` URIs for redundancy.",
+      "Reports arrive from external addresses; whitelist `*@dmarc.yahoo.com` style senders per provider docs.",
+      "Skipping `rua` does not reduce spam; it hides abuse until customers complain."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Append `rua=mailto:dmarc@yourdomain` with a deliverable mailbox, publish, then open `_dmarc` TXT at `_dmarc.yourdomain` to confirm the tag appears exactly once alongside your existing policy flags.",
+    codeTitle: "Baseline monitoring policy",
+    codeLanguage: "DNS TXT",
+    code: `_dmarc.example.com TXT \"v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com; fo=1\"`,
+    afterCodeText:
+      "Add `fo=1` only if you understand forensic volume trade-offs; skip it if you only need aggregate first.",
+    wrongExampleTitle: "Wrong setup",
+    wrongExampleLanguage: "DNS TXT",
+    wrongExampleCode: `v=DMARC1; p=reject`,
+    wrongExampleText:
+      "Strict disposition without reporting blinds you to collateral damage and legitimate sources failing alignment.",
+    correctExampleTitle: "Correct monitoring-first posture",
+    correctExampleLanguage: "DNS TXT",
+    correctExampleCode: `v=DMARC1; p=none; rua=mailto:reports@example.com; adkim=r; aspf=r`,
+    correctExampleText:
+      "Reporting while monitoring ensures you gather evidence before tightening policy.",
+    whyTitle: "Why teams skip rua",
+    whyText:
+      "Mailbox storage fears, privacy reviews, or ignorance of aggregate XML size dominate. Yet modern ESPs compress reports and many vendors offer free ingestion endpoints.",
+    problemTitle: "What you lose without rua",
+    problemPoints: [
+      "No time-series view of SPF/DKIM pass rates by source IP.",
+      "Harder phishing investigations lacking centralised evidence.",
+      "Executive stakeholders see opinion, not metrics.",
+      "Delayed detection of shadow SaaS senders spoofing your domain."
+    ],
+    deliverabilityTitle: "Deliverability angle",
+    deliverabilityText:
+      "Even perfect inbox placement needs longitudinal data; missing `rua` prevents tuning DKIM selectors and SPF includes before they become crises.",
+    causesTitle: "Common causes",
+    causes: [
+      "Copy/paste templates omitting `rua` entirely.",
+      "Accidental removal during compressing TXT to fit registrar UI limits.",
+      "Fear of GDPR without anonymising parsers.",
+      "Belief that `p=none` alone satisfies compliance checklists."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "We look for a parsable DMARC TXT and note whether reporting tags are present. Absent `rua` triggers operational guidance even when enforcement tags parse correctly.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Can rua point off-domain?",
+        answer:
+          "Yes, but DMARC expects mailbox confirmation via DNS if you use third-party addresses—follow their onboarding wizard."
+      },
+      {
+        question: "How large are files?",
+        answer:
+          "Varies by sender volume; enterprise domains can see multiple daily messages, but compression keeps most mailboxes manageable."
+      },
+      {
+        question: "Is ruf mandatory too?",
+        answer:
+          "No—forensic reports are optional and noisy; start with aggregate (`rua`)."
+      }
+    ],
+    nextSteps: [
+      "Create a dedicated mailbox or vendor ingestion alias.",
+      "Publish `rua` and verify arrival within 24–72 hours.",
+      "Parse XML into dashboards or spreadsheets.",
+      "Identify misaligned sources before moving `p=` tighter.",
+      "Only then schedule enforcement changes with stakeholders."
+    ],
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+    related: [
+      { href: "/dmarc/dmarc-rua-ruf-not-working", label: "DMARC reports not working" },
+      { href: "/dmarc/dmarc-aggregate-reports-explained", label: "DMARC aggregate reports explained" },
+      { href: "/dmarc/dmarc-record-example", label: "DMARC record examples" }
+    ]
+  },
+
+  "dmarc/dmarc-subdomain-policy-not-working": {
+    title: "DMARC Subdomain Policy Not Working (When sp= Ignores Expectations)",
+    description:
+      "Understand how `sp=` changes subdomain enforcement versus organisational policy—and why Header From alignment still decides outcomes.",
+    intro:
+      "The `sp=` tag sets a default policy for subdomains of the DMARC record owner when no separate DMARC record exists on each child host. It does not override organisational domain alignment magically: mail from `news.brand.com` must still align through SPF or DKIM to the domain shown in the From header. Teams expect `sp=reject` at `_dmarc.brand.com` to block all child-domain spoofing instantly, yet messages can still pass DMARC when a phisher uses `From: phish@brand.com` with misaligned authentication—because `sp` never triggers. Another confusion: publishing DMARC on `sub.brand.com` with its own tags while forgetting apex `sp`, yielding asymmetric enforcement that looks ‘broken’ during testing.",
+    quickPoints: [
+      "`sp` applies when mail uses subdomains of the organisational domain—check which domain is the DMARC authority.",
+      "Subdomains can publish independent `_dmarc` records that supersede inherited `sp`.",
+      "Alignment uses authenticated domains, not arbitrary substrings in display names.",
+      "Testing with the wrong From domain makes `sp` look inert."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Inventory which domain appears in From, publish DMARC at the matching organisational boundary, set `sp` intentionally, and add dedicated `_dmarc` children only when a subdomain needs divergent policy. Validate with aggregate reports filtered by `header_from` and `policy_evaluated`.",
+    codeTitle: "Apex policy with subdomain override",
+    codeLanguage: "DNS TXT",
+    code: `_dmarc.brand.com TXT \"v=DMARC1; p=reject; sp=quarantine; rua=mailto:dmarc@brand.com\"`,
+    afterCodeText:
+      "`sp` governs unprotected subdomains lacking their own DMARC while `p` governs the organisational domain presence.",
+    wrongExampleTitle: "Mis-set expectations",
+    wrongExampleLanguage: "Plain text",
+    wrongExampleCode: `Expect sp=reject to stop brand.com spoofing`,
+    wrongExampleText:
+      "Organizational domain spoofing is controlled by `p` and alignment—not by `sp` alone.",
+    correctExampleTitle: "Targeted child policy",
+    correctExampleLanguage: "DNS TXT",
+    correctExampleCode: `_dmarc.mail.brand.com TXT \"v=DMARC1; p=none; rua=mailto:subs@brand.com\"`,
+    correctExampleText:
+      "Explicit child `_dmarc` records let newsletters operate under different enforcement while keeping apex strict.",
+    whyTitle: "Why sp= surprises teams",
+    whyText:
+      "DMARC’s inheritance rules are subtle; documentation often compresses them into a single bullet. Product managers then simulate attacks using the wrong From domain and declare DMARC defective.",
+    problemTitle: "Operational misunderstandings",
+    problemPoints: [
+      "False confidence that marketing subdomains inherit apex `p=reject` without alignment checks.",
+      "Legitimate mail from regional subdomains suddenly quarantined after tightening `sp`.",
+      "Duplicate `_dmarc` records causing parse ambiguity at children.",
+      "Vendor mails using bounce subdomains not aligned with expectation."
+    ],
+    deliverabilityTitle: "Deliverability angle",
+    deliverabilityText:
+      "When `sp` tightens before sources authenticate subdomains, DMARC ‘fails’ legitimate campaigns—better described as intended enforcement, not DNS breakage.",
+    causesTitle: "Common causes",
+    causes: [
+      "No child `_dmarc` for high-volume marketing hostnames.",
+      "Confusing organisational vs subdomain boundaries in multi-brand holding companies.",
+      "Assuming `sp` changes alignment mode—it does not; `aspf`/`adkim` do.",
+      "Testing DMARC from tools that do not show policy_applied versus evaluated."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "We validate the organisational `_dmarc` TXT and interpret `sp` relative to your declared From domains. Cross-domain tests require distinct checks per sending pattern.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Should sp equal p eventually?",
+        answer:
+          "Often, yet marketing ecosystems may warrant softer `sp` while apex stays reject—decide via reports."
+      },
+      {
+        question: "Does CNAME flattening affect _dmarc?",
+        answer:
+          "If `_dmarc` is CNAMEd improperly, you might read someone else’s policy—verify authoritative answers."
+      },
+      {
+        question: "What about internationalised domains?",
+        answer:
+          "Use punycode consistently when publishing DMARC; alignment follows IDNA rules per receiver."
+      }
+    ],
+    nextSteps: [
+      "Map each sending service to its From domain and subdomain usage.",
+      "Publish explicit `_dmarc` rows for exceptions.",
+      "Tune `sp` only after `rua` confirms impact.",
+      "Communicate changes to marketing partners with example Authentication-Results.",
+      "Revisit after acquisitions merge DNS zones."
+    ],
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+    related: [
+      { href: "/dmarc/dmarc-sp-subdomain-policy-explained", label: "DMARC sp subdomain policy explained" },
+      { href: "/dmarc/dmarc-alignment-failed", label: "DMARC alignment failed" },
+      { href: "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject", label: "DMARC policy none vs quarantine vs reject" }
+    ]
+  },
+
+  "dmarc/dmarc-spf-dkim-both-fail": {
+    title: "DMARC When SPF and DKIM Both Fail (Total Authentication Loss)",
+    description:
+      "Diagnose combined SPF and DKIM failures: misaligned domains, broken records, and why DMARC cannot salvage mail without one passing identifier.",
+    intro:
+      "DMARC passes only when at least one authenticated identifier aligns with the Header From domain *and* passes. When SPF yields fail or permerror and DKIM verification fails in the same delivery attempt, DMARC has nothing positive to reuse—policy evaluation sees only negative signals. This is common during migrations where DKIM keys moved but SPF still lists retired relays, or when forwarding breaks DKIM while SPF passes for the forwarder’s domain (both misaligned). Understanding whether both mechanisms truly failed versus merely misaligned guides remediation: alignment issues may need DNS tweaks, while double failure often signals infrastructure outage or outright spoofing attempts.",
+    quickPoints: [
+      "SPF alignment compares the SPF-authenticated domain to the RFC5322 From domain.",
+      "DKIM alignment compares the `d=` domain (with relaxed modes) to the From domain.",
+      "Both can be cryptographically ‘fine’ yet fail DMARC if domains differ under strict mode.",
+      "`p=none` still reports the double-fail fact pattern for monitoring."
+    ],
+    fixTitle: "One-Minute Fix",
+    fixText:
+      "Prioritise restoring *one* strong path—usually DKIM for third-party ESPs—so at least one aligned pass exists, then circle back to SPF includes for your primary MTA. Parallel fixes prevent thrash when both records change simultaneously without measurement.",
+    codeTitle: "Diagnostic snapshot pattern",
+    codeLanguage: "Authentication-Results excerpt",
+    code: `spf=fail ... reason=\"...\"\ndkim=fail ... reason=\"...\"\ndmarc=fail p=none`,
+    afterCodeText:
+      "Use aggregate reports to see whether failures concentrate on specific source IPs or header From domains.",
+    wrongExampleTitle: "Wrong response",
+    wrongExampleLanguage: "Plain text",
+    wrongExampleCode: `Loosen DMARC by deleting SPF/DKIM records 'to reduce noise'`,
+    wrongExampleText:
+      "Removing authentication does not improve legitimacy—it erases the signals DMARC needs entirely.",
+    correctExampleTitle: "Staged repair",
+    correctExampleLanguage: "Plain text",
+    correctExampleCode: `Fix DKIM selector → confirm pass → repair SPF include depth → re-evaluate SPF pass`,
+    correctExampleText:
+      "Sequence changes so you always retain at least one reliable authentication channel per stream.",
+    whyTitle: "Why both can fail together",
+    whyText:
+      "Total failure often means an infrastructure event: DNS outage, bulk key deletion, or ESP incident—all paths degrade at once. In abuse cases, forged mail never matched either identifier.",
+    problemTitle: "Risk profile",
+    problemPoints: [
+      "Mailbox providers may reject or throttle aggressively with no positive auth.",
+      "Brand trust erodes when customers receive unauthenticated spoofs.",
+      "Internal phish simulations look artificially successful—tests may bypass real controls.",
+      "Forensic workloads spike during grey failure windows."
+    ],
+    deliverabilityTitle: "Deliverability angle",
+    deliverabilityText:
+      "Double-fail traffic usually sinks fastest—filters assume the worst when neither SPF nor DKIM vouch for the From identity.",
+    causesTitle: "Common causes",
+    causes: [
+      "Dual-stack IPv6 senders missing AAAA coverage in SPF mechanisms.",
+      "ESPs rotating DKIM while customers still point SPF at old includes.",
+      "Forwarding chains strip DKIM and break SPF alignment simultaneously.",
+      "Accidental duplicate `_dmarc` records masking monitoring during the crisis."
+    ],
+    checkedTitle: "What we checked",
+    checkedText:
+      "We test each protocol independently before synthesising DMARC outcomes. Bring Authentication-Results headers and DMARC XML when both modes fail to pinpoint whether alignment or mechanism evaluation broke first.",
+    faqTitle: "FAQ",
+    faq: [
+      {
+        question: "Will ARC salvage DMARC?",
+        answer:
+          "ARC helps trusted intermediaries pass downstream context but does not create DMARC pass by itself at strict boundaries."
+      },
+      {
+        question: "Should I raise p= during investigation?",
+        answer:
+          "Keep enforcement steady while fixing mechanisms—changing policy mid-outage worsens user impact."
+      },
+      {
+        question: "Is BIMI affected?",
+        answer:
+          "Logo display depends on validated BIMI plus underlying DMARC success; double failures block both."
+      }
+    ],
+    nextSteps: [
+      "Segment failing mail streams by ESP and IP ranges.",
+      "Restore DKIM signing with a known-good selector first.",
+      "Align SPF includes with actual egress IPs.",
+      "Analyse DMARC reports for alignment vs mechanism causes.",
+      "Only tighten policy once steady pass rates return."
+    ],
+    hub: {
+      href: "/dmarc",
+      label: "DMARC Hub"
+    },
+    related: [
+      { href: "/dmarc/dmarc-alignment-failed", label: "DMARC alignment failed" },
+      { href: "/dmarc/dmarc-aspf-adkim-explained", label: "DMARC aspf and adkim explained" },
+      { href: "/dmarc/dmarc-policy-none-vs-quarantine-vs-reject", label: "DMARC policy none vs quarantine vs reject" }
     ]
   }
 };

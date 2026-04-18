@@ -2,10 +2,9 @@ import Link from "next/link";
 import CodeBlock from "../../components/CodeBlock";
 
 export const metadata = {
-  title:
-    "Complete DMARC Guide – Policy, Alignment and Reporting Explained (2026)",
+  title: "DMARC Guide: Fix Alignment, Policy and Reporting Fast",
   description:
-    "Learn how DMARC works with SPF and DKIM, how to deploy monitoring safely, interpret aggregate reports, and move to enforcement without breaking legitimate email.",
+    "Step-by-step guide to fix DMARC issues. Includes DNS examples, common mistakes, and how to improve email deliverability fast.",
 };
 
 const relatedLinks = [

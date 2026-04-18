@@ -5,10 +5,9 @@ import { dkimCluster } from "@/app/data/internalLinks";
 const MAX_HUB_CARDS = 12;
 
 export const metadata: Metadata = {
-  title:
-    "DKIM Hub – Fix DKIM Errors, Selectors, Alignment and Signatures for Modern Email Delivery (2026)",
+  title: "DKIM Hub: Fix DKIM Errors Fast with Guide & Tools",
   description:
-    "Deep-dive DKIM hub for founders and IT admins. Understand DKIM selectors, alignment, key length, body hash failures, and get one-minute fixes for common DKIM errors.",
+    "Step-by-step guide to fix DKIM Hub errors. Includes DNS examples, common mistakes, and how to improve email deliverability fast.",
 };
 
 export default function DKIMHubPage() {

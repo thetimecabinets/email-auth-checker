@@ -116,7 +116,10 @@ export default function ErrorPageTemplate(
           {data.intro}
           {renderIntroLinks(data.hub?.href)}
         </p>
-        <p style={styles.updated}>Last updated: {new Date().toLocaleDateString()}</p>
+        <p style={styles.updated}>
+          Updated for 2026 to reflect current Gmail, Outlook, and Yahoo
+          behavior.
+        </p>
 
         {contextualLink}
 
@@ -133,6 +136,17 @@ export default function ErrorPageTemplate(
             to understand how these protocols work together.
           </p>
         </div>
+
+        {data.quickPoints && data.quickPoints.length > 0 && (
+          <div style={styles.quickBox}>
+            <h2 style={styles.sectionTitle}>Quick answer</h2>
+            <ul style={styles.list}>
+              {data.quickPoints.slice(0, 5).map((point, index) => (
+                <li key={index}>{point}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div style={styles.fixBox}>
           <h2 style={styles.sectionTitle}>{data.fixTitle}</h2>
@@ -157,6 +171,20 @@ export default function ErrorPageTemplate(
           <p style={styles.trust}>Free live DNS check. No signup required.</p>
         </div>
 
+        {data.verifySteps && data.verifySteps.length > 0 && (
+          <div style={styles.infoBox}>
+            <h2 style={styles.sectionTitle}>Verify the fix</h2>
+            <p style={styles.text}>
+              After applying the fix, confirm everything works correctly:
+            </p>
+            <ol style={styles.list}>
+              {data.verifySteps.map((step, index) => (
+                <li key={index}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+
         {pathname === "/spf/multiple-spf-records-found" ||
         pathname === "/spf/spf-permerror-too-many-dns-lookups" ||
         pathname === "/spf/spf-record-generator" ||
@@ -170,16 +198,7 @@ export default function ErrorPageTemplate(
           </div>
         ) : null}
 
-        {pathname === "/spf/spf-lookup-checker" && (
-          <div style={{ marginTop: 24 }}>
-            <h2 style={styles.sectionTitle}>Check DNS lookups</h2>
-            <p style={styles.text}>
-              Paste your SPF record to estimate how many DNS lookups it uses and
-              see whether you are close to the SPF limit.
-            </p>
-            <SPFLookupChecker />
-          </div>
-        )}
+        {pathname === "/spf/spf-lookup-checker" && <SPFLookupChecker />}
 
         {pathname === "/dmarc/dmarc-generator" && (
           <div style={{ marginTop: 24 }}>
@@ -674,6 +693,18 @@ const styles: Record<string, React.CSSProperties> = {
   },
   infoBox: {
     marginBottom: 40,
+  },
+  updated: {
+    fontSize: 14,
+    color: "#6b7280",
+    marginBottom: 20,
+  },
+  quickBox: {
+    background: "#f8fafc",
+    border: "1px solid #e5e7eb",
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 24,
   },
   trust: {
     fontSize: 14,
